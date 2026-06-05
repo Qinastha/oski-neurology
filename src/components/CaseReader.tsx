@@ -16,11 +16,13 @@ import {
   Images,
   Menu,
   MessageSquareText,
-  MoreHorizontal,
-  Star
+  Star,
+  X,
+  ZoomIn
 } from "lucide-react";
 
-import type { CaseSummary, ChecklistItem, InteractionItem, StudyCase } from "@/content/schema";
+import type { CaseImage, CaseSummary, ChecklistItem, InteractionItem, StudyCase } from "@/content/schema";
+import { cn } from "@/lib/cn";
 import { formatGroup, formatStatus } from "@/lib/case-format";
 import { MarkdownView } from "./MarkdownView";
 
@@ -31,6 +33,17 @@ interface CaseReaderProps {
   next?: CaseSummary;
 }
 
+type LightboxImage = CaseImage & {
+  kind: "original" | "scan";
+};
+
+const panelClass =
+  "rounded-lg border border-clinical-line/85 bg-white/90 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl";
+const iconButtonClass =
+  "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong";
+const yellowButtonClass =
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]";
+
 function readFavorites() {
   if (typeof window === "undefined") {
     return new Set<string>();
@@ -38,7 +51,9 @@ function readFavorites() {
 
   try {
     const value = JSON.parse(window.localStorage.getItem("favoriteCases") ?? "[]");
-    return new Set(Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []);
+    return new Set(
+      Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []
+    );
   } catch {
     return new Set<string>();
   }
@@ -53,37 +68,65 @@ function SectionBlock({
 }: {
   id: string;
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
 }) {
   return (
-    <details className="reader-section" id={id} open={defaultOpen}>
-      <summary>
-        <span>
+    <details
+      className="group mt-2.5 rounded-lg border border-clinical-line bg-white"
+      id={id}
+      open={defaultOpen}
+    >
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 [&::-webkit-details-marker]:hidden">
+        <span className="inline-flex items-center gap-2.5 font-extrabold">
           {icon}
           {title}
         </span>
-        <ChevronDown size={18} />
+        <ChevronDown className="transition group-open:rotate-180" size={18} />
       </summary>
-      <div className="reader-section__body">{children}</div>
+      <div className="border-t border-clinical-line p-4 max-md:p-3">{children}</div>
     </details>
   );
 }
 
 function ChecklistCard({ item }: { item: ChecklistItem }) {
   const [open, setOpen] = useState(item.order <= 3);
+  const buttonId = `checklist-trigger-${item.id}`;
+  const panelId = `checklist-panel-${item.id}`;
 
   return (
-    <article className={`check-step ${open ? "is-open" : ""}`}>
-      <button type="button" onClick={() => setOpen((value) => !value)}>
-        <span className="check-step__number">{String(item.order).padStart(2, "0")}</span>
-        <span className="check-step__title">{item.title}</span>
-        <ChevronDown size={18} />
+    <article
+      className={cn(
+        "check-step rounded-lg border bg-gradient-to-b from-white to-[#fffdf8] transition",
+        open ? "border-clinical-accent-strong/45" : "border-clinical-line"
+      )}
+      data-state={open ? "open" : "closed"}
+    >
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        className="grid min-h-[54px] w-full grid-cols-[38px_minmax(0,1fr)_22px] items-center gap-2.5 p-3 text-left max-md:grid-cols-[34px_minmax(0,1fr)_20px] max-md:px-2.5"
+        id={buttonId}
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-clinical-accent-soft text-xs font-black text-[#8a6300]">
+          {String(item.order).padStart(2, "0")}
+        </span>
+        <span className="min-w-0 text-[15px] font-extrabold leading-tight">{item.title}</span>
+        <ChevronDown className={cn("transition", open && "rotate-180")} size={18} />
       </button>
       {open ? (
-        <div className="check-step__answer">
-          <span>Что проговорить</span>
+        <div
+          aria-labelledby={buttonId}
+          className="mb-3 ml-[60px] mr-3 rounded-r-lg border-l-[3px] border-clinical-accent bg-[#fffaf0] p-3.5 max-md:ml-[46px] max-md:p-3"
+          id={panelId}
+          role="region"
+        >
+          <span className="mb-1.5 block text-xs font-black uppercase text-clinical-accent-strong">
+            Что проговорить
+          </span>
           <MarkdownView markdown={item.body} />
         </div>
       ) : null}
@@ -93,23 +136,199 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
 
 function InteractionCard({ item, index }: { item: InteractionItem; index: number }) {
   return (
-    <article className="interaction-card">
-      <span>{String(index + 1).padStart(2, "0")}</span>
+    <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+      <span className="font-black text-clinical-accent-strong">
+        {String(index + 1).padStart(2, "0")}
+      </span>
       <div>
-        <strong>{item.title}</strong>
+        <strong className="mb-1 block">{item.title}</strong>
         <MarkdownView markdown={item.body} />
       </div>
     </article>
   );
 }
 
+function MediaFigure({
+  image,
+  kind,
+  onOpen
+}: {
+  image: CaseImage;
+  kind: LightboxImage["kind"];
+  onOpen: (image: LightboxImage) => void;
+}) {
+  const isScan = kind === "scan";
+
+  return (
+    <figure
+      className="overflow-hidden rounded-lg border border-clinical-line bg-white [content-visibility:auto] [contain-intrinsic-size:260px] max-md:min-w-[min(78vw,320px)] max-md:[scroll-snap-align:start]"
+      data-media-figure={kind}
+    >
+      <button
+        aria-label={`Открыть изображение: ${image.caption ?? image.alt}`}
+        className={cn(
+          "group relative block w-full overflow-hidden bg-[#f7f7f7] text-left",
+          isScan ? "aspect-[1.2/1] bg-[#111]" : "aspect-[3/4]"
+        )}
+        data-image-open={kind}
+        type="button"
+        onClick={() => onOpen({ ...image, kind })}
+      >
+        <Image
+          alt={image.alt}
+          className={cn(
+            "h-full w-full transition duration-300",
+            isScan
+              ? "-translate-y-[8%] scale-[1.85] object-cover object-center group-hover:scale-[1.92]"
+              : "object-contain object-top group-hover:scale-[1.03]"
+          )}
+          height={isScan ? 540 : 1200}
+          loading="lazy"
+          quality={isScan ? 72 : 70}
+          sizes={isScan ? "(max-width: 820px) 78vw, 240px" : "(max-width: 820px) 78vw, 260px"}
+          src={image.src}
+          width={isScan ? 960 : 900}
+        />
+        <span className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/70 bg-white/85 text-[#3b414a] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100 max-md:opacity-100">
+          <ZoomIn size={17} />
+        </span>
+      </button>
+      {image.caption ? (
+        <figcaption className="p-2.5 text-xs leading-snug text-clinical-muted">
+          {image.caption}
+        </figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
+function OriginalPagesDisclosure({
+  pages,
+  onOpen
+}: {
+  pages: CaseImage[];
+  onOpen: (image: LightboxImage) => void;
+}) {
+  const [shouldRenderPages, setShouldRenderPages] = useState(false);
+
+  return (
+    <details
+      className="group mt-3.5"
+      onToggle={(event) => {
+        if (event.currentTarget.open) {
+          setShouldRenderPages(true);
+        }
+      }}
+    >
+      <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-clinical-line-strong bg-clinical-accent-soft px-3 text-[13px] font-extrabold text-[#594107] [&::-webkit-details-marker]:hidden">
+        Показать страницы задачи ({pages.length})
+        <ChevronDown className="transition group-open:rotate-180" size={17} />
+      </summary>
+      {shouldRenderPages ? (
+        <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 max-md:flex max-md:overflow-x-auto max-md:pb-1 max-md:[scroll-snap-type:x_mandatory]">
+          {pages.map((page) => (
+            <MediaFigure image={page} kind="original" key={page.src} onOpen={onOpen} />
+          ))}
+        </div>
+      ) : null}
+    </details>
+  );
+}
+
+function ImageLightbox({
+  image,
+  onClose
+}: {
+  image: LightboxImage;
+  onClose: () => void;
+}) {
+  const isScan = image.kind === "scan";
+
+  return (
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-50 bg-[#111]/88 p-3 text-white backdrop-blur-md"
+      data-image-lightbox="open"
+      role="dialog"
+    >
+      <button
+        aria-label="Закрыть просмотр по фону"
+        className="absolute inset-0 h-full w-full cursor-default"
+        type="button"
+        onClick={onClose}
+      />
+      <section className="relative z-10 mx-auto flex h-full max-w-6xl flex-col">
+        <header className="flex min-h-12 items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm font-extrabold text-white/90">
+            {image.caption ?? image.alt}
+          </p>
+          <button
+            aria-label="Закрыть просмотр изображения"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+            data-image-lightbox-close="button"
+            type="button"
+            onClick={onClose}
+          >
+            <X size={19} />
+          </button>
+        </header>
+        <div
+          className={cn(
+            "relative min-h-0 flex-1 overflow-hidden rounded-lg border border-white/15 bg-black",
+            isScan ? "my-auto aspect-[1.2/1] max-h-[calc(100dvh-112px)] w-full flex-none" : ""
+          )}
+        >
+          <Image
+            alt={image.alt}
+            className={cn(
+              isScan ? "-translate-y-[8%] scale-[1.85] object-cover object-center" : "object-contain"
+            )}
+            fill
+            quality={90}
+            sizes="100vw"
+            src={image.src}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<LightboxImage | null>(null);
 
   useEffect(() => {
     setFavorites(readFavorites());
     window.localStorage.setItem("lastCase", studyCase.slug);
+    setMobileMenuOpen(false);
+    setLightboxImage(null);
   }, [studyCase.slug]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen && !lightboxImage) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        if (lightboxImage) {
+          setLightboxImage(null);
+        } else {
+          setMobileMenuOpen(false);
+        }
+      }
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [lightboxImage, mobileMenuOpen]);
 
   const favorite = favorites.has(studyCase.slug);
 
@@ -134,107 +353,106 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
   ] as const;
 
   return (
-    <main className="reader-shell">
-      <aside className="side-rail reader-rail">
-        <Link className="brand" href="/cases">
-          <span className="brand__mark">
+    <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[210px_minmax(0,760px)] xl:grid-cols-[210px_minmax(0,760px)_240px] max-md:block max-md:p-0 max-md:pb-20">
+      <aside className={cn(panelClass, "sticky top-5 flex h-[calc(100dvh-40px)] flex-col p-[18px_14px] max-md:hidden")}>
+        <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/cases">
+          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
             <Brain size={24} />
           </span>
           <span>ОСКИ Неврология</span>
         </Link>
-        <nav className="mini-case-nav" aria-label="Станции">
+        <nav className="mt-7 grid gap-1.5 overflow-auto pr-0.5" aria-label="Станции">
           {cases.map((item) => (
             <Link
-              className={item.slug === studyCase.slug ? "is-active" : ""}
+              className={cn(
+                "grid min-h-[46px] grid-cols-[26px_minmax(0,1fr)] gap-2 rounded-lg p-2 text-[13px] leading-tight text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
+                item.slug === studyCase.slug && "bg-clinical-accent-soft text-[#171a1f]"
+              )}
               href={`/cases/${item.slug}`}
               key={item.slug}
             >
-              <span>{String(item.order).padStart(2, "0")}</span>
-              <span>{item.title}</span>
+              <span className="font-black text-clinical-accent-strong">
+                {String(item.order).padStart(2, "0")}
+              </span>
+              <span className="line-clamp-2 min-w-0">{item.title}</span>
             </Link>
           ))}
         </nav>
       </aside>
 
-      <section className="reader-main">
-        <header className="reader-topbar">
-          <Link className="icon-button" href="/cases" aria-label="К списку станций">
+      <section className={cn(panelClass, "min-w-0 p-[18px] max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none")}>
+        <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
+          <Link className={iconButtonClass} href="/cases" aria-label="К списку станций">
             <ArrowLeft size={18} />
           </Link>
-          <div>
-            <span>{formatGroup(studyCase.group)}</span>
-            <h1>{studyCase.title}</h1>
+          <div className="min-w-0 text-center">
+            <span className="text-xs font-extrabold text-clinical-accent-strong">
+              {formatGroup(studyCase.group)}
+            </span>
+            <h1 className="mt-1 truncate text-base font-extrabold">{studyCase.title}</h1>
           </div>
-          <button className="icon-button" aria-label="Меню" type="button">
-            <MoreHorizontal size={18} />
+          <button
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-case-menu"
+            className={iconButtonClass}
+            data-mobile-menu-trigger="top"
+            aria-label="Открыть меню станции"
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <Menu size={18} />
           </button>
         </header>
 
-        <div className="reader-title-row">
+        <div className="flex items-start justify-between gap-4 pb-4 max-md:block">
           <div>
-            <p className="breadcrumbs">
-              МРТ/КТ и чеклисты <span>/</span> {String(studyCase.order).padStart(2, "0")}
+            <p className="m-0 text-[13px] font-extrabold text-clinical-accent-strong">
+              МРТ/КТ и чеклисты / {String(studyCase.order).padStart(2, "0")}
             </p>
-            <h2>{studyCase.title}</h2>
-            <p>{studyCase.focus}</p>
+            <h2 className="mt-1 text-[clamp(26px,4vw,42px)] font-black leading-[1.05]">
+              {studyCase.title}
+            </h2>
+            <p className="mt-2.5 max-w-[68ch] leading-relaxed text-clinical-muted">
+              {studyCase.focus}
+            </p>
           </div>
-          <button className="favorite-button" type="button" onClick={toggleFavorite}>
+          <button
+            className={cn(yellowButtonClass, "max-md:mt-3.5 max-md:w-full")}
+            type="button"
+            onClick={toggleFavorite}
+          >
             {favorite ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
             {favorite ? "В избранном" : "В избранное"}
           </button>
         </div>
 
         <SectionBlock id="original" title="Оригинальная задача" icon={<FileText size={19} />}>
-          <div className="source-row">
-            <a href={studyCase.sourcePdf.href} target="_blank">
+          <div className="mb-3 flex items-center justify-between gap-4 text-[13px] text-clinical-muted">
+            <a
+              className="font-extrabold text-clinical-accent-strong underline underline-offset-4"
+              href={studyCase.sourcePdf.href}
+              target="_blank"
+            >
               {studyCase.sourcePdf.label}
             </a>
             <span>{formatStatus(studyCase.reviewStatus)}</span>
           </div>
           <MarkdownView markdown={studyCase.originalMarkdown} />
-          <details className="page-gallery-disclosure">
-            <summary>
-              Показать страницы задачи ({studyCase.originalPages.length})
-              <ChevronDown size={17} />
-            </summary>
-            <div className="original-pages">
-              {studyCase.originalPages.map((page) => (
-                <figure key={page.src}>
-                  <Image
-                    src={page.src}
-                    alt={page.alt}
-                    width={900}
-                    height={1200}
-                    sizes="(max-width: 820px) 78vw, 260px"
-                  />
-                  <figcaption>{page.caption}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </details>
+          <OriginalPagesDisclosure pages={studyCase.originalPages} onOpen={setLightboxImage} />
         </SectionBlock>
 
         {studyCase.group === "imaging" ? (
           <SectionBlock id="imaging" title="Снимки" icon={<Images size={19} />}>
-            <div className="image-grid">
+            <div className="image-grid grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 max-md:flex max-md:overflow-x-auto max-md:pb-1 max-md:[scroll-snap-type:x_mandatory]">
               {studyCase.imaging.map((image) => (
-                <figure key={image.src}>
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={720}
-                    height={540}
-                    sizes="(max-width: 820px) 78vw, 240px"
-                  />
-                  <figcaption>{image.caption}</figcaption>
-                </figure>
+                <MediaFigure image={image} kind="scan" key={image.src} onOpen={setLightboxImage} />
               ))}
             </div>
           </SectionBlock>
         ) : null}
 
         <SectionBlock id="checklist" title="Разбор по чеклисту" icon={<ClipboardList size={19} />}>
-          <div className="checklist-flow">
+          <div className="grid gap-2.5">
             {studyCase.checklist.map((item) => (
               <ChecklistCard item={item} key={item.id} />
             ))}
@@ -248,28 +466,30 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           defaultOpen={studyCase.interaction.length > 0}
         >
           {studyCase.interaction.length > 0 ? (
-            <div className="interaction-list">
+            <div className="grid gap-2.5">
               {studyCase.interaction.map((item, index) => (
                 <InteractionCard item={item} index={index} key={item.id} />
               ))}
             </div>
           ) : (
-            <p className="muted-copy">В этой станции полноценного актерского диалога нет.</p>
+            <p className="m-0 text-clinical-muted">В этой станции полноценного актерского диалога нет.</p>
           )}
         </SectionBlock>
 
-        <footer className="reader-pager">
+        <footer className="mt-3.5 flex items-center justify-between gap-4">
           {previous ? (
-            <Link href={`/cases/${previous.slug}`}>
+            <Link className={yellowButtonClass} href={`/cases/${previous.slug}`}>
               <ArrowLeft size={17} />
               Назад
             </Link>
           ) : (
             <span />
           )}
-          <span>{studyCase.order} из {cases.length}</span>
+          <span className="text-sm text-clinical-muted">
+            {studyCase.order} из {cases.length}
+          </span>
           {next ? (
-            <Link href={`/cases/${next.slug}`}>
+            <Link className={yellowButtonClass} href={`/cases/${next.slug}`}>
               Далее
               <ArrowRight size={17} />
             </Link>
@@ -279,37 +499,47 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
         </footer>
       </section>
 
-      <aside className="reader-aside">
-        <nav aria-label="Содержание станции">
-          <strong>Содержание станции</strong>
+      <aside className={cn(panelClass, "sticky top-5 hidden h-[calc(100dvh-40px)] overflow-auto p-4 xl:block")}>
+        <nav className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4" aria-label="Содержание станции">
+          <strong className="text-sm">Содержание станции</strong>
           {anchors.map(([id, label]) => (
-            <a href={`#${id}`} key={id}>
+            <a className="text-[13px] leading-normal text-clinical-muted hover:text-clinical-accent-strong" href={`#${id}`} key={id}>
               {label}
             </a>
           ))}
         </nav>
 
         {studyCase.group === "imaging" ? (
-          <section>
-            <strong>Ключевой вывод</strong>
-            <p>{studyCase.keyAnswer}</p>
+          <section className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4">
+            <strong className="text-sm">Ключевой вывод</strong>
+            <p className="m-0 text-[13px] leading-normal text-clinical-muted">{studyCase.keyAnswer}</p>
           </section>
         ) : null}
 
-        <section>
-          <strong>Теги</strong>
-          <div className="tag-cloud">
+        <section className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4">
+          <strong className="text-sm">Теги</strong>
+          <div className="flex flex-wrap gap-1.5">
             {studyCase.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
+              <span
+                className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs text-[#595f68]"
+                key={tag}
+              >
+                {tag}
+              </span>
             ))}
           </div>
         </section>
 
         {studyCase.group === "imaging" ? (
-          <section>
-            <strong>Источники</strong>
+          <section className="grid gap-2.5">
+            <strong className="text-sm">Источники</strong>
             {studyCase.sources.map((source) => (
-              <a href={source.href} key={source.href} target="_blank">
+              <a
+                className="text-[13px] leading-normal text-clinical-muted hover:text-clinical-accent-strong"
+                href={source.href}
+                key={source.href}
+                target="_blank"
+              >
                 {source.label}
               </a>
             ))}
@@ -317,24 +547,125 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
         ) : null}
       </aside>
 
-      <nav className="mobile-tabbar" aria-label="Мобильная навигация">
-        <Link href="/cases">
+      {mobileMenuOpen ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-40 hidden bg-black/20 backdrop-blur-sm max-md:block"
+          data-mobile-case-menu="open"
+          id="mobile-case-menu"
+          role="dialog"
+        >
+          <button
+            aria-label="Закрыть меню по фону"
+            className="absolute inset-0 h-full w-full cursor-default"
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <section className="absolute inset-x-2 bottom-2 max-h-[82dvh] overflow-auto rounded-lg border border-clinical-line bg-white p-4 shadow-[0_22px_70px_rgba(49,39,10,0.24)]">
+            <header className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="m-0 text-xs font-extrabold uppercase text-clinical-accent-strong">
+                  {formatGroup(studyCase.group)} / {String(studyCase.order).padStart(2, "0")}
+                </p>
+                <h2 className="mt-1 text-lg font-black leading-tight">Меню станции</h2>
+              </div>
+              <button
+                className={iconButtonClass}
+                data-mobile-menu-close="button"
+                aria-label="Закрыть меню станции"
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <X size={18} />
+              </button>
+            </header>
+
+            <nav className="grid gap-2" aria-label="Мобильное содержание станции">
+              {anchors.map(([id, label]) => (
+                <a
+                  className="flex min-h-11 items-center justify-between rounded-lg border border-clinical-line bg-[#fffdf8] px-3 text-sm font-extrabold text-[#272b31]"
+                  href={`#${id}`}
+                  key={id}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {label}
+                  <ArrowRight size={16} />
+                </a>
+              ))}
+            </nav>
+
+            {studyCase.group === "imaging" ? (
+              <section className="mt-3 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+                <strong className="text-sm">Ключевой вывод</strong>
+                <p className="mt-2 text-sm leading-relaxed text-clinical-muted">{studyCase.keyAnswer}</p>
+              </section>
+            ) : null}
+
+            <section className="mt-3 rounded-lg border border-clinical-line bg-white p-3">
+              <strong className="text-sm">Теги</strong>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {studyCase.tags.map((tag) => (
+                  <span
+                    className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs text-[#595f68]"
+                    key={tag}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {previous ? (
+                <Link className={yellowButtonClass} href={`/cases/${previous.slug}`}>
+                  <ArrowLeft size={17} />
+                  Назад
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next ? (
+                <Link className={yellowButtonClass} href={`/cases/${next.slug}`}>
+                  Далее
+                  <ArrowRight size={17} />
+                </Link>
+              ) : (
+                <span />
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-4 border-t border-clinical-line bg-clinical-bg/95 px-2 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
+        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-clinical-accent-strong" href="/cases">
           <Home size={19} />
           Все
         </Link>
-        <button type="button" onClick={toggleFavorite}>
+        <button className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" type="button" onClick={toggleFavorite}>
           <Star size={19} />
           Избранное
         </button>
-        <a href="#checklist">
+        <a className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="#checklist">
           <ClipboardList size={19} />
           Чеклист
         </a>
-        <button type="button">
+        <button
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-case-menu"
+          className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]"
+          data-mobile-menu-trigger="bottom"
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+        >
           <Menu size={19} />
           Меню
         </button>
       </nav>
+
+      {lightboxImage ? (
+        <ImageLightbox image={lightboxImage} onClose={() => setLightboxImage(null)} />
+      ) : null}
     </main>
   );
 }

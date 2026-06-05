@@ -21,7 +21,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body className="bg-clinical-bg font-sans text-clinical-text antialiased">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,244,191,0.72),transparent_34%),radial-gradient(circle_at_top_right,rgba(244,197,63,0.18),transparent_26%),#fffdf7]"
+        />
+        {children}
+      </body>
     </html>
   );
 }

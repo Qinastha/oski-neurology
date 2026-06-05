@@ -8,3 +8,5 @@ dist
 script
 *.env
 *.local
+tsconfig.tsbuildinfo
+docs

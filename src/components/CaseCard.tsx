@@ -18,12 +18,17 @@ export function CaseCard({
   onToggleFavorite
 }: CaseCardProps) {
   return (
-    <article className="case-card">
-      <Link className="case-card__main" href={`/cases/${studyCase.slug}`}>
-        <span className="case-card__order">{String(studyCase.order).padStart(2, "0")}</span>
-        <span>
-          <strong>{studyCase.title}</strong>
-          <small>
+    <article className="case-card grid min-h-[72px] grid-cols-[minmax(0,1fr)_44px] items-center rounded-lg border border-clinical-line bg-white/85 transition hover:border-clinical-line-strong hover:bg-[#fffaf0]">
+      <Link
+        className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-3 p-3"
+        href={`/cases/${studyCase.slug}`}
+      >
+        <span className="font-black text-clinical-accent-strong">
+          {String(studyCase.order).padStart(2, "0")}
+        </span>
+        <span className="min-w-0">
+          <strong className="block truncate text-[15px] leading-tight">{studyCase.title}</strong>
+          <small className="mt-1 block text-xs text-clinical-muted">
             {formatGroup(studyCase.group)} · {studyCase.checklistCount} пунктов ·{" "}
             {formatStatus(studyCase.reviewStatus)}
           </small>
@@ -35,7 +40,7 @@ export function CaseCard({
             ? `Убрать ${studyCase.title} из избранного`
             : `Добавить ${studyCase.title} в избранное`
         }
-        className="icon-button"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong"
         type="button"
         onClick={() => onToggleFavorite(studyCase.slug)}
       >
