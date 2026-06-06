@@ -71,9 +71,9 @@ Legend:
 5. `site/src/content/cases/cauda-equina/checklist.md`
    - Add emergency neurosurgical consultation/decompression language after MRI, because bladder/bowel dysfunction and weakness make this an urgent pathway.
 
-## Imaging cases queued for the next pass
+## Imaging cases
 
-These 5 cases should be reviewed with the actual images open side-by-side:
+These 5 cases were reviewed in the dedicated imaging pass:
 
 - `stroke-ct-mca`
 - `glioma-dislocation`
@@ -81,4 +81,4 @@ These 5 cases should be reviewed with the actual images open side-by-side:
 - `als-mri`
 - `cervical-myelopathy-mri`
 
-For that pass, compare each checklist statement against the page images, scan gallery, and source PDF, then mark whether the finding is visible, inferred, or should be softened.
+See `site/src/content/reviews/imaging-sanity-check.md` for the image-by-image sanity notes.

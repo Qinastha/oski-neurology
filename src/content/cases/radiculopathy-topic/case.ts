@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-02",
   "slug": "radiculopathy-topic",
   "order": 2,
-  "title": "Радикулопатия. Топический диагноз",
-  "focus": "Станция на детализацию корешкового болевого синдрома, исключение красных флагов и топическую локализацию поражения.",
+  "title": "Радикулопатія. Топічний діагноз",
+  "focus": "Станція на деталізацію корінцевого больового синдрому, виключення червоних прапорців і топічну локалізацію ураження.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12252@2025-04-29T110757.pdf",
@@ -30,7 +31,8 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "радикулопатия"
+    "радикулопатія"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

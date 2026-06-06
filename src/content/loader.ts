@@ -80,6 +80,16 @@ export function getSearchBlob(studyCase: StudyCase) {
       studyCase.focus,
       studyCase.tags.join(" "),
       studyCase.originalMarkdown,
+      ...(studyCase.blueprint
+        ? [
+            ...studyCase.blueprint.requiredTasks.flatMap((item) => [item.prompt, item.note ?? ""]),
+            ...studyCase.blueprint.answerBlocks.flatMap((block) => [
+              block.title,
+              block.body ?? "",
+              ...block.points.map((point) => point.text)
+            ])
+          ]
+        : []),
       ...studyCase.checklist.flatMap((item) => [item.title, item.body]),
       ...studyCase.interaction.flatMap((item) => [item.title, item.body])
     ].join("\n")

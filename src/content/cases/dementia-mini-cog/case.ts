@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-01",
   "slug": "dementia-mini-cog",
   "order": 1,
-  "title": "Деменция. Mini-Cog",
-  "focus": "Станция на корректное проведение скрининга когнитивных нарушений Mini-Cog и профессиональное объяснение необходимости дообследования.",
+  "title": "Деменція. Mini-Cog",
+  "focus": "Станція на коректне проведення скринінгу когнітивних порушень Mini-Cog і професійне пояснення необхідності дообстеження.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12251@2025-04-29T110224.pdf",
@@ -30,8 +31,9 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "деменция",
+    "деменція",
     "Mini-Cog"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

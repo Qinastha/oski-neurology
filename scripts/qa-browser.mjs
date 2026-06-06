@@ -95,6 +95,39 @@ async function inspect(name, url, viewport, selector) {
     interactions.expandedAfter = await page.locator('.check-step button[aria-expanded="true"]').count();
   }
 
+  if (name === "desktop-dementia") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="dementia-mini-cog"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-radiculopathy") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="radiculopathy-topic"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-trigeminal-neuralgia") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="trigeminal-neuralgia-sensory"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
   if (name === "mobile-stroke") {
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
@@ -131,6 +164,24 @@ async function inspect(name, url, viewport, selector) {
 }
 
 await inspect("desktop-cases", "http://127.0.0.1:3000/cases", { width: 1440, height: 900 }, ".case-list");
+await inspect(
+  "desktop-dementia",
+  "http://127.0.0.1:3000/cases/dementia-mini-cog",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="dementia-mini-cog"]'
+);
+await inspect(
+  "desktop-radiculopathy",
+  "http://127.0.0.1:3000/cases/radiculopathy-topic",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="radiculopathy-topic"]'
+);
+await inspect(
+  "desktop-trigeminal-neuralgia",
+  "http://127.0.0.1:3000/cases/trigeminal-neuralgia-sensory",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="trigeminal-neuralgia-sensory"]'
+);
 await inspect(
   "desktop-stroke",
   "http://127.0.0.1:3000/cases/stroke-ct-mca",
@@ -189,6 +240,63 @@ const failures = results.flatMap((result) => {
   }
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
+  }
+  if (result.name === "desktop-dementia" && result.metrics.checklistCards !== 18) {
+    issues.push(`${result.name}: expected 18 checklist cards`);
+  }
+  if (result.name === "desktop-dementia" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (result.name === "desktop-dementia" && result.interactions.blueprintRequiredTasks !== 3) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-dementia" && result.interactions.blueprintSources !== 3) {
+    issues.push(`${result.name}: expected three blueprint sources`);
+  }
+  if (result.name === "desktop-dementia" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-dementia" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.metrics.checklistCards !== 19) {
+    issues.push(`${result.name}: expected 19 checklist cards`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.interactions.blueprintRequiredTasks !== 3) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.interactions.blueprintSources !== 3) {
+    issues.push(`${result.name}: expected three blueprint sources`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-radiculopathy" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-trigeminal-neuralgia" && result.metrics.checklistCards !== 20) {
+    issues.push(`${result.name}: expected 20 checklist cards`);
+  }
+  if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-trigeminal-neuralgia" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.blueprintSources !== 3) {
+    issues.push(`${result.name}: expected three blueprint sources`);
+  }
+  if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-trigeminal-neuralgia" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
   }
   if (result.name === "desktop-stroke" && result.interactions.originalFiguresBefore !== 0) {
     issues.push(`${result.name}: original page images should be lazy-rendered before disclosure opens`);

@@ -21,9 +21,25 @@ import {
   ZoomIn
 } from "lucide-react";
 
-import type { CaseImage, CaseSummary, ChecklistItem, InteractionItem, StudyCase } from "@/content/schema";
+import type {
+  CaseImage,
+  CaseSummary,
+  ChecklistItem,
+  InteractionItem,
+  StationBlueprint,
+  TaskCoverageStatus,
+  StudyCase
+} from "@/content/schema";
 import { cn } from "@/lib/cn";
-import { formatGroup, formatStatus } from "@/lib/case-format";
+import {
+  formatAnswerBlockType,
+  formatBlueprintVerdict,
+  formatEvidenceType,
+  formatGroup,
+  formatStationType,
+  formatStatus,
+  formatTaskCoverage
+} from "@/lib/case-format";
 import { MarkdownView } from "./MarkdownView";
 
 interface CaseReaderProps {
@@ -145,6 +161,116 @@ function InteractionCard({ item, index }: { item: InteractionItem; index: number
         <MarkdownView markdown={item.body} />
       </div>
     </article>
+  );
+}
+
+function coverageClass(status: TaskCoverageStatus) {
+  const classes: Record<TaskCoverageStatus, string> = {
+    covered: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    partial: "border-amber-200 bg-amber-50 text-amber-800",
+    missing: "border-rose-200 bg-rose-50 text-rose-800",
+    not_applicable: "border-slate-200 bg-slate-50 text-slate-700"
+  };
+
+  return classes[status];
+}
+
+function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
+  return (
+    <div className="grid gap-3">
+      <div className="grid gap-2 rounded-lg border border-clinical-line bg-[#fffaf0] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div>
+          <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
+            {formatStationType(blueprint.stationType)}
+          </p>
+          <h3 className="mt-1 text-lg font-black leading-tight">Швидка карта відповіді</h3>
+        </div>
+        <span className="inline-flex min-h-8 items-center justify-center rounded-lg border border-clinical-line-strong bg-white px-2.5 text-xs font-extrabold text-[#51421a]">
+          {formatBlueprintVerdict(blueprint.reviewVerdict)}
+        </span>
+      </div>
+
+      <section className="rounded-lg border border-clinical-line bg-white p-3">
+        <h3 className="text-sm font-black">Покриття завдання</h3>
+        <div className="mt-2 grid gap-2" data-blueprint-required-tasks="list">
+          {blueprint.requiredTasks.map((task, index) => (
+            <article
+              className="grid gap-2 rounded-lg border border-clinical-line bg-[#fffdf8] p-2.5 sm:grid-cols-[34px_minmax(0,1fr)_auto] sm:items-start"
+              key={task.id}
+            >
+              <span className="font-black text-clinical-accent-strong">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className="min-w-0">
+                <p className="m-0 text-sm font-extrabold leading-snug">{task.prompt}</p>
+                {task.note ? (
+                  <p className="mt-1.5 text-sm leading-relaxed text-clinical-muted">{task.note}</p>
+                ) : null}
+              </div>
+              <span
+                className={cn(
+                  "inline-flex min-h-7 w-fit items-center rounded-full border px-2 text-xs font-extrabold",
+                  coverageClass(task.coverage)
+                )}
+              >
+                {formatTaskCoverage(task.coverage)}
+              </span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-2.5 sm:grid-cols-2">
+        {blueprint.answerBlocks.map((block) => (
+          <article
+            className={cn(
+              "rounded-lg border border-clinical-line bg-white p-3",
+              (block.type === "must_say" || block.type === "pitfalls") && "bg-[#fffaf0]"
+            )}
+            key={`${block.type}-${block.title}`}
+          >
+            <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
+              {formatAnswerBlockType(block.type)}
+            </p>
+            <h3 className="mt-1 text-base font-black leading-tight">{block.title}</h3>
+            {block.body ? (
+              <p className="mt-2 text-sm leading-relaxed text-clinical-muted">{block.body}</p>
+            ) : null}
+            <ul className="mt-2.5 grid gap-2">
+              {block.points.map((point) => (
+                <li className="grid grid-cols-[8px_minmax(0,1fr)] gap-2 text-sm leading-relaxed" key={point.text}>
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-clinical-accent" />
+                  <span>
+                    {point.text}
+                    {point.evidence ? (
+                      <span className="ml-2 inline-flex rounded-full border border-clinical-line bg-[#fffdf8] px-1.5 py-0.5 text-[11px] font-extrabold text-clinical-muted">
+                        {formatEvidenceType(point.evidence)}
+                      </span>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <section className="rounded-lg border border-clinical-line bg-white p-3">
+        <h3 className="text-sm font-black">Джерела для ревізії</h3>
+        <div className="mt-2 grid gap-1.5" data-blueprint-sources="list">
+          {blueprint.sources.map((source) => (
+            <a
+              className="text-sm leading-relaxed text-clinical-muted underline underline-offset-4 hover:text-clinical-accent-strong"
+              href={source.href}
+              key={source.href}
+              target="_blank"
+            >
+              {source.label}
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -348,6 +474,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
   const anchors = [
     ["original", "Оригинальная задача"],
     ...(studyCase.group === "imaging" ? ([["imaging", "Снимки"]] as const) : []),
+    ...(studyCase.blueprint ? ([["blueprint", "Підготовка до станції"]] as const) : []),
     ["checklist", "Разбор по чеклисту"],
     ["interaction", "Взаимодействие"]
   ] as const;
@@ -447,6 +574,14 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
               {studyCase.imaging.map((image) => (
                 <MediaFigure image={image} kind="scan" key={image.src} onOpen={setLightboxImage} />
               ))}
+            </div>
+          </SectionBlock>
+        ) : null}
+
+        {studyCase.blueprint ? (
+          <SectionBlock id="blueprint" title="Підготовка до станції" icon={<Brain size={19} />}>
+            <div data-station-blueprint={studyCase.slug}>
+              <StationBlueprintPanel blueprint={studyCase.blueprint} />
             </div>
           </SectionBlock>
         ) : null}
