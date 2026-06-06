@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-12",
   "slug": "weber-syndrome",
   "order": 12,
-  "title": "Альтернирующий синдром Вебера",
-  "focus": "Станция без актерского диалога: необходимо распознать стволовой инсульт, назвать синдром Вебера, сосудистый бассейн и срочную тактику.",
+  "title": "Альтернуючий синдром Вебера",
+  "focus": "Усний розбір без повноцінного акторського діалогу: розпізнати стовбуровий інсульт, назвати синдром Вебера, судинний басейн і невідкладну тактику.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12504@2025-04-29T110823.pdf",
@@ -26,7 +27,10 @@ export const caseMeta = {
   "tags": [
     "без МРТ/КТ",
     "Вебер",
-    "ствол"
+    "стовбур",
+    "середній мозок",
+    "інсульт"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

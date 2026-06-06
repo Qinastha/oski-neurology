@@ -214,6 +214,48 @@ async function inspect(name, url, viewport, selector) {
     interactions.checkedStatusText = await page.getByText("проверено").count();
   }
 
+  if (name === "desktop-weber-syndrome") {
+    interactions.blueprintSections = await page.locator('[data-station-blueprint="weber-syndrome"]').count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-parietal-tumor-stereognosis") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="parietal-tumor-stereognosis"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-ulnar-neuropathy-cubital") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="ulnar-neuropathy-cubital"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-cerebellar-ataxia") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="cerebellar-ataxia"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
   if (name === "mobile-stroke") {
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
@@ -315,6 +357,30 @@ await inspect(
   "http://127.0.0.1:3000/cases/trigeminal-sensory",
   { width: 1440, height: 900 },
   '[data-station-blueprint="trigeminal-sensory"]'
+);
+await inspect(
+  "desktop-weber-syndrome",
+  "http://127.0.0.1:3000/cases/weber-syndrome",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="weber-syndrome"]'
+);
+await inspect(
+  "desktop-parietal-tumor-stereognosis",
+  "http://127.0.0.1:3000/cases/parietal-tumor-stereognosis",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="parietal-tumor-stereognosis"]'
+);
+await inspect(
+  "desktop-ulnar-neuropathy-cubital",
+  "http://127.0.0.1:3000/cases/ulnar-neuropathy-cubital",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="ulnar-neuropathy-cubital"]'
+);
+await inspect(
+  "desktop-cerebellar-ataxia",
+  "http://127.0.0.1:3000/cases/cerebellar-ataxia",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="cerebellar-ataxia"]'
 );
 await inspect(
   "desktop-stroke",
@@ -607,6 +673,123 @@ const failures = results.flatMap((result) => {
     issues.push(`${result.name}: checked review status not visible`);
   }
   if (result.name === "desktop-trigeminal-sensory" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-weber-syndrome" && result.metrics.checklistCards !== 10) {
+    issues.push(`${result.name}: expected 10 checklist cards`);
+  }
+  if (result.name === "desktop-weber-syndrome" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-weber-syndrome" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-weber-syndrome" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-weber-syndrome" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-weber-syndrome" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.metrics.checklistCards !== 12
+  ) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.interactions.blueprintSources !== 5
+  ) {
+    issues.push(`${result.name}: expected five blueprint sources`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (
+    result.name === "desktop-parietal-tumor-stereognosis" &&
+    result.metrics.imageCards !== 0
+  ) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-ulnar-neuropathy-cubital" && result.metrics.checklistCards !== 14) {
+    issues.push(`${result.name}: expected 14 checklist cards`);
+  }
+  if (
+    result.name === "desktop-ulnar-neuropathy-cubital" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-ulnar-neuropathy-cubital" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-ulnar-neuropathy-cubital" &&
+    result.interactions.blueprintSources !== 5
+  ) {
+    issues.push(`${result.name}: expected five blueprint sources`);
+  }
+  if (
+    result.name === "desktop-ulnar-neuropathy-cubital" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-ulnar-neuropathy-cubital" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-cerebellar-ataxia" && result.metrics.checklistCards !== 14) {
+    issues.push(`${result.name}: expected 14 checklist cards`);
+  }
+  if (
+    result.name === "desktop-cerebellar-ataxia" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-cerebellar-ataxia" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-cerebellar-ataxia" &&
+    result.interactions.blueprintSources !== 5
+  ) {
+    issues.push(`${result.name}: expected five blueprint sources`);
+  }
+  if (
+    result.name === "desktop-cerebellar-ataxia" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-cerebellar-ataxia" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
   }
   if (result.name === "desktop-stroke" && result.interactions.originalFiguresBefore !== 0) {

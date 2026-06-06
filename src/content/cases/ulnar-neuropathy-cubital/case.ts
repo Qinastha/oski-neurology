@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-14",
   "slug": "ulnar-neuropathy-cubital",
   "order": 14,
-  "title": "Невропатия локтевого нерва. Синдром кубитального канала",
-  "focus": "Станция на клиническое распознавание компрессии локтевого нерва в области локтя и выбор дальнейшей диагностики.",
+  "title": "Невропатія локтевого нерва. Кубітальний канал",
+  "focus": "Змішана станція: уточнити скарги, провести клінічні проби локтевого нерва, визначити рівень ураження і запропонувати діагностику та лікування.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12536@2025-04-29T110851.pdf",
@@ -30,7 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "локтевой нерв"
+    "локтевий нерв",
+    "кубітальний канал",
+    "ЕНМГ"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

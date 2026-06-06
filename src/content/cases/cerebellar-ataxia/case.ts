@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-15",
   "slug": "cerebellar-ataxia",
   "order": 15,
-  "title": "Атаксия. Поражение мозжечка",
-  "focus": "Станция на отличение мозжечковой атаксии от сенситивной и пирамидной патологии, с демонстрацией координаторных проб.",
+  "title": "Мозочкова атаксія. Координаторні проби",
+  "focus": "Станція на відмежування мозочкової атаксії від сенситивної та пірамідної патології з демонстрацією координаторних проб.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12538@2025-04-29T110905.pdf",
@@ -30,8 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "атаксия",
-    "мозжечок"
+    "атаксія",
+    "мозочок",
+    "координаторні проби"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

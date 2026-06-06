@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-13",
   "slug": "parietal-tumor-stereognosis",
   "order": 13,
-  "title": "Новообразование теменной доли. Стереогноз",
-  "focus": "Станция на проверку сложной чувствительности и распознавание астереогноза при поражении теменной коры.",
+  "title": "Ураження тім'яної долі. Стереогноз",
+  "focus": "Змішана станція: пояснити пацієнту пробу на стереогноз, виконати її обома руками і локалізувати астереогноз у тім'яній корі.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12506@2025-04-29T111147.pdf",
@@ -30,7 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "стереогноз"
+    "стереогноз",
+    "тім'яна доля",
+    "складна чутливість"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;
