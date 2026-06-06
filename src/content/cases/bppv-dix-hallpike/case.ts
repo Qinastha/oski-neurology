@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-06",
   "slug": "bppv-dix-hallpike",
   "order": 6,
-  "title": "ДППГ. Тест Дикса-Холлпайка",
-  "focus": "Станция на диагностику доброкачественного пароксизмального позиционного головокружения с оценкой позиционного нистагма.",
+  "title": "ДППГ. Тест Дікса-Холпайка",
+  "focus": "Станція на діагностику доброякісного пароксизмального позиційного головокружіння з оцінкою позиційного ністагму.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12382@2025-04-29T110312.pdf",
@@ -30,7 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "ДППГ"
+    "ДППГ",
+    "Dix-Hallpike",
+    "позиційний ністагм"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

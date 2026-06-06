@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-09",
   "slug": "parkinson-gait-thevenard",
   "order": 9,
-  "title": "Болезнь Паркинсона. Оценка ходьбы и тест Тевенара",
-  "focus": "Станция на выявление постуральной нестабильности и определение III стадии болезни Паркинсона по Hoehn-Yahr.",
+  "title": "Хвороба Паркінсона. Оцінка ходи і тест Тевенара",
+  "focus": "Станція на виявлення постуральної нестабільності та визначення III стадії хвороби Паркінсона за Hoehn-Yahr.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12419@2025-04-29T110331.pdf",
@@ -30,7 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "Паркинсон"
+    "Паркінсон",
+    "хода",
+    "Hoehn-Yahr"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

@@ -128,6 +128,92 @@ async function inspect(name, url, viewport, selector) {
     interactions.checkedStatusText = await page.getByText("проверено").count();
   }
 
+  if (name === "desktop-neurosyphilis") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="neurosyphilis-vibration"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-msa-orthostatic") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="msa-orthostatic"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-bppv-dix-hallpike") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="bppv-dix-hallpike"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-bppv-epley") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="bppv-epley"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-hearing-rinne-weber") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="hearing-rinne-weber"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-parkinson-gait-thevenard") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="parkinson-gait-thevenard"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-cauda-equina") {
+    interactions.blueprintSections = await page.locator('[data-station-blueprint="cauda-equina"]').count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
+  if (name === "desktop-trigeminal-sensory") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="trigeminal-sensory"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+  }
+
   if (name === "mobile-stroke") {
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
@@ -181,6 +267,54 @@ await inspect(
   "http://127.0.0.1:3000/cases/trigeminal-neuralgia-sensory",
   { width: 1440, height: 900 },
   '[data-station-blueprint="trigeminal-neuralgia-sensory"]'
+);
+await inspect(
+  "desktop-neurosyphilis",
+  "http://127.0.0.1:3000/cases/neurosyphilis-vibration",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="neurosyphilis-vibration"]'
+);
+await inspect(
+  "desktop-msa-orthostatic",
+  "http://127.0.0.1:3000/cases/msa-orthostatic",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="msa-orthostatic"]'
+);
+await inspect(
+  "desktop-bppv-dix-hallpike",
+  "http://127.0.0.1:3000/cases/bppv-dix-hallpike",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="bppv-dix-hallpike"]'
+);
+await inspect(
+  "desktop-bppv-epley",
+  "http://127.0.0.1:3000/cases/bppv-epley",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="bppv-epley"]'
+);
+await inspect(
+  "desktop-hearing-rinne-weber",
+  "http://127.0.0.1:3000/cases/hearing-rinne-weber",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="hearing-rinne-weber"]'
+);
+await inspect(
+  "desktop-parkinson-gait-thevenard",
+  "http://127.0.0.1:3000/cases/parkinson-gait-thevenard",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="parkinson-gait-thevenard"]'
+);
+await inspect(
+  "desktop-cauda-equina",
+  "http://127.0.0.1:3000/cases/cauda-equina",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="cauda-equina"]'
+);
+await inspect(
+  "desktop-trigeminal-sensory",
+  "http://127.0.0.1:3000/cases/trigeminal-sensory",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="trigeminal-sensory"]'
 );
 await inspect(
   "desktop-stroke",
@@ -296,6 +430,183 @@ const failures = results.flatMap((result) => {
     issues.push(`${result.name}: checked review status not visible`);
   }
   if (result.name === "desktop-trigeminal-neuralgia" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-neurosyphilis" && result.metrics.checklistCards !== 15) {
+    issues.push(`${result.name}: expected 15 checklist cards`);
+  }
+  if (result.name === "desktop-neurosyphilis" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-neurosyphilis" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-neurosyphilis" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-neurosyphilis" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-neurosyphilis" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-msa-orthostatic" && result.metrics.checklistCards !== 11) {
+    issues.push(`${result.name}: expected 11 checklist cards`);
+  }
+  if (result.name === "desktop-msa-orthostatic" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-msa-orthostatic" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-msa-orthostatic" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-msa-orthostatic" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-msa-orthostatic" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-bppv-dix-hallpike" && result.metrics.checklistCards !== 13) {
+    issues.push(`${result.name}: expected 13 checklist cards`);
+  }
+  if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-bppv-dix-hallpike" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-bppv-dix-hallpike" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-bppv-epley" && result.metrics.checklistCards !== 15) {
+    issues.push(`${result.name}: expected 15 checklist cards`);
+  }
+  if (result.name === "desktop-bppv-epley" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-bppv-epley" &&
+    result.interactions.blueprintRequiredTasks !== 2
+  ) {
+    issues.push(`${result.name}: expected two blueprint required tasks`);
+  }
+  if (result.name === "desktop-bppv-epley" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-bppv-epley" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-bppv-epley" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-hearing-rinne-weber" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-hearing-rinne-weber" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-hearing-rinne-weber" &&
+    result.interactions.blueprintRequiredTasks !== 4
+  ) {
+    issues.push(`${result.name}: expected four blueprint required tasks`);
+  }
+  if (result.name === "desktop-hearing-rinne-weber" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-hearing-rinne-weber" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-hearing-rinne-weber" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-parkinson-gait-thevenard" && result.metrics.checklistCards !== 10) {
+    issues.push(`${result.name}: expected 10 checklist cards`);
+  }
+  if (
+    result.name === "desktop-parkinson-gait-thevenard" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-parkinson-gait-thevenard" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-parkinson-gait-thevenard" &&
+    result.interactions.blueprintSources !== 4
+  ) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (
+    result.name === "desktop-parkinson-gait-thevenard" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-parkinson-gait-thevenard" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-cauda-equina" && result.metrics.checklistCards !== 10) {
+    issues.push(`${result.name}: expected 10 checklist cards`);
+  }
+  if (result.name === "desktop-cauda-equina" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-cauda-equina" &&
+    result.interactions.blueprintRequiredTasks !== 5
+  ) {
+    issues.push(`${result.name}: expected five blueprint required tasks`);
+  }
+  if (result.name === "desktop-cauda-equina" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-cauda-equina" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-cauda-equina" && result.metrics.imageCards !== 0) {
+    issues.push(`${result.name}: non-imaging case should not render scan gallery`);
+  }
+  if (result.name === "desktop-trigeminal-sensory" && result.metrics.checklistCards !== 11) {
+    issues.push(`${result.name}: expected 11 checklist cards`);
+  }
+  if (result.name === "desktop-trigeminal-sensory" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-trigeminal-sensory" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-trigeminal-sensory" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-trigeminal-sensory" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-trigeminal-sensory" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
   }
   if (result.name === "desktop-stroke" && result.interactions.originalFiguresBefore !== 0) {

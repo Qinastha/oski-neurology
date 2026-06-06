@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-05",
   "slug": "msa-orthostatic",
   "order": 5,
-  "title": "Множественная системная атрофия. Ортостатическая проба",
-  "focus": "Станция на диагностику нейрогенной ортостатической гипотензии у пациента с быстро прогрессирующим паркинсонизмом и вегетативными нарушениями.",
+  "title": "Мультисистемна атрофія. Ортостатична проба",
+  "focus": "Станція на діагностику нейрогенної ортостатичної гіпотензії у пацієнта зі швидко прогресуючим паркінсонізмом і вегетативними порушеннями.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12381@2025-04-29T110254.pdf",
@@ -26,7 +27,9 @@ export const caseMeta = {
   "tags": [
     "без МРТ/КТ",
     "MSA",
-    "ортостаз"
+    "ортостаз",
+    "нейрогенна ортостатична гіпотензія"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-10",
   "slug": "cauda-equina",
   "order": 10,
-  "title": "Синдром конского хвоста",
-  "focus": "Станция без полноценного актерского диалога: нужно устно разобрать клинический кейс, синдромы, уровень поражения и срочную тактику.",
+  "title": "Синдром кінського хвоста",
+  "focus": "Станція без повноцінного акторського діалогу: потрібно усно розібрати клінічний кейс, синдроми, рівень ураження і невідкладну тактику.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12420@2025-04-29T110809.pdf",
@@ -25,7 +26,9 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "конский хвост"
+    "кінський хвіст",
+    "невідкладний стан"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-04",
   "slug": "neurosyphilis-vibration",
   "order": 4,
-  "title": "Нейросифилис. Вибрационная чувствительность",
-  "focus": "Станция на исследование паллестезии камертоном 128 Гц и синдромальную диагностику поражения задних канатиков.",
+  "title": "Нейросифіліс. Вібраційна чутливість",
+  "focus": "Станція на дослідження палестезії камертоном 128 Гц і синдромальну діагностику ураження задніх канатиків.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12258@2025-04-29T111029.pdf",
@@ -30,8 +31,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "нейросифилис",
-    "чувствительность"
+    "нейросифіліс",
+    "tabes dorsalis",
+    "вібраційна чутливість"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

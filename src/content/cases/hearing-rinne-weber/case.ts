@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-08",
   "slug": "hearing-rinne-weber",
   "order": 8,
-  "title": "Оценка слуха. Тесты Ринне и Вебера",
-  "focus": "Станция на различение проводниковой и сенсоневральной тугоухости с помощью камертональных проб.",
+  "title": "Оцінка слуху. Проби Рінне і Вебера",
+  "focus": "Станція на розрізнення кондуктивної та сенсоневральної туговухості за допомогою камертональних проб.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12411@2025-04-29T111053.pdf",
@@ -25,8 +26,10 @@ export const caseMeta = {
   ],
   "tags": [
     "без МРТ/КТ",
-    "Ринне",
-    "Вебер"
+    "Рінне",
+    "Вебер",
+    "слух"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

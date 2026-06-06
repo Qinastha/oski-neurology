@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-11",
   "slug": "trigeminal-sensory",
   "order": 11,
-  "title": "Тригеминальная невралгия. Оценка чувствительной функции",
-  "focus": "Станция на объяснение причины лицевой боли и последовательную оценку поверхностной, болевой чувствительности и точек выхода V нерва.",
+  "title": "Тригемінальна невралгія. Чутлива функція V нерва",
+  "focus": "Змішана станція: пояснити причину нападоподібного лицевого болю, отримати згоду і послідовно перевірити чутливу функцію трійчастого нерва.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12468@2025-04-29T111113.pdf",
@@ -24,7 +25,10 @@ export const caseMeta = {
     }
   ],
   "tags": [
-    "без МРТ/КТ"
+    "без МРТ/КТ",
+    "трійчастий нерв",
+    "чутливість"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;

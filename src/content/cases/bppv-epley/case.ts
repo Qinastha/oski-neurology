@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-07",
   "slug": "bppv-epley",
   "order": 7,
-  "title": "ДППГ. Маневр Эпли",
-  "focus": "Станция на лечение ДППГ репозиционным маневром Эпли и корректное объяснение пациенту механизма заболевания.",
+  "title": "ДППГ. Маневр Еплі",
+  "focus": "Станція на лікування ДППГ репозиційним маневром Еплі та коректне пояснення пацієнтці механізму захворювання.",
   "group": "non-imaging",
   "sourcePdf": {
     "label": "task_12384@2025-04-29T110703.pdf",
@@ -31,7 +32,9 @@ export const caseMeta = {
   "tags": [
     "без МРТ/КТ",
     "ДППГ",
-    "Эпли"
+    "Еплі",
+    "репозиційний маневр"
   ],
-  "reviewStatus": "reviewing"
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint
 } satisfies CaseMeta;
