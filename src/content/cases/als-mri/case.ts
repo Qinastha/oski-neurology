@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-19",
   "slug": "als-mri",
   "order": 19,
-  "title": "БАС. Нейровизуализация",
-  "focus": "Боковой амиотрофический склероз: гиперинтенсивность кортикоспинальных трактов и признак бокала вина.",
+  "title": "БАС. Нейровізуалізація",
+  "focus": "Бічний аміотрофічний склероз: гіперінтенсивність кортикоспінальних трактів і симптом келиха вина.",
   "group": "imaging",
   "sourcePdf": {
     "label": "task_12566@2025-04-29T111718.pdf",
@@ -32,47 +33,44 @@ export const caseMeta = {
     "БАС",
     "мотонейрон",
     "МРТ",
-    "кортикоспинальные тракты"
+    "кортикоспінальні тракти"
   ],
-  "reviewStatus": "reviewing",
-  "keyAnswer": "Прогрессирующее поражение верхнего и нижнего мотонейрона; МРТ помогает исключить мимики и может показывать признаки поражения кортикоспинальных трактов.",
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint,
+  "keyAnswer": "Ймовірна хвороба мотонейрона/БАС із вираженим ураженням верхнього мотонейрона; МРТ допомагає виключити міміки й може показувати підтримувальні ознаки ураження кортикоспінальних трактів.",
   "imaging": [
     {
       "src": "/cases/als-mri/scan-01.jpeg",
-      "alt": "05 - БАС - гиперинтенсивность кортикоспинальных трактов в стволе",
-      "caption": "05 - БАС - гиперинтенсивность кортикоспинальных трактов в стволе"
+      "alt": "T2-зріз із гіперінтенсивністю кортикоспінальних трактів у стовбурі",
+      "caption": "CST у стовбурі"
     },
     {
       "src": "/cases/als-mri/scan-02.jpeg",
-      "alt": "06 - БАС - аксиальный T2 срез ствола",
-      "caption": "06 - БАС - аксиальный T2 срез ствола"
+      "alt": "Аксіальний T2-зріз стовбура при підозрі на хворобу мотонейрона",
+      "caption": "Аксіальний T2"
     },
     {
       "src": "/cases/als-mri/scan-03.jpeg",
-      "alt": "12 - БАС - признак бокала вина на МРТ",
-      "caption": "12 - БАС - признак бокала вина на МРТ"
+      "alt": "Коронарний зріз із навчальним симптомом келиха вина при БАС",
+      "caption": "Симптом келиха вина"
     }
   ],
   "sources": [
     {
-      "label": "Stroke Imaging, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK546635/"
-    },
-    {
-      "label": "Glioblastoma Multiforme, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK558954/"
-    },
-    {
-      "label": "Multiple Sclerosis, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK499849/"
-    },
-    {
-      "label": "Amyotrophic Lateral Sclerosis, StatPearls / NCBI Bookshelf",
+      "label": "NCBI Bookshelf: Clinical Manifestation and Management of ALS",
       "href": "https://www.ncbi.nlm.nih.gov/books/NBK573427/"
     },
     {
-      "label": "Cervical Myelopathy, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK482312/"
+      "label": "Merck Manual Professional: ALS and other motor neuron diseases",
+      "href": "https://www.merckmanuals.com/professional/neurologic-disorders/peripheral-nervous-system-and-motor-unit-disorders/amyotrophic-lateral-sclerosis-als-and-other-motor-neuron-diseases-mnds"
+    },
+    {
+      "label": "NICE NG42: Motor neurone disease assessment and management",
+      "href": "https://www.nice.org.uk/guidance/ng42/chapter/recommendations"
+    },
+    {
+      "label": "Practical Neurology: Diagnosing ALS - Gold Coast criteria and the role of EMG",
+      "href": "https://pn.bmj.com/content/22/3/176"
     }
   ]
 } satisfies CaseMeta;

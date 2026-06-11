@@ -73,6 +73,12 @@ async function inspect(name, url, viewport, selector) {
   }
 
   if (name === "desktop-stroke") {
+    interactions.blueprintSections = await page.locator('[data-station-blueprint="stroke-ct-mca"]').count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
     interactions.originalFiguresBefore = await page.locator('[data-media-figure="original"]').count();
     await page.getByText("Показать страницы задачи").click();
     await page.waitForSelector('[data-media-figure="original"]', { timeout: 5000 });
@@ -256,6 +262,80 @@ async function inspect(name, url, viewport, selector) {
     interactions.checkedStatusText = await page.getByText("проверено").count();
   }
 
+  if (name === "desktop-glioma-dislocation") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="glioma-dislocation"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+    await page.locator('[data-image-open="scan"]').first().click();
+    await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
+    interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
+    await page.locator('[data-image-lightbox-close="button"]').click();
+    await page.waitForSelector('[data-image-lightbox="open"]', {
+      state: "detached",
+      timeout: 5000
+    });
+  }
+
+  if (name === "desktop-multiple-sclerosis-mri") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="multiple-sclerosis-mri"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+    await page.locator('[data-image-open="scan"]').first().click();
+    await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
+    interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
+    await page.locator('[data-image-lightbox-close="button"]').click();
+    await page.waitForSelector('[data-image-lightbox="open"]', {
+      state: "detached",
+      timeout: 5000
+    });
+  }
+
+  if (name === "desktop-als-mri") {
+    interactions.blueprintSections = await page.locator('[data-station-blueprint="als-mri"]').count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+    await page.locator('[data-image-open="scan"]').first().click();
+    await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
+    interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
+    await page.locator('[data-image-lightbox-close="button"]').click();
+    await page.waitForSelector('[data-image-lightbox="open"]', {
+      state: "detached",
+      timeout: 5000
+    });
+  }
+
+  if (name === "desktop-cervical-myelopathy-mri") {
+    interactions.blueprintSections = await page
+      .locator('[data-station-blueprint="cervical-myelopathy-mri"]')
+      .count();
+    interactions.blueprintRequiredTasks = await page
+      .locator('[data-blueprint-required-tasks="list"] article')
+      .count();
+    interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
+    interactions.checkedStatusText = await page.getByText("проверено").count();
+    await page.locator('[data-image-open="scan"]').first().click();
+    await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
+    interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
+    await page.locator('[data-image-lightbox-close="button"]').click();
+    await page.waitForSelector('[data-image-lightbox="open"]', {
+      state: "detached",
+      timeout: 5000
+    });
+  }
+
   if (name === "mobile-stroke") {
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
@@ -389,6 +469,30 @@ await inspect(
   ".check-step"
 );
 await inspect(
+  "desktop-glioma-dislocation",
+  "http://127.0.0.1:3000/cases/glioma-dislocation",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="glioma-dislocation"]'
+);
+await inspect(
+  "desktop-multiple-sclerosis-mri",
+  "http://127.0.0.1:3000/cases/multiple-sclerosis-mri",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="multiple-sclerosis-mri"]'
+);
+await inspect(
+  "desktop-als-mri",
+  "http://127.0.0.1:3000/cases/als-mri",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="als-mri"]'
+);
+await inspect(
+  "desktop-cervical-myelopathy-mri",
+  "http://127.0.0.1:3000/cases/cervical-myelopathy-mri",
+  { width: 1440, height: 900 },
+  '[data-station-blueprint="cervical-myelopathy-mri"]'
+);
+await inspect(
   "mobile-stroke",
   "http://127.0.0.1:3000/cases/stroke-ct-mca",
   { width: 390, height: 844 },
@@ -440,6 +544,141 @@ const failures = results.flatMap((result) => {
   }
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
+  }
+  if (result.name === "desktop-stroke" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-stroke" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (result.name === "desktop-stroke" && result.interactions.blueprintRequiredTasks !== 4) {
+    issues.push(`${result.name}: expected four blueprint required tasks`);
+  }
+  if (result.name === "desktop-stroke" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-stroke" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-glioma-dislocation" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-glioma-dislocation" && result.metrics.imageCards !== 4) {
+    issues.push(`${result.name}: expected four scan image cards`);
+  }
+  if (result.name === "desktop-glioma-dislocation" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-glioma-dislocation" &&
+    result.interactions.blueprintRequiredTasks !== 4
+  ) {
+    issues.push(`${result.name}: expected four blueprint required tasks`);
+  }
+  if (result.name === "desktop-glioma-dislocation" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (
+    result.name === "desktop-glioma-dislocation" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-glioma-dislocation" && result.interactions.scanLightboxOpen !== 1) {
+    issues.push(`${result.name}: scan lightbox did not open`);
+  }
+  if (result.name === "desktop-multiple-sclerosis-mri" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-multiple-sclerosis-mri" && result.metrics.imageCards !== 2) {
+    issues.push(`${result.name}: expected two scan image cards`);
+  }
+  if (
+    result.name === "desktop-multiple-sclerosis-mri" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-multiple-sclerosis-mri" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-multiple-sclerosis-mri" &&
+    result.interactions.blueprintSources !== 4
+  ) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (
+    result.name === "desktop-multiple-sclerosis-mri" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (
+    result.name === "desktop-multiple-sclerosis-mri" &&
+    result.interactions.scanLightboxOpen !== 1
+  ) {
+    issues.push(`${result.name}: scan lightbox did not open`);
+  }
+  if (result.name === "desktop-als-mri" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-als-mri" && result.metrics.imageCards !== 3) {
+    issues.push(`${result.name}: expected three scan image cards`);
+  }
+  if (result.name === "desktop-als-mri" && result.interactions.blueprintSections !== 1) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (result.name === "desktop-als-mri" && result.interactions.blueprintRequiredTasks !== 3) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (result.name === "desktop-als-mri" && result.interactions.blueprintSources !== 4) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (result.name === "desktop-als-mri" && result.interactions.checkedStatusText < 1) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (result.name === "desktop-als-mri" && result.interactions.scanLightboxOpen !== 1) {
+    issues.push(`${result.name}: scan lightbox did not open`);
+  }
+  if (result.name === "desktop-cervical-myelopathy-mri" && result.metrics.checklistCards !== 12) {
+    issues.push(`${result.name}: expected 12 checklist cards`);
+  }
+  if (result.name === "desktop-cervical-myelopathy-mri" && result.metrics.imageCards !== 6) {
+    issues.push(`${result.name}: expected six scan image cards`);
+  }
+  if (
+    result.name === "desktop-cervical-myelopathy-mri" &&
+    result.interactions.blueprintSections !== 1
+  ) {
+    issues.push(`${result.name}: station blueprint did not render`);
+  }
+  if (
+    result.name === "desktop-cervical-myelopathy-mri" &&
+    result.interactions.blueprintRequiredTasks !== 3
+  ) {
+    issues.push(`${result.name}: expected three blueprint required tasks`);
+  }
+  if (
+    result.name === "desktop-cervical-myelopathy-mri" &&
+    result.interactions.blueprintSources !== 4
+  ) {
+    issues.push(`${result.name}: expected four blueprint sources`);
+  }
+  if (
+    result.name === "desktop-cervical-myelopathy-mri" &&
+    result.interactions.checkedStatusText < 1
+  ) {
+    issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (
+    result.name === "desktop-cervical-myelopathy-mri" &&
+    result.interactions.scanLightboxOpen !== 1
+  ) {
+    issues.push(`${result.name}: scan lightbox did not open`);
   }
   if (result.name === "desktop-dementia" && result.metrics.checklistCards !== 18) {
     issues.push(`${result.name}: expected 18 checklist cards`);

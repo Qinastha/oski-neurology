@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-18",
   "slug": "multiple-sclerosis-mri",
   "order": 18,
-  "title": "Рассеянный склероз. МРТ",
-  "focus": "Рассеянный склероз: множественные T2/FLAIR очаги, перивентрикулярная и мозолистая локализация.",
+  "title": "Розсіяний склероз. МРТ",
+  "focus": "Розсіяний склероз: множинні T2/FLAIR-вогнища, перивентрикулярна і мозолиста локалізація.",
   "group": "imaging",
   "sourcePdf": {
     "label": "task_12417@2025-04-29T111704.pdf",
@@ -24,46 +25,43 @@ export const caseMeta = {
     }
   ],
   "tags": [
-    "рассеянный склероз",
+    "розсіяний склероз",
     "МРТ",
     "T2",
     "FLAIR",
     "McDonald"
   ],
-  "reviewStatus": "reviewing",
-  "keyAnswer": "Демиелинизирующее заболевание ЦНС, наиболее вероятно рассеянный склероз: множественные T2/FLAIR очаги в типичных зонах и критерии диссеминации.",
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint,
+  "keyAnswer": "Демієлінізуюче захворювання ЦНС, найімовірніше розсіяний склероз: множинні T2/FLAIR-вогнища у типових зонах, клінічна та МРТ-дисемінація у просторі й часі.",
   "imaging": [
     {
       "src": "/cases/multiple-sclerosis-mri/scan-01.jpeg",
-      "alt": "04 - рассеянный склероз - множественные T2 очаги",
-      "caption": "04 - рассеянный склероз - множественные T2 очаги"
+      "alt": "Множинні T2/FLAIR-вогнища білої речовини при підозрі на розсіяний склероз",
+      "caption": "Множинні T2/FLAIR-вогнища"
     },
     {
       "src": "/cases/multiple-sclerosis-mri/scan-02.jpeg",
-      "alt": "18 - рассеянный склероз - перивентрикулярные T2 очаги",
-      "caption": "18 - рассеянный склероз - перивентрикулярные T2 очаги"
+      "alt": "Перивентрикулярні T2/FLAIR-вогнища білої речовини при підозрі на розсіяний склероз",
+      "caption": "Перивентрикулярні вогнища"
     }
   ],
   "sources": [
     {
-      "label": "Stroke Imaging, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK546635/"
-    },
-    {
-      "label": "Glioblastoma Multiforme, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK558954/"
-    },
-    {
-      "label": "Multiple Sclerosis, StatPearls / NCBI Bookshelf",
+      "label": "StatPearls / NCBI Bookshelf: Multiple Sclerosis",
       "href": "https://www.ncbi.nlm.nih.gov/books/NBK499849/"
     },
     {
-      "label": "Amyotrophic Lateral Sclerosis, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK573427/"
+      "label": "Merck Manual Professional: Multiple Sclerosis",
+      "href": "https://www.merckmanuals.com/professional/neurologic-disorders/demyelinating-disorders/multiple-sclerosis-ms"
     },
     {
-      "label": "Cervical Myelopathy, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK482312/"
+      "label": "Thompson et al. 2017 McDonald criteria, Lancet Neurology",
+      "href": "https://pubmed.ncbi.nlm.nih.gov/29275977/"
+    },
+    {
+      "label": "Filippi et al. MAGNIMS MRI criteria, Lancet Neurology",
+      "href": "https://pubmed.ncbi.nlm.nih.gov/26822746/"
     }
   ]
 } satisfies CaseMeta;

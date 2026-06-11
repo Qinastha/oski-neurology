@@ -1,11 +1,12 @@
 import type { CaseMeta } from "../../schema";
+import { stationBlueprint } from "./blueprint";
 
 export const caseMeta = {
   "id": "case-17",
   "slug": "glioma-dislocation",
   "order": 17,
-  "title": "Дислокационный синдром. Нейровизуализация",
-  "focus": "Высокозлокачественная глиома с кровоизлиянием, перифокальным отеком и дислокационным синдромом.",
+  "title": "Високозлоякісна гліома. Дислокаційний синдром",
+  "focus": "Внутрішньомозкове об'ємне утворення з МР-ознаками high-grade glioma, перифокальним набряком, мас-ефектом і дислокаційним синдромом.",
   "group": "imaging",
   "sourcePdf": {
     "label": "task_12284@2025-04-29T111601.pdf",
@@ -24,56 +25,53 @@ export const caseMeta = {
     }
   ],
   "tags": [
-    "глиома",
-    "масс-эффект",
-    "дислокация",
+    "гліома",
+    "мас-ефект",
+    "дислокація",
     "МРТ",
-    "нейрохирургия"
+    "нейрохірургія"
   ],
-  "reviewStatus": "reviewing",
-  "keyAnswer": "Внутримозговое объемное образование с перифокальным отеком, контрастированием, кровоизлиянием, масс-эффектом и дислокацией структур.",
+  "reviewStatus": "checked",
+  "blueprint": stationBlueprint,
+  "keyAnswer": "Внутрішньомозкове об'ємне утворення правої півкулі з неоднорідним/кільцеподібним контрастуванням, вираженим перифокальним набряком, мас-ефектом і дислокацією структур; попередньо high-grade glioma/підозра на гліобластому, але остаточний діагноз потребує гістомолекулярної верифікації.",
   "imaging": [
     {
       "src": "/cases/glioma-dislocation/scan-01.jpeg",
-      "alt": "01 - высокозлокачественная глиома с кровоизлиянием - коронарный срез с перифокальным отеком",
-      "caption": "01 - высокозлокачественная глиома с кровоизлиянием - коронарный срез с перифокальным отеком"
+      "alt": "МРТ коронарний зріз: об'ємне утворення з вираженим перифокальним набряком",
+      "caption": "Перифокальний набряк"
     },
     {
       "src": "/cases/glioma-dislocation/scan-02.jpeg",
-      "alt": "02 - высокозлокачественная глиома с кровоизлиянием - T1 с контрастом коронарный срез",
-      "caption": "02 - высокозлокачественная глиома с кровоизлиянием - T1 с контрастом коронарный срез"
+      "alt": "МРТ T1 з контрастом, коронарний зріз: неоднорідне контрастування пухлини",
+      "caption": "T1 з контрастом"
     },
     {
       "src": "/cases/glioma-dislocation/scan-03.jpeg",
-      "alt": "03 - высокозлокачественная глиома с кровоизлиянием - аксиальный срез с кольцевидным контрастированием",
-      "caption": "03 - высокозлокачественная глиома с кровоизлиянием - аксиальный срез с кольцевидным контрастированием"
+      "alt": "МРТ аксіальний зріз: кільцеподібне контрастування та некротично-кістозні ділянки",
+      "caption": "Кільцеподібне контрастування"
     },
     {
       "src": "/cases/glioma-dislocation/scan-04.jpeg",
-      "alt": "15 - высокозлокачественная глиома с кровоизлиянием - дислокационный синдром",
-      "caption": "15 - высокозлокачественная глиома с кровоизлиянием - дислокационный синдром"
+      "alt": "МРТ аксіальний зріз: мас-ефект і дислокація серединних структур",
+      "caption": "Мас-ефект і дислокація"
     }
   ],
   "sources": [
     {
-      "label": "Stroke Imaging, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK546635/"
+      "label": "NICE NG99: Brain tumours and brain metastases in over 16s",
+      "href": "https://www.nice.org.uk/guidance/ng99/chapter/recommendations"
     },
     {
-      "label": "Glioblastoma Multiforme, StatPearls / NCBI Bookshelf",
+      "label": "EANO guidelines on adult diffuse gliomas",
+      "href": "https://www.nature.com/articles/s41571-020-00447-z"
+    },
+    {
+      "label": "StatPearls / NCBI Bookshelf: Glioblastoma Multiforme",
       "href": "https://www.ncbi.nlm.nih.gov/books/NBK558954/"
     },
     {
-      "label": "Multiple Sclerosis, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK499849/"
-    },
-    {
-      "label": "Amyotrophic Lateral Sclerosis, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK573427/"
-    },
-    {
-      "label": "Cervical Myelopathy, StatPearls / NCBI Bookshelf",
-      "href": "https://www.ncbi.nlm.nih.gov/books/NBK482312/"
+      "label": "StatPearls / NCBI Bookshelf: Brain Herniation",
+      "href": "https://www.ncbi.nlm.nih.gov/books/NBK542246/"
     }
   ]
 } satisfies CaseMeta;
