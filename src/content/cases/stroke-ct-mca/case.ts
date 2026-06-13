@@ -15,12 +15,12 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/stroke-ct-mca/original-01.png",
-      "alt": "Оригинальная задача stroke-ct-mca, страница 1",
+      "alt": "Оригінальне завдання stroke-ct-mca, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/stroke-ct-mca/original-02.png",
-      "alt": "Оригинальная задача stroke-ct-mca, страница 2",
+      "alt": "Оригінальне завдання stroke-ct-mca, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],

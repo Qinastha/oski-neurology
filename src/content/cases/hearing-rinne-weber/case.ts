@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/hearing-rinne-weber/original-01.jpg",
-      "alt": "Оригинальная задача hearing-rinne-weber, страница 1",
+      "alt": "Оригінальне завдання hearing-rinne-weber, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/hearing-rinne-weber/original-02.jpg",
-      "alt": "Оригинальная задача hearing-rinne-weber, страница 2",
+      "alt": "Оригінальне завдання hearing-rinne-weber, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "Рінне",
     "Вебер",
     "слух"

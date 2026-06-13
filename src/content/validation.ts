@@ -28,7 +28,7 @@ const stationAnswerBlockSchema = z.object({
     "task_summary",
     "actor_communication",
     "history_questions",
-    "exam_steps",
+    "clinical_exam",
     "imaging_review",
     "diagnosis",
     "management",
@@ -38,6 +38,43 @@ const stationAnswerBlockSchema = z.object({
   title: z.string().min(1),
   body: z.string().min(1).optional(),
   points: z.array(stationAnswerPointSchema).min(1)
+});
+
+const practicalSkillSourceSchema = z.object({
+  deck: z.string().min(1),
+  slides: z.array(z.number().int().positive()).min(1)
+});
+
+const practicalSkillStepSchema = z.object({
+  id: z.string().min(1),
+  role: z.enum(["prepare", "explain", "perform", "observe", "interpret", "safety"]),
+  title: z.string().min(1),
+  instruction: z.string().min(1),
+  expectedFinding: z.string().min(1).optional()
+});
+
+const practicalSkillSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  kind: z.enum([
+    "cognitive_screening",
+    "motor_exam",
+    "sensory_exam",
+    "coordination_exam",
+    "hearing_test",
+    "autonomic_test",
+    "vestibular_test",
+    "therapeutic_maneuver",
+    "gait_postural_test",
+    "provocative_test"
+  ]),
+  source: practicalSkillSourceSchema,
+  equipment: z.array(z.string().min(1)).optional(),
+  patientSetup: z.array(z.string().min(1)).optional(),
+  examinerPhrases: z.array(z.string().min(1)).optional(),
+  steps: z.array(practicalSkillStepSchema).min(1),
+  interpretation: z.array(z.string().min(1)).min(1),
+  safety: z.array(z.string().min(1)).optional()
 });
 
 const stationBlueprintSchema = z.object({
@@ -51,6 +88,7 @@ const stationBlueprintSchema = z.object({
   ]),
   reviewVerdict: z.enum(["needs_revision", "medically_checked", "checked_with_caveats"]),
   requiredTasks: z.array(requiredTaskSchema).min(1),
+  practicalSkills: z.array(practicalSkillSchema).optional(),
   answerBlocks: z.array(stationAnswerBlockSchema).min(1),
   sources: z.array(sourceFileSchema).min(1)
 });

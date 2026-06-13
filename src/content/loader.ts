@@ -83,6 +83,20 @@ export function getSearchBlob(studyCase: StudyCase) {
       ...(studyCase.blueprint
         ? [
             ...studyCase.blueprint.requiredTasks.flatMap((item) => [item.prompt, item.note ?? ""]),
+            ...(studyCase.blueprint.practicalSkills?.flatMap((skill) => [
+              skill.title,
+              skill.kind,
+              ...(skill.equipment ?? []),
+              ...(skill.patientSetup ?? []),
+              ...(skill.examinerPhrases ?? []),
+              ...skill.steps.flatMap((step) => [
+                step.title,
+                step.instruction,
+                step.expectedFinding ?? ""
+              ]),
+              ...skill.interpretation,
+              ...(skill.safety ?? [])
+            ]) ?? []),
             ...studyCase.blueprint.answerBlocks.flatMap((block) => [
               block.title,
               block.body ?? "",

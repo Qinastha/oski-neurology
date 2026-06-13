@@ -15,12 +15,12 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/multiple-sclerosis-mri/original-01.png",
-      "alt": "Оригинальная задача multiple-sclerosis-mri, страница 1",
+      "alt": "Оригінальне завдання multiple-sclerosis-mri, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/multiple-sclerosis-mri/original-02.png",
-      "alt": "Оригинальная задача multiple-sclerosis-mri, страница 2",
+      "alt": "Оригінальне завдання multiple-sclerosis-mri, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],

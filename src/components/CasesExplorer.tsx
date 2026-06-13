@@ -23,17 +23,17 @@ export interface ExplorerCase extends CaseSummary {
 }
 
 const filterLabels: Record<Filter, string> = {
-  all: "Все",
-  "non-imaging": "Без МРТ/КТ",
-  imaging: "МРТ/КТ",
-  favorites: "Избранное"
+  all: "Усі",
+  "non-imaging": "Без КТ/МРТ",
+  imaging: "КТ/МРТ",
+  favorites: "Обране"
 };
 
 const navigationItems = [
-  { filter: "all", label: "Все станции", mobileLabel: "Все", Icon: ClipboardList },
-  { filter: "non-imaging", label: "Без МРТ/КТ", mobileLabel: "Без МРТ/КТ", Icon: FileText },
-  { filter: "imaging", label: "МРТ/КТ", mobileLabel: "МРТ/КТ", Icon: BookOpen },
-  { filter: "favorites", label: "Избранное", mobileLabel: "Избранное", Icon: Star }
+  { filter: "all", label: "Усі станції", mobileLabel: "Усі", Icon: ClipboardList },
+  { filter: "non-imaging", label: "Без КТ/МРТ", mobileLabel: "Без КТ/МРТ", Icon: FileText },
+  { filter: "imaging", label: "КТ/МРТ", mobileLabel: "КТ/МРТ", Icon: BookOpen },
+  { filter: "favorites", label: "Обране", mobileLabel: "Обране", Icon: Star }
 ] as const satisfies Array<{
   filter: Filter;
   label: string;
@@ -108,7 +108,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
             <Brain size={24} />
           </span>
-          <span>ОСКИ Неврология</span>
+          <span>ОСКІ Неврологія</span>
         </Link>
         <Link
           className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
@@ -118,7 +118,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           КРОК тести
         </Link>
 
-        <nav className="mt-8 grid gap-1.5" aria-label="Основная навигация">
+        <nav className="mt-8 grid gap-1.5" aria-label="Основна навігація">
           {navigationItems.map(({ filter: itemFilter, label, Icon }) => (
             <button
               aria-pressed={filter === itemFilter}
@@ -142,10 +142,10 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="m-0 text-[13px] font-extrabold text-clinical-accent-strong">
-              20 учебных станций
+              20 навчальних станцій
             </p>
             <h1 className="mt-1 text-[clamp(30px,4vw,42px)] font-black leading-[1.04] text-clinical-text">
-              Подготовка к ОСКИ по неврологии
+              Підготовка до ОСКІ з неврології
             </h1>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
@@ -161,7 +161,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
                 className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]"
                 href={`/cases/${lastCase}`}
               >
-                Продолжить
+                Продовжити
               </Link>
             ) : null}
           </div>
@@ -174,7 +174,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
               className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-[#8f96a3]"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Поиск станций, синдромов, ключевых слов..."
+              placeholder="Пошук станцій, синдромів, ключових слів..."
             />
           </label>
         </div>

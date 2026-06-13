@@ -15,12 +15,12 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/glioma-dislocation/original-01.png",
-      "alt": "Оригинальная задача glioma-dislocation, страница 1",
+      "alt": "Оригінальне завдання glioma-dislocation, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/glioma-dislocation/original-02.png",
-      "alt": "Оригинальная задача glioma-dislocation, страница 2",
+      "alt": "Оригінальне завдання glioma-dislocation, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],

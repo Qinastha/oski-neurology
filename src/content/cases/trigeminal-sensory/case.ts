@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/trigeminal-sensory/original-01.jpg",
-      "alt": "Оригинальная задача trigeminal-sensory, страница 1",
+      "alt": "Оригінальне завдання trigeminal-sensory, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/trigeminal-sensory/original-02.jpg",
-      "alt": "Оригинальная задача trigeminal-sensory, страница 2",
+      "alt": "Оригінальне завдання trigeminal-sensory, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "трійчастий нерв",
     "чутливість"
   ],

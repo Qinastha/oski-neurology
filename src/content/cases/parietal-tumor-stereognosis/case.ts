@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/parietal-tumor-stereognosis/original-01.jpg",
-      "alt": "Оригинальная задача parietal-tumor-stereognosis, страница 1",
+      "alt": "Оригінальне завдання parietal-tumor-stereognosis, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/parietal-tumor-stereognosis/original-02.jpg",
-      "alt": "Оригинальная задача parietal-tumor-stereognosis, страница 2",
+      "alt": "Оригінальне завдання parietal-tumor-stereognosis, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/parietal-tumor-stereognosis/original-03.jpg",
-      "alt": "Оригинальная задача parietal-tumor-stereognosis, страница 3",
+      "alt": "Оригінальне завдання parietal-tumor-stereognosis, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "стереогноз",
     "тім'яна доля",
     "складна чутливість"

@@ -1162,7 +1162,7 @@ export const krokBooklets = [
             "text": "Наявність птозу верхньої повіки та мідріазу"
           }
         ],
-        "correctOptionId": "2024-034-a"
+        "correctOptionId": "2024-034-c"
       },
       {
         "id": "2024-035",
@@ -2420,7 +2420,7 @@ export const krokBooklets = [
             "text": "Монакова"
           }
         ],
-        "correctOptionId": "2024-071-a"
+        "correctOptionId": "2024-071-b"
       },
       {
         "id": "2024-072",

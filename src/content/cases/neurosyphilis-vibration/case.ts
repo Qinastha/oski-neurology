@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/neurosyphilis-vibration/original-01.jpg",
-      "alt": "Оригинальная задача neurosyphilis-vibration, страница 1",
+      "alt": "Оригінальне завдання neurosyphilis-vibration, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/neurosyphilis-vibration/original-02.jpg",
-      "alt": "Оригинальная задача neurosyphilis-vibration, страница 2",
+      "alt": "Оригінальне завдання neurosyphilis-vibration, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/neurosyphilis-vibration/original-03.jpg",
-      "alt": "Оригинальная задача neurosyphilis-vibration, страница 3",
+      "alt": "Оригінальне завдання neurosyphilis-vibration, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "нейросифіліс",
     "tabes dorsalis",
     "вібраційна чутливість"

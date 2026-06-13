@@ -59,7 +59,9 @@ async function inspect(name, url, viewport, selector) {
     krokStartCards: document.querySelectorAll("[data-krok-start-card]").length,
     krokQuestionCards: document.querySelectorAll("[data-krok-question-card]").length,
     krokResultPanels: document.querySelectorAll('[data-krok-result="summary"]').length,
-    krokMobileNavigatorItems: document.querySelectorAll("[data-krok-mobile-question-link]").length
+    krokMobileNavigatorItems: document.querySelectorAll("[data-krok-mobile-question-link]").length,
+    practicalSkillCards: document.querySelectorAll("[data-blueprint-practical-skills='list'] article")
+      .length
   }));
 
   const interactions = {};
@@ -91,7 +93,7 @@ async function inspect(name, url, viewport, selector) {
       timeout: 5000
     });
 
-    const searchInput = page.getByPlaceholder("Поиск станций, синдромов, ключевых слов...");
+    const searchInput = page.getByPlaceholder("Пошук станцій, синдромів, ключових слів...");
     await searchInput.fill("Mini-Cog");
     await page.waitForFunction(() => document.querySelectorAll(".case-card").length === 1, {
       timeout: 5000
@@ -110,9 +112,9 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
     interactions.originalFiguresBefore = await page.locator('[data-media-figure="original"]').count();
-    await page.getByText("Показать страницы задачи").click();
+    await page.getByText("Показати сторінки завдання").click();
     await page.waitForSelector('[data-media-figure="original"]', { timeout: 5000 });
     interactions.originalFiguresAfter = await page.locator('[data-media-figure="original"]').count();
 
@@ -141,7 +143,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-radiculopathy") {
@@ -152,7 +154,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-trigeminal-neuralgia") {
@@ -163,7 +165,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-neurosyphilis") {
@@ -174,7 +176,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-msa-orthostatic") {
@@ -185,7 +187,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-bppv-dix-hallpike") {
@@ -196,7 +198,9 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
+    interactions.visibleDeckReferences = await page.getByText("ОСКИ.pptx").count();
+    interactions.legacyDixHallpikeSteps = await page.getByText("Як виконати Dix-Hallpike").count();
   }
 
   if (name === "desktop-bppv-epley") {
@@ -207,7 +211,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-hearing-rinne-weber") {
@@ -218,7 +222,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-parkinson-gait-thevenard") {
@@ -229,7 +233,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-cauda-equina") {
@@ -238,7 +242,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-trigeminal-sensory") {
@@ -249,7 +253,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-weber-syndrome") {
@@ -258,7 +262,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-parietal-tumor-stereognosis") {
@@ -269,7 +273,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-ulnar-neuropathy-cubital") {
@@ -280,7 +284,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-cerebellar-ataxia") {
@@ -291,7 +295,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
   }
 
   if (name === "desktop-glioma-dislocation") {
@@ -302,7 +306,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
     interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
@@ -321,7 +325,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
     interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
@@ -338,7 +342,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
     interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
@@ -357,7 +361,7 @@ async function inspect(name, url, viewport, selector) {
       .locator('[data-blueprint-required-tasks="list"] article')
       .count();
     interactions.blueprintSources = await page.locator('[data-blueprint-sources="list"] a').count();
-    interactions.checkedStatusText = await page.getByText("проверено").count();
+    interactions.checkedStatusText = await page.getByText("перевірено").count();
     await page.locator('[data-image-open="scan"]').first().click();
     await page.waitForSelector('[data-image-lightbox="open"]', { timeout: 5000 });
     interactions.scanLightboxOpen = await page.locator('[data-image-lightbox="open"]').count();
@@ -693,6 +697,22 @@ await inspect(
 
 await browser.close();
 
+const practicalCaseNames = new Set([
+  "desktop-bppv-dix-hallpike",
+  "desktop-bppv-epley",
+  "desktop-cerebellar-ataxia",
+  "desktop-dementia",
+  "desktop-hearing-rinne-weber",
+  "desktop-msa-orthostatic",
+  "desktop-neurosyphilis",
+  "desktop-parietal-tumor-stereognosis",
+  "desktop-parkinson-gait-thevenard",
+  "desktop-radiculopathy",
+  "desktop-trigeminal-neuralgia",
+  "desktop-trigeminal-sensory",
+  "desktop-ulnar-neuropathy-cubital"
+]);
+
 const failures = results.flatMap((result) => {
   const issues = [];
   if (result.problems.length > 0) {
@@ -703,6 +723,9 @@ const failures = results.flatMap((result) => {
   }
   if (result.metrics.tableCount !== 0) {
     issues.push(`${result.name}: expected no tables, got ${result.metrics.tableCount}`);
+  }
+  if (practicalCaseNames.has(result.name) && result.metrics.practicalSkillCards !== 1) {
+    issues.push(`${result.name}: expected one practical skill card`);
   }
   if (result.name.includes("stroke") && result.metrics.checklistCards < 5) {
     issues.push(`${result.name}: checklist cards not rendered`);
@@ -1086,6 +1109,18 @@ const failures = results.flatMap((result) => {
   }
   if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.checkedStatusText < 1) {
     issues.push(`${result.name}: checked review status not visible`);
+  }
+  if (
+    result.name === "desktop-bppv-dix-hallpike" &&
+    result.interactions.visibleDeckReferences !== 0
+  ) {
+    issues.push(`${result.name}: deck source should not be visible in practical skill UI`);
+  }
+  if (
+    result.name === "desktop-bppv-dix-hallpike" &&
+    result.interactions.legacyDixHallpikeSteps !== 0
+  ) {
+    issues.push(`${result.name}: legacy Dix-Hallpike answerBlock is still visible`);
   }
   if (result.name === "desktop-bppv-dix-hallpike" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);

@@ -711,7 +711,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
                 href="/cases"
               >
                 <Home size={17} />
-                ОСКИ станції
+                ОСКІ станції
               </Link>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
                 450 питань · 3 буклети
@@ -814,7 +814,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
           href="/cases"
         >
           <Home size={16} />
-          ОСКИ станції
+          ОСКІ станції
         </Link>
 
         <div className="mt-6 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">

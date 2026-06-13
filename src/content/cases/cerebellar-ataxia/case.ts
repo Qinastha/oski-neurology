@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/cerebellar-ataxia/original-01.jpg",
-      "alt": "Оригинальная задача cerebellar-ataxia, страница 1",
+      "alt": "Оригінальне завдання cerebellar-ataxia, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/cerebellar-ataxia/original-02.jpg",
-      "alt": "Оригинальная задача cerebellar-ataxia, страница 2",
+      "alt": "Оригінальне завдання cerebellar-ataxia, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/cerebellar-ataxia/original-03.jpg",
-      "alt": "Оригинальная задача cerebellar-ataxia, страница 3",
+      "alt": "Оригінальне завдання cerebellar-ataxia, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "атаксія",
     "мозочок",
     "координаторні проби"

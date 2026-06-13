@@ -16,6 +16,16 @@ const caseFiles = caseDirs.map((slug) => ({
   slug,
   source: fs.readFileSync(path.join(casesRoot, slug, "case.ts"), "utf8")
 }));
+const blueprintFiles = caseDirs
+  .map((slug) => ({
+    slug,
+    filePath: path.join(casesRoot, slug, "blueprint.ts")
+  }))
+  .filter(({ filePath }) => fs.existsSync(filePath))
+  .map(({ slug, filePath }) => ({
+    slug,
+    source: fs.readFileSync(filePath, "utf8")
+  }));
 
 const slugs = caseFiles.map(({ source }) => source.match(/"?slug"?:\s*"([^"]+)"/)?.[1] ?? "");
 const groups = caseFiles.map(
@@ -60,6 +70,16 @@ for (const slug of slugs) {
     if (!/^##\s+/m.test(checklist)) {
       failures.push(`Checklist has no markdown sections: ${slug}`);
     }
+  }
+}
+
+for (const { slug, source } of blueprintFiles) {
+  if (source.includes('type: "exam_steps"')) {
+    failures.push(`Blueprint ${slug} still uses deprecated answer block type "exam_steps"`);
+  }
+
+  if (source.includes("practicalSkills: []")) {
+    failures.push(`Blueprint ${slug} has an empty practicalSkills array`);
   }
 }
 
@@ -157,5 +177,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без МРТ/КТ, ${imagingCount} МРТ/КТ), ${publicRefs.length} public assets, ${krokQuestionCount} KROK questions`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} KROK questions`
 );

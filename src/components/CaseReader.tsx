@@ -26,6 +26,8 @@ import type {
   CaseSummary,
   ChecklistItem,
   InteractionItem,
+  PracticalSkill,
+  StationAnswerBlockType,
   StationBlueprint,
   TaskCoverageStatus,
   StudyCase
@@ -36,6 +38,8 @@ import {
   formatBlueprintVerdict,
   formatEvidenceType,
   formatGroup,
+  formatPracticalSkillKind,
+  formatPracticalStepRole,
   formatStationType,
   formatStatus,
   formatTaskCoverage
@@ -59,6 +63,17 @@ const iconButtonClass =
   "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong";
 const yellowButtonClass =
   "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]";
+const answerBlockOrder: Record<StationAnswerBlockType, number> = {
+  task_summary: 10,
+  actor_communication: 20,
+  history_questions: 30,
+  clinical_exam: 40,
+  imaging_review: 50,
+  diagnosis: 60,
+  management: 70,
+  must_say: 80,
+  pitfalls: 90
+};
 
 function readFavorites() {
   if (typeof window === "undefined") {
@@ -141,7 +156,7 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
           role="region"
         >
           <span className="mb-1.5 block text-xs font-black uppercase text-clinical-accent-strong">
-            Что проговорить
+            Що проговорити
           </span>
           <MarkdownView markdown={item.body} />
         </div>
@@ -175,7 +190,120 @@ function coverageClass(status: TaskCoverageStatus) {
   return classes[status];
 }
 
+function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
+  return (
+    <article className="rounded-lg border border-clinical-line-strong bg-[#fffaf0] p-3">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div>
+          <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
+            Практична частина · {formatPracticalSkillKind(skill.kind)}
+          </p>
+          <h3 className="mt-1 text-base font-black leading-tight">{skill.title}</h3>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 lg:grid-cols-3">
+        {skill.equipment?.length ? (
+          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+            <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
+              Підготувати
+            </h4>
+            <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
+              {skill.equipment.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {skill.patientSetup?.length ? (
+          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+            <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
+              Положення пацієнта
+            </h4>
+            <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
+              {skill.patientSetup.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {skill.examinerPhrases?.length ? (
+          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+            <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
+              Сказати пацієнту
+            </h4>
+            <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
+              {skill.examinerPhrases.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {skill.steps.map((step, index) => (
+          <section
+            className="grid gap-2 rounded-lg border border-clinical-line bg-white p-2.5 sm:grid-cols-[34px_minmax(0,1fr)]"
+            key={step.id}
+          >
+            <span className="font-black text-clinical-accent-strong">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <div className="min-w-0">
+              <p className="m-0 text-[11px] font-black uppercase text-clinical-muted">
+                {formatPracticalStepRole(step.role)}
+              </p>
+              <h4 className="mt-0.5 text-sm font-black leading-snug">{step.title}</h4>
+              <p className="mt-1.5 text-sm leading-relaxed text-clinical-muted">
+                {step.instruction}
+              </p>
+              {step.expectedFinding ? (
+                <p className="mt-1.5 rounded-lg bg-[#fffaf0] px-2 py-1.5 text-sm leading-relaxed text-[#5d4710]">
+                  {step.expectedFinding}
+                </p>
+              ) : null}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+          <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
+            Інтерпретація
+          </h4>
+          <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
+            {skill.interpretation.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        {skill.safety?.length ? (
+          <div className="rounded-lg border border-amber-200 bg-white p-2.5">
+            <h4 className="text-xs font-black uppercase text-amber-700">Безпека</h4>
+            <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
+              {skill.safety.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
 function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
+  const orderedAnswerBlocks = blueprint.answerBlocks
+    .map((block, index) => ({ block, index }))
+    .sort(
+      (left, right) =>
+        answerBlockOrder[left.block.type] - answerBlockOrder[right.block.type] ||
+        left.index - right.index
+    )
+    .map(({ block }) => block);
+
   return (
     <div className="grid gap-3">
       <div className="grid gap-2 rounded-lg border border-clinical-line bg-[#fffaf0] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -183,7 +311,7 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
           <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
             {formatStationType(blueprint.stationType)}
           </p>
-          <h3 className="mt-1 text-lg font-black leading-tight">Швидка карта відповіді</h3>
+          <h3 className="mt-1 text-lg font-black leading-tight">Карта підготовки</h3>
         </div>
         <span className="inline-flex min-h-8 items-center justify-center rounded-lg border border-clinical-line-strong bg-white px-2.5 text-xs font-extrabold text-[#51421a]">
           {formatBlueprintVerdict(blueprint.reviewVerdict)}
@@ -191,7 +319,7 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
       </div>
 
       <section className="rounded-lg border border-clinical-line bg-white p-3">
-        <h3 className="text-sm font-black">Покриття завдання</h3>
+        <h3 className="text-sm font-black">Що вимагає завдання</h3>
         <div className="mt-2 grid gap-2" data-blueprint-required-tasks="list">
           {blueprint.requiredTasks.map((task, index) => (
             <article
@@ -220,8 +348,17 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
         </div>
       </section>
 
+      {blueprint.practicalSkills?.length ? (
+        <section className="grid gap-2.5" data-blueprint-practical-skills="list">
+          <h3 className="text-sm font-black">Практична частина</h3>
+          {blueprint.practicalSkills.map((skill) => (
+            <PracticalSkillCard key={skill.id} skill={skill} />
+          ))}
+        </section>
+      ) : null}
+
       <div className="grid gap-2.5 sm:grid-cols-2">
-        {blueprint.answerBlocks.map((block) => (
+        {orderedAnswerBlocks.map((block) => (
           <article
             className={cn(
               "rounded-lg border border-clinical-line bg-white p-3",
@@ -291,7 +428,7 @@ function MediaFigure({
       data-media-figure={kind}
     >
       <button
-        aria-label={`Открыть изображение: ${image.caption ?? image.alt}`}
+        aria-label={`Відкрити зображення: ${image.caption ?? image.alt}`}
         className={cn(
           "group relative block w-full overflow-hidden bg-[#f7f7f7] text-left",
           isScan ? "aspect-[1.2/1] bg-[#111]" : "aspect-[3/4]"
@@ -347,7 +484,7 @@ function OriginalPagesDisclosure({
       }}
     >
       <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-clinical-line-strong bg-clinical-accent-soft px-3 text-[13px] font-extrabold text-[#594107] [&::-webkit-details-marker]:hidden">
-        Показать страницы задачи ({pages.length})
+        Показати сторінки завдання ({pages.length})
         <ChevronDown className="transition group-open:rotate-180" size={17} />
       </summary>
       {shouldRenderPages ? (
@@ -378,7 +515,7 @@ function ImageLightbox({
       role="dialog"
     >
       <button
-        aria-label="Закрыть просмотр по фону"
+        aria-label="Закрити перегляд через фон"
         className="absolute inset-0 h-full w-full cursor-default"
         type="button"
         onClick={onClose}
@@ -389,7 +526,7 @@ function ImageLightbox({
             {image.caption ?? image.alt}
           </p>
           <button
-            aria-label="Закрыть просмотр изображения"
+            aria-label="Закрити перегляд зображення"
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
             data-image-lightbox-close="button"
             type="button"
@@ -472,11 +609,11 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
   }
 
   const anchors = [
-    ["original", "Оригинальная задача"],
-    ...(studyCase.group === "imaging" ? ([["imaging", "Снимки"]] as const) : []),
+    ["original", "Оригінальне завдання"],
+    ...(studyCase.group === "imaging" ? ([["imaging", "Знімки"]] as const) : []),
     ...(studyCase.blueprint ? ([["blueprint", "Підготовка до станції"]] as const) : []),
-    ["checklist", "Разбор по чеклисту"],
-    ["interaction", "Взаимодействие"]
+    ["checklist", "Детальний чеклист"],
+    ["interaction", "Взаємодія"]
   ] as const;
 
   return (
@@ -486,9 +623,9 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
             <Brain size={24} />
           </span>
-          <span>ОСКИ Неврология</span>
+          <span>ОСКІ Неврологія</span>
         </Link>
-        <nav className="mt-7 grid gap-1.5 overflow-auto pr-0.5" aria-label="Станции">
+        <nav className="mt-7 grid gap-1.5 overflow-auto pr-0.5" aria-label="Станції">
           {cases.map((item) => (
             <Link
               className={cn(
@@ -509,7 +646,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
 
       <section className={cn(panelClass, "min-w-0 p-[18px] max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none")}>
         <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
-          <Link className={iconButtonClass} href="/cases" aria-label="К списку станций">
+          <Link className={iconButtonClass} href="/cases" aria-label="До списку станцій">
             <ArrowLeft size={18} />
           </Link>
           <div className="min-w-0 text-center">
@@ -523,7 +660,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             aria-controls="mobile-case-menu"
             className={iconButtonClass}
             data-mobile-menu-trigger="top"
-            aria-label="Открыть меню станции"
+            aria-label="Відкрити меню станції"
             type="button"
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -534,7 +671,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
         <div className="flex items-start justify-between gap-4 pb-4 max-md:block">
           <div>
             <p className="m-0 text-[13px] font-extrabold text-clinical-accent-strong">
-              МРТ/КТ и чеклисты / {String(studyCase.order).padStart(2, "0")}
+              ОСКІ станція / {String(studyCase.order).padStart(2, "0")}
             </p>
             <h2 className="mt-1 text-[clamp(26px,4vw,42px)] font-black leading-[1.05]">
               {studyCase.title}
@@ -549,11 +686,11 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             onClick={toggleFavorite}
           >
             {favorite ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-            {favorite ? "В избранном" : "В избранное"}
+            {favorite ? "В обраному" : "До обраного"}
           </button>
         </div>
 
-        <SectionBlock id="original" title="Оригинальная задача" icon={<FileText size={19} />}>
+        <SectionBlock id="original" title="Оригінальне завдання" icon={<FileText size={19} />}>
           <div className="mb-3 flex items-center justify-between gap-4 text-[13px] text-clinical-muted">
             <a
               className="font-extrabold text-clinical-accent-strong underline underline-offset-4"
@@ -569,7 +706,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
         </SectionBlock>
 
         {studyCase.group === "imaging" ? (
-          <SectionBlock id="imaging" title="Снимки" icon={<Images size={19} />}>
+          <SectionBlock id="imaging" title="Знімки" icon={<Images size={19} />}>
             <div className="image-grid grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3 max-md:flex max-md:overflow-x-auto max-md:pb-1 max-md:[scroll-snap-type:x_mandatory]">
               {studyCase.imaging.map((image) => (
                 <MediaFigure image={image} kind="scan" key={image.src} onOpen={setLightboxImage} />
@@ -586,7 +723,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           </SectionBlock>
         ) : null}
 
-        <SectionBlock id="checklist" title="Разбор по чеклисту" icon={<ClipboardList size={19} />}>
+        <SectionBlock id="checklist" title="Детальний чеклист" icon={<ClipboardList size={19} />}>
           <div className="grid gap-2.5">
             {studyCase.checklist.map((item) => (
               <ChecklistCard item={item} key={item.id} />
@@ -596,7 +733,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
 
         <SectionBlock
           id="interaction"
-          title="Взаимодействие"
+          title="Взаємодія"
           icon={<MessageSquareText size={19} />}
           defaultOpen={studyCase.interaction.length > 0}
         >
@@ -607,7 +744,9 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
               ))}
             </div>
           ) : (
-            <p className="m-0 text-clinical-muted">В этой станции полноценного актерского диалога нет.</p>
+            <p className="m-0 text-clinical-muted">
+              У цій станції повноцінного діалогу з актором немає.
+            </p>
           )}
         </SectionBlock>
 
@@ -621,11 +760,11 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             <span />
           )}
           <span className="text-sm text-clinical-muted">
-            {studyCase.order} из {cases.length}
+            {studyCase.order} з {cases.length}
           </span>
           {next ? (
             <Link className={yellowButtonClass} href={`/cases/${next.slug}`}>
-              Далее
+              Далі
               <ArrowRight size={17} />
             </Link>
           ) : (
@@ -635,8 +774,8 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
       </section>
 
       <aside className={cn(panelClass, "sticky top-5 hidden h-[calc(100dvh-40px)] overflow-auto p-4 xl:block")}>
-        <nav className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4" aria-label="Содержание станции">
-          <strong className="text-sm">Содержание станции</strong>
+        <nav className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4" aria-label="Зміст станції">
+          <strong className="text-sm">Зміст станції</strong>
           {anchors.map(([id, label]) => (
             <a className="text-[13px] leading-normal text-clinical-muted hover:text-clinical-accent-strong" href={`#${id}`} key={id}>
               {label}
@@ -646,7 +785,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
 
         {studyCase.group === "imaging" ? (
           <section className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4">
-            <strong className="text-sm">Ключевой вывод</strong>
+            <strong className="text-sm">Ключовий висновок</strong>
             <p className="m-0 text-[13px] leading-normal text-clinical-muted">{studyCase.keyAnswer}</p>
           </section>
         ) : null}
@@ -667,7 +806,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
 
         {studyCase.group === "imaging" ? (
           <section className="grid gap-2.5">
-            <strong className="text-sm">Источники</strong>
+            <strong className="text-sm">Джерела</strong>
             {studyCase.sources.map((source) => (
               <a
                 className="text-[13px] leading-normal text-clinical-muted hover:text-clinical-accent-strong"
@@ -691,7 +830,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           role="dialog"
         >
           <button
-            aria-label="Закрыть меню по фону"
+            aria-label="Закрити меню через фон"
             className="absolute inset-0 h-full w-full cursor-default"
             type="button"
             onClick={() => setMobileMenuOpen(false)}
@@ -702,12 +841,12 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
                 <p className="m-0 text-xs font-extrabold uppercase text-clinical-accent-strong">
                   {formatGroup(studyCase.group)} / {String(studyCase.order).padStart(2, "0")}
                 </p>
-                <h2 className="mt-1 text-lg font-black leading-tight">Меню станции</h2>
+                <h2 className="mt-1 text-lg font-black leading-tight">Меню станції</h2>
               </div>
               <button
                 className={iconButtonClass}
                 data-mobile-menu-close="button"
-                aria-label="Закрыть меню станции"
+                aria-label="Закрити меню станції"
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -715,7 +854,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
               </button>
             </header>
 
-            <nav className="grid gap-2" aria-label="Мобильное содержание станции">
+            <nav className="grid gap-2" aria-label="Мобільний зміст станції">
               {anchors.map(([id, label]) => (
                 <a
                   className="flex min-h-11 items-center justify-between rounded-lg border border-clinical-line bg-[#fffdf8] px-3 text-sm font-extrabold text-[#272b31]"
@@ -731,7 +870,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
 
             {studyCase.group === "imaging" ? (
               <section className="mt-3 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
-                <strong className="text-sm">Ключевой вывод</strong>
+                <strong className="text-sm">Ключовий висновок</strong>
                 <p className="mt-2 text-sm leading-relaxed text-clinical-muted">{studyCase.keyAnswer}</p>
               </section>
             ) : null}
@@ -761,7 +900,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
               )}
               {next ? (
                 <Link className={yellowButtonClass} href={`/cases/${next.slug}`}>
-                  Далее
+                  Далі
                   <ArrowRight size={17} />
                 </Link>
               ) : (
@@ -775,11 +914,11 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
       <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-4 border-t border-clinical-line bg-clinical-bg/95 px-2 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
         <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-clinical-accent-strong" href="/cases">
           <Home size={19} />
-          Все
+          Усі
         </Link>
         <button className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" type="button" onClick={toggleFavorite}>
           <Star size={19} />
-          Избранное
+          Обране
         </button>
         <a className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="#checklist">
           <ClipboardList size={19} />

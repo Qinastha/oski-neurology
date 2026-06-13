@@ -15,12 +15,12 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/cervical-myelopathy-mri/original-01.png",
-      "alt": "Оригинальная задача cervical-myelopathy-mri, страница 1",
+      "alt": "Оригінальне завдання cervical-myelopathy-mri, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/cervical-myelopathy-mri/original-02.png",
-      "alt": "Оригинальная задача cervical-myelopathy-mri, страница 2",
+      "alt": "Оригінальне завдання cervical-myelopathy-mri, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],

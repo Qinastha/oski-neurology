@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/dementia-mini-cog/original-01.jpg",
-      "alt": "Оригинальная задача dementia-mini-cog, страница 1",
+      "alt": "Оригінальне завдання dementia-mini-cog, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/dementia-mini-cog/original-02.jpg",
-      "alt": "Оригинальная задача dementia-mini-cog, страница 2",
+      "alt": "Оригінальне завдання dementia-mini-cog, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/dementia-mini-cog/original-03.jpg",
-      "alt": "Оригинальная задача dementia-mini-cog, страница 3",
+      "alt": "Оригінальне завдання dementia-mini-cog, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "деменція",
     "Mini-Cog"
   ],

@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/weber-syndrome/original-01.jpg",
-      "alt": "Оригинальная задача weber-syndrome, страница 1",
+      "alt": "Оригінальне завдання weber-syndrome, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/weber-syndrome/original-02.jpg",
-      "alt": "Оригинальная задача weber-syndrome, страница 2",
+      "alt": "Оригінальне завдання weber-syndrome, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "Вебер",
     "стовбур",
     "середній мозок",

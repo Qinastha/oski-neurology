@@ -68,7 +68,7 @@ export const stationBlueprint = {
       ]
     },
     {
-      type: "exam_steps",
+      type: "clinical_exam",
       title: "Що шукати при огляді",
       points: [
         {

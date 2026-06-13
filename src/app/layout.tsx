@@ -4,13 +4,39 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "ОСКИ Неврология",
-    template: "%s · ОСКИ Неврология"
+    default: "ОСКІ Неврологія",
+    template: "%s · ОСКІ Неврологія"
   },
-  description:
-    "Временный учебный сайт для подготовки к ОСКИ и КРОК по неврологии: станции, снимки, чеклисты, ответы и тренувальні тести.",
-  applicationName: "ОСКИ Неврология",
-  keywords: ["ОСКИ", "КРОК", "неврология", "интернатура", "чеклисты", "МРТ", "КТ", "тести"]
+    description:
+    "Тимчасовий навчальний сайт для підготовки до ОСКІ та КРОК з неврології: станції, знімки, чеклисти, відповіді й тренувальні тести.",
+    applicationName: "ОСКІ Неврологія",
+    keywords: ["ОСКІ", "КРОК", "неврологія", "інтернатура", "чеклисти", "МРТ", "КТ", "тести"],
+    icons: {
+        // Favicons
+        icon: [
+            { url: '/metadata/icon1.png', sizes: '96x96', type: 'image/png' },
+            { url: '/metadata/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+        ],
+        // Apple touch icon (iOS)
+        apple: [
+            { url: '/metadata/apple-icon.png', sizes: '180x180', type: 'image/png' },
+        ],
+        // Other icons (Android, Manifest, etc.)
+        other: [
+            {
+                rel: 'android-chrome',
+                url: '/metadata/web-app-manifest-192x192.png',
+                sizes: '192x192',
+                type: 'image/png',
+            },
+            {
+                rel: 'android-chrome',
+                url: '/metadata/web-app-manifest-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+            },
+        ],
+    },
 };
 
 export const viewport: Viewport = {
@@ -20,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ru">
+    <html lang="uk">
       <body className="bg-clinical-bg font-sans text-clinical-text antialiased">
         <div
           aria-hidden="true"

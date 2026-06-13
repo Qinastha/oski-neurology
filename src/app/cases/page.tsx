@@ -4,7 +4,7 @@ import { CasesExplorer, type ExplorerCase } from "@/components/CasesExplorer";
 import { getAllCases, getSearchBlob } from "@/content/loader";
 
 export const metadata: Metadata = {
-  title: "Все станции"
+  title: "Усі станції"
 };
 
 export const dynamic = "force-static";

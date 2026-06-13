@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/bppv-dix-hallpike/original-01.jpg",
-      "alt": "Оригинальная задача bppv-dix-hallpike, страница 1",
+      "alt": "Оригінальне завдання bppv-dix-hallpike, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/bppv-dix-hallpike/original-02.jpg",
-      "alt": "Оригинальная задача bppv-dix-hallpike, страница 2",
+      "alt": "Оригінальне завдання bppv-dix-hallpike, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/bppv-dix-hallpike/original-03.jpg",
-      "alt": "Оригинальная задача bppv-dix-hallpike, страница 3",
+      "alt": "Оригінальне завдання bppv-dix-hallpike, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "ДППГ",
     "Dix-Hallpike",
     "позиційний ністагм"

@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/als-mri/original-01.png",
-      "alt": "Оригинальная задача als-mri, страница 1",
+      "alt": "Оригінальне завдання als-mri, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/als-mri/original-02.png",
-      "alt": "Оригинальная задача als-mri, страница 2",
+      "alt": "Оригінальне завдання als-mri, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/als-mri/original-03.png",
-      "alt": "Оригинальная задача als-mri, страница 3",
+      "alt": "Оригінальне завдання als-mri, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],

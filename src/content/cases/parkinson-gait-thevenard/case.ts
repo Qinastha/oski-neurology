@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/parkinson-gait-thevenard/original-01.jpg",
-      "alt": "Оригинальная задача parkinson-gait-thevenard, страница 1",
+      "alt": "Оригінальне завдання parkinson-gait-thevenard, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/parkinson-gait-thevenard/original-02.jpg",
-      "alt": "Оригинальная задача parkinson-gait-thevenard, страница 2",
+      "alt": "Оригінальне завдання parkinson-gait-thevenard, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/parkinson-gait-thevenard/original-03.jpg",
-      "alt": "Оригинальная задача parkinson-gait-thevenard, страница 3",
+      "alt": "Оригінальне завдання parkinson-gait-thevenard, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "Паркінсон",
     "хода",
     "Hoehn-Yahr"

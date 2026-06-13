@@ -15,7 +15,7 @@ export type StationAnswerBlockType =
   | "task_summary"
   | "actor_communication"
   | "history_questions"
-  | "exam_steps"
+  | "clinical_exam"
   | "imaging_review"
   | "diagnosis"
   | "management"
@@ -28,6 +28,26 @@ export type StationReviewVerdict =
   | "checked_with_caveats";
 
 export type StationEvidenceType = "visible_on_image" | "from_case" | "caution";
+
+export type PracticalSkillKind =
+  | "cognitive_screening"
+  | "motor_exam"
+  | "sensory_exam"
+  | "coordination_exam"
+  | "hearing_test"
+  | "autonomic_test"
+  | "vestibular_test"
+  | "therapeutic_maneuver"
+  | "gait_postural_test"
+  | "provocative_test";
+
+export type PracticalSkillStepRole =
+  | "prepare"
+  | "explain"
+  | "perform"
+  | "observe"
+  | "interpret"
+  | "safety";
 
 export interface SourceFile {
   label: string;
@@ -59,11 +79,38 @@ export interface StationAnswerBlock {
   points: StationAnswerPoint[];
 }
 
+export interface PracticalSkillSource {
+  deck: string;
+  slides: number[];
+}
+
+export interface PracticalSkillStep {
+  id: string;
+  role: PracticalSkillStepRole;
+  title: string;
+  instruction: string;
+  expectedFinding?: string;
+}
+
+export interface PracticalSkill {
+  id: string;
+  title: string;
+  kind: PracticalSkillKind;
+  source: PracticalSkillSource;
+  equipment?: string[];
+  patientSetup?: string[];
+  examinerPhrases?: string[];
+  steps: PracticalSkillStep[];
+  interpretation: string[];
+  safety?: string[];
+}
+
 export interface StationBlueprint {
   slug: string;
   stationType: StationType;
   reviewVerdict: StationReviewVerdict;
   requiredTasks: RequiredTask[];
+  practicalSkills?: PracticalSkill[];
   answerBlocks: StationAnswerBlock[];
   sources: SourceFile[];
 }

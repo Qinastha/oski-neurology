@@ -15,22 +15,22 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/radiculopathy-topic/original-01.jpg",
-      "alt": "Оригинальная задача radiculopathy-topic, страница 1",
+      "alt": "Оригінальне завдання radiculopathy-topic, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/radiculopathy-topic/original-02.jpg",
-      "alt": "Оригинальная задача radiculopathy-topic, страница 2",
+      "alt": "Оригінальне завдання radiculopathy-topic, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     },
     {
       "src": "/cases/radiculopathy-topic/original-03.jpg",
-      "alt": "Оригинальная задача radiculopathy-topic, страница 3",
+      "alt": "Оригінальне завдання radiculopathy-topic, сторінка 3",
       "caption": "Страница 3 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "радикулопатія"
   ],
   "reviewStatus": "checked",

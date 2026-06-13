@@ -29,7 +29,7 @@ export function CaseCard({
         <span className="min-w-0">
           <strong className="block truncate text-[15px] leading-tight">{studyCase.title}</strong>
           <small className="mt-1 block text-xs text-clinical-muted">
-            {formatGroup(studyCase.group)} · {studyCase.checklistCount} пунктов ·{" "}
+            {formatGroup(studyCase.group)} · {studyCase.checklistCount} пунктів ·{" "}
             {formatStatus(studyCase.reviewStatus)}
           </small>
         </span>
@@ -37,8 +37,8 @@ export function CaseCard({
       <button
         aria-label={
           favorite
-            ? `Убрать ${studyCase.title} из избранного`
-            : `Добавить ${studyCase.title} в избранное`
+            ? `Прибрати ${studyCase.title} з обраного`
+            : `Додати ${studyCase.title} до обраного`
         }
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong"
         type="button"

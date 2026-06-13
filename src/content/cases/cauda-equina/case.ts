@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/cauda-equina/original-01.jpg",
-      "alt": "Оригинальная задача cauda-equina, страница 1",
+      "alt": "Оригінальне завдання cauda-equina, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/cauda-equina/original-02.jpg",
-      "alt": "Оригинальная задача cauda-equina, страница 2",
+      "alt": "Оригінальне завдання cauda-equina, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "кінський хвіст",
     "невідкладний стан"
   ],

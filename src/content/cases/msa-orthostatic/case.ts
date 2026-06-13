@@ -15,17 +15,17 @@ export const caseMeta = {
   "originalPages": [
     {
       "src": "/cases/msa-orthostatic/original-01.jpg",
-      "alt": "Оригинальная задача msa-orthostatic, страница 1",
+      "alt": "Оригінальне завдання msa-orthostatic, сторінка 1",
       "caption": "Страница 1 оригинального задания"
     },
     {
       "src": "/cases/msa-orthostatic/original-02.jpg",
-      "alt": "Оригинальная задача msa-orthostatic, страница 2",
+      "alt": "Оригінальне завдання msa-orthostatic, сторінка 2",
       "caption": "Страница 2 оригинального задания"
     }
   ],
   "tags": [
-    "без МРТ/КТ",
+    "без КТ/МРТ",
     "MSA",
     "ортостаз",
     "нейрогенна ортостатична гіпотензія"

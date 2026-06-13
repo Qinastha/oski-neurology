@@ -1,5 +1,7 @@
 import type {
   CaseGroup,
+  PracticalSkillKind,
+  PracticalSkillStepRole,
   ReviewStatus,
   StationAnswerBlockType,
   StationEvidenceType,
@@ -9,14 +11,14 @@ import type {
 } from "@/content/schema";
 
 export function formatGroup(group: CaseGroup) {
-  return group === "imaging" ? "МРТ/КТ" : "Без МРТ/КТ";
+  return group === "imaging" ? "КТ/МРТ" : "Без КТ/МРТ";
 }
 
 export function formatStatus(status: ReviewStatus) {
   const labels: Record<ReviewStatus, string> = {
-    draft: "черновик",
-    reviewing: "на проверке",
-    checked: "проверено"
+    draft: "чернетка",
+    reviewing: "на перевірці",
+    checked: "перевірено"
   };
 
   return labels[status];
@@ -60,7 +62,7 @@ export function formatAnswerBlockType(type: StationAnswerBlockType) {
     task_summary: "Що питають",
     actor_communication: "Що сказати актору",
     history_questions: "Анамнез",
-    exam_steps: "Як виконати",
+    clinical_exam: "Клінічний огляд",
     imaging_review: "Що видно на КТ/МРТ",
     diagnosis: "Діагноз",
     management: "Тактика",
@@ -79,4 +81,34 @@ export function formatEvidenceType(type: StationEvidenceType) {
   };
 
   return labels[type];
+}
+
+export function formatPracticalSkillKind(kind: PracticalSkillKind) {
+  const labels: Record<PracticalSkillKind, string> = {
+    cognitive_screening: "когнітивний скринінг",
+    motor_exam: "оцінка моторики",
+    sensory_exam: "оцінка чутливості",
+    coordination_exam: "координаторні проби",
+    hearing_test: "слухові проби",
+    autonomic_test: "вегетативна проба",
+    vestibular_test: "вестибулярна проба",
+    therapeutic_maneuver: "лікувальний маневр",
+    gait_postural_test: "хода та постуральність",
+    provocative_test: "провокаційна проба"
+  };
+
+  return labels[kind];
+}
+
+export function formatPracticalStepRole(role: PracticalSkillStepRole) {
+  const labels: Record<PracticalSkillStepRole, string> = {
+    prepare: "Підготовка",
+    explain: "Пояснити",
+    perform: "Виконати",
+    observe: "Оцінити",
+    interpret: "Інтерпретувати",
+    safety: "Безпека"
+  };
+
+  return labels[role];
 }
