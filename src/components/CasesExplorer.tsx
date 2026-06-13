@@ -7,6 +7,7 @@ import {
   Brain,
   ClipboardList,
   FileText,
+  GraduationCap,
   Search,
   Star
 } from "lucide-react";
@@ -109,6 +110,13 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           </span>
           <span>ОСКИ Неврология</span>
         </Link>
+        <Link
+          className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+          href="/krok"
+        >
+          <GraduationCap size={16} />
+          КРОК тести
+        </Link>
 
         <nav className="mt-8 grid gap-1.5" aria-label="Основная навигация">
           {navigationItems.map(({ filter: itemFilter, label, Icon }) => (
@@ -131,7 +139,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
       </aside>
 
       <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px] max-md:shadow-none">
-        <header className="flex items-start justify-between gap-4">
+        <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="m-0 text-[13px] font-extrabold text-clinical-accent-strong">
               20 учебных станций
@@ -140,14 +148,23 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
               Подготовка к ОСКИ по неврологии
             </h1>
           </div>
-          {lastCase ? (
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
             <Link
-              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]"
-              href={`/cases/${lastCase}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+              href="/krok"
             >
-              Продолжить
+              <GraduationCap size={16} />
+              КРОК
             </Link>
-          ) : null}
+            {lastCase ? (
+              <Link
+                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]"
+                href={`/cases/${lastCase}`}
+              >
+                Продолжить
+              </Link>
+            ) : null}
+          </div>
         </header>
 
         <div className="mt-5" data-search-shell="query">

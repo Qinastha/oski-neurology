@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "import:krok": "node scripts/import-krok.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "validate:content": "node scripts/validate-content.mjs",

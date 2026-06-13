@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "playwright";
@@ -7,6 +8,29 @@ await mkdir(outputDir, { recursive: true });
 
 const browser = await chromium.launch();
 const results = [];
+const generatedKrokSource = readFileSync(
+  path.join(process.cwd(), "src/content/krok/generated.ts"),
+  "utf8"
+);
+const generatedKrokPrefix = "export const krokBooklets = ";
+const generatedKrokJson = generatedKrokSource
+  .slice(generatedKrokSource.indexOf(generatedKrokPrefix) + generatedKrokPrefix.length)
+  .replace(/\s+satisfies KrokBooklet\[];\s*$/, "");
+const krokCorrectOptionByQuestionId = new Map();
+
+for (const booklet of JSON.parse(generatedKrokJson)) {
+  for (const question of booklet.questions) {
+    krokCorrectOptionByQuestionId.set(question.id, question.correctOptionId);
+  }
+}
+
+function getCorrectOptionId(questionId) {
+  const optionId = krokCorrectOptionByQuestionId.get(questionId);
+  if (!optionId) {
+    throw new Error(`No KROK correct option found for ${questionId}`);
+  }
+  return optionId;
+}
 
 async function inspect(name, url, viewport, selector) {
   const page = await browser.newPage({ viewport });
@@ -18,6 +42,10 @@ async function inspect(name, url, viewport, selector) {
   });
   page.on("pageerror", (error) => problems.push(`[pageerror] ${error.message}`));
 
+  if (name.includes("krok")) {
+    await page.context().clearCookies();
+  }
+
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForSelector(selector, { timeout: 15000 });
 
@@ -27,7 +55,11 @@ async function inspect(name, url, viewport, selector) {
     caseCards: document.querySelectorAll(".case-card").length,
     checklistCards: document.querySelectorAll(".check-step").length,
     imageCards: document.querySelectorAll(".image-grid figure").length,
-    mobileTabs: document.querySelectorAll(".mobile-tabbar a, .mobile-tabbar button").length
+    mobileTabs: document.querySelectorAll(".mobile-tabbar a, .mobile-tabbar button").length,
+    krokStartCards: document.querySelectorAll("[data-krok-start-card]").length,
+    krokQuestionCards: document.querySelectorAll("[data-krok-question-card]").length,
+    krokResultPanels: document.querySelectorAll('[data-krok-result="summary"]').length,
+    krokMobileNavigatorItems: document.querySelectorAll("[data-krok-mobile-question-link]").length
   }));
 
   const interactions = {};
@@ -364,6 +396,154 @@ async function inspect(name, url, viewport, selector) {
     interactions.menuLinks = await page.locator('[data-mobile-case-menu="open"] nav a').count();
   }
 
+  if (name === "desktop-krok") {
+    interactions.startCards = await page.locator("[data-krok-start-card]").count();
+
+    await page.locator('[data-krok-start-card="2026"] [data-krok-start-mode="ordered"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    interactions.orderedCards = await page.locator("[data-krok-question-card]").count();
+    interactions.orderedFirstBooklet = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-booklet-id");
+    interactions.orderedFirstSourceNumber = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-source-number");
+    interactions.orderedFirstThreeIds = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) => cards.slice(0, 3).map((card) => card.getAttribute("data-krok-question-card")));
+    interactions.orderedHasShuffledOptions = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) =>
+        cards
+          .slice(0, 10)
+          .some((card) => !card.querySelector("[data-krok-option]")?.getAttribute("data-krok-option")?.endsWith("-a"))
+      );
+
+    await page.locator("[data-krok-question-card]").first().locator("[data-krok-option]").first().click();
+    interactions.answerFeedback = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getByText("Правильна відповідь:")
+      .count();
+
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-resume="active"]', { timeout: 15000 });
+    interactions.resumeCard = await page.locator('[data-krok-resume="active"]').count();
+    await page.locator('[data-krok-resume-action="continue"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    interactions.orderedFirstThreeAfterReload = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) => cards.slice(0, 3).map((card) => card.getAttribute("data-krok-question-card")));
+
+    await page.context().clearCookies();
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
+    await page.locator('[data-krok-start-card="2025"] [data-krok-start-mode="shuffled"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    interactions.shuffledFirstFiveSources = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) =>
+        cards.slice(0, 5).map((card) => card.getAttribute("data-krok-source-number"))
+      );
+    interactions.shuffledFirstFiveIds = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) => cards.slice(0, 5).map((card) => card.getAttribute("data-krok-question-card")));
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-resume="active"]', { timeout: 15000 });
+    await page.locator('[data-krok-resume-action="continue"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    interactions.shuffledFirstFiveAfterReload = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) => cards.slice(0, 5).map((card) => card.getAttribute("data-krok-question-card")));
+
+    await page.context().clearCookies();
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
+    await page.locator('[data-krok-start-card="random"] [data-krok-start-mode="shuffled"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    const randomIds = await page
+      .locator("[data-krok-question-card]")
+      .evaluateAll((cards) => cards.map((card) => card.getAttribute("data-krok-question-card")));
+    interactions.randomCards = randomIds.length;
+    interactions.randomUniqueCards = new Set(randomIds).size;
+    interactions.randomYears = new Set(randomIds.map((id) => id?.slice(0, 4))).size;
+    interactions.randomFirstId = randomIds[0];
+
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-resume="active"]', { timeout: 15000 });
+    await page.locator('[data-krok-resume-action="continue"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    interactions.randomFirstIdAfterReload = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-question-card");
+
+    const firstRandomQuestionId = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-question-card");
+    if (!firstRandomQuestionId) {
+      throw new Error("No first random KROK question found");
+    }
+    const firstRandomCorrectOptionId = getCorrectOptionId(firstRandomQuestionId);
+    await page
+      .locator(
+        `[data-krok-question-card="${firstRandomQuestionId}"] [data-krok-option="${firstRandomCorrectOptionId}"]`
+      )
+      .click();
+    await page.getByRole("button", { name: "Завершити тест" }).click();
+    await page.waitForSelector('[data-krok-result="summary"]', { timeout: 15000 });
+    interactions.finishResultPanels = await page.locator('[data-krok-result="summary"]').count();
+    interactions.finishText = await page.locator('[data-krok-result="summary"]').innerText();
+    await page.locator('[data-krok-result="summary"] button').click();
+    await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
+    interactions.restartStartCards = await page.locator("[data-krok-start-card]").count();
+  }
+
+  if (name === "mobile-krok") {
+    interactions.startCards = await page.locator("[data-krok-start-card]").count();
+    await page.locator('[data-krok-start-card="2024"] [data-krok-start-mode="ordered"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    interactions.questionCards = await page.locator("[data-krok-question-card]").count();
+    interactions.bottomBar = await page.locator('[data-krok-mobile-bar="summary"]').count();
+    interactions.mobilePanelClosedInitially = await page.locator('[data-krok-mobile-panel="open"]').count();
+    interactions.bottomStatusBefore = await page.locator('[data-krok-mobile-bar="summary"]').innerText();
+    const firstMobileQuestionId = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-question-card");
+    if (!firstMobileQuestionId) {
+      throw new Error("No first mobile KROK question found");
+    }
+    const firstMobileCorrectOptionId = getCorrectOptionId(firstMobileQuestionId);
+    await page
+      .locator(
+        `[data-krok-question-card="${firstMobileQuestionId}"] [data-krok-option="${firstMobileCorrectOptionId}"]`
+      )
+      .click();
+    interactions.bottomStatusAfterAnswer = await page.locator('[data-krok-mobile-bar="summary"]').innerText();
+    await page.locator('[data-krok-mobile-panel-trigger="button"]').click();
+    await page.waitForSelector('[data-krok-mobile-panel="open"]', { timeout: 5000 });
+    interactions.mobilePanelOpen = await page.locator('[data-krok-mobile-panel="open"]').count();
+    interactions.mobilePanelFilters = await page.locator("[data-krok-mobile-filter]").count();
+    interactions.mobileNavigatorItems = await page.locator("[data-krok-mobile-question-link]").count();
+    interactions.bottomFinishButtons = await page.getByRole("button", { name: "Завершити" }).count();
+  }
+
   const screenshotPath = path.join(outputDir, `${name}.png`);
   await page.screenshot({ path: screenshotPath, fullPage: false });
   await page.close();
@@ -372,6 +552,12 @@ async function inspect(name, url, viewport, selector) {
 }
 
 await inspect("desktop-cases", "http://127.0.0.1:3000/cases", { width: 1440, height: 900 }, ".case-list");
+await inspect(
+  "desktop-krok",
+  "http://127.0.0.1:3000/krok",
+  { width: 1440, height: 900 },
+  '[data-krok-page="start"]'
+);
 await inspect(
   "desktop-dementia",
   "http://127.0.0.1:3000/cases/dementia-mini-cog",
@@ -498,6 +684,12 @@ await inspect(
   { width: 390, height: 844 },
   ".mobile-tabbar"
 );
+await inspect(
+  "mobile-krok",
+  "http://127.0.0.1:3000/krok",
+  { width: 390, height: 844 },
+  '[data-krok-page="start"]'
+);
 
 await browser.close();
 
@@ -544,6 +736,104 @@ const failures = results.flatMap((result) => {
   }
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.startCards !== 4) {
+    issues.push(`${result.name}: expected four start cards`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.orderedCards !== 150) {
+    issues.push(`${result.name}: ordered 2026 booklet did not render 150 questions`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.orderedFirstBooklet !== "2026") {
+    issues.push(`${result.name}: ordered 2026 first question uses wrong booklet`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.orderedFirstSourceNumber !== "1") {
+    issues.push(`${result.name}: ordered 2026 first question is not source №1`);
+  }
+  if (result.name === "desktop-krok" && !result.interactions.orderedHasShuffledOptions) {
+    issues.push(`${result.name}: option order does not appear shuffled`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.answerFeedback !== 1) {
+    issues.push(`${result.name}: answer feedback did not render`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.resumeCard !== 1) {
+    issues.push(`${result.name}: resume card did not render after reload`);
+  }
+  if (
+    result.name === "desktop-krok" &&
+    JSON.stringify(result.interactions.orderedFirstThreeIds) !==
+      JSON.stringify(result.interactions.orderedFirstThreeAfterReload)
+  ) {
+    issues.push(`${result.name}: ordered session order changed after reload`);
+  }
+  if (
+    result.name === "desktop-krok" &&
+    JSON.stringify(result.interactions.shuffledFirstFiveSources) === JSON.stringify(["1", "2", "3", "4", "5"])
+  ) {
+    issues.push(`${result.name}: shuffled 2025 question order stayed sequential`);
+  }
+  if (
+    result.name === "desktop-krok" &&
+    JSON.stringify(result.interactions.shuffledFirstFiveIds) !==
+      JSON.stringify(result.interactions.shuffledFirstFiveAfterReload)
+  ) {
+    issues.push(`${result.name}: shuffled session order changed after reload`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.randomCards !== 150) {
+    issues.push(`${result.name}: random booklet did not render 150 questions`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.randomUniqueCards !== 150) {
+    issues.push(`${result.name}: random booklet contains duplicate questions`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.randomYears < 2) {
+    issues.push(`${result.name}: random booklet did not draw from multiple years`);
+  }
+  if (
+    result.name === "desktop-krok" &&
+    result.interactions.randomFirstId !== result.interactions.randomFirstIdAfterReload
+  ) {
+    issues.push(`${result.name}: random session order changed after reload`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.finishResultPanels !== 1) {
+    issues.push(`${result.name}: finish result panel did not render`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 4) {
+    issues.push(`${result.name}: restart did not return to booklet start`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.startCards !== 4) {
+    issues.push(`${result.name}: expected four start cards on mobile`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.questionCards !== 150) {
+    issues.push(`${result.name}: mobile booklet did not render 150 questions`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.bottomBar !== 1) {
+    issues.push(`${result.name}: compact mobile bottom bar is missing`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.mobilePanelClosedInitially !== 0) {
+    issues.push(`${result.name}: mobile navigation panel should be closed initially`);
+  }
+  if (
+    result.name === "mobile-krok" &&
+    !String(result.interactions.bottomStatusAfterAnswer ?? "").includes("Відповіли 1/150")
+  ) {
+    issues.push(`${result.name}: mobile status did not show answered count after answer`);
+  }
+  if (
+    result.name === "mobile-krok" &&
+    !String(result.interactions.bottomStatusAfterAnswer ?? "").includes("0.7%")
+  ) {
+    issues.push(`${result.name}: mobile status did not show one-decimal percent after one correct answer`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.mobilePanelOpen !== 1) {
+    issues.push(`${result.name}: mobile navigation panel did not open`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.mobilePanelFilters !== 5) {
+    issues.push(`${result.name}: mobile navigation panel should render five filters`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.mobileNavigatorItems !== 150) {
+    issues.push(`${result.name}: mobile question navigator did not render 150 links`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.bottomFinishButtons !== 1) {
+    issues.push(`${result.name}: mobile finish button is missing`);
   }
   if (result.name === "desktop-stroke" && result.metrics.checklistCards !== 12) {
     issues.push(`${result.name}: expected 12 checklist cards`);

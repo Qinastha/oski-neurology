@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const casesRoot = path.join(root, "src/content/cases");
+const krokGeneratedPath = path.join(root, "src/content/krok/generated.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -69,11 +70,92 @@ for (const href of publicRefs) {
   }
 }
 
+function parseGeneratedKrokBooklets() {
+  if (!fs.existsSync(krokGeneratedPath)) {
+    failures.push(`Missing KROK generated data: ${krokGeneratedPath}`);
+    return [];
+  }
+
+  const source = fs.readFileSync(krokGeneratedPath, "utf8");
+  const prefix = "export const krokBooklets = ";
+  const start = source.indexOf(prefix);
+  const end = source.lastIndexOf(" satisfies KrokBooklet[];");
+  if (start < 0 || end < 0 || end <= start) {
+    failures.push("Unable to locate KROK generated data literal");
+    return [];
+  }
+
+  try {
+    return JSON.parse(source.slice(start + prefix.length, end));
+  } catch (error) {
+    failures.push(`Unable to parse KROK generated data: ${error.message}`);
+    return [];
+  }
+}
+
+const krokBooklets = parseGeneratedKrokBooklets();
+const expectedBookletIds = new Set(["2024", "2025", "2026"]);
+if (krokBooklets.length !== 3) {
+  failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
+}
+
+const krokQuestionIds = new Set();
+let krokQuestionCount = 0;
+let krokCorrectAnswerCount = 0;
+for (const booklet of krokBooklets) {
+  if (!expectedBookletIds.has(booklet.id)) {
+    failures.push(`Unexpected KROK booklet id: ${booklet.id}`);
+  }
+  if (!Array.isArray(booklet.questions) || booklet.questions.length !== 150) {
+    failures.push(`Expected 150 KROK questions for ${booklet.id}, got ${booklet.questions?.length}`);
+    continue;
+  }
+
+  for (const question of booklet.questions) {
+    krokQuestionCount += 1;
+    if (krokQuestionIds.has(question.id)) {
+      failures.push(`Duplicate KROK question id: ${question.id}`);
+    }
+    krokQuestionIds.add(question.id);
+
+    if (question.bookletId !== booklet.id) {
+      failures.push(`KROK question ${question.id} has wrong bookletId ${question.bookletId}`);
+    }
+    if (!Number.isInteger(question.sourceNumber) || question.sourceNumber < 1) {
+      failures.push(`KROK question ${question.id} has invalid sourceNumber`);
+    }
+    if (typeof question.text !== "string" || question.text.trim().length === 0) {
+      failures.push(`KROK question ${question.id} has empty text`);
+    }
+    if (!Array.isArray(question.options) || question.options.length < 3 || question.options.length > 5) {
+      failures.push(`KROK question ${question.id} has invalid option count`);
+      continue;
+    }
+
+    const optionIds = new Set(question.options.map((option) => option.id));
+    if (optionIds.size !== question.options.length) {
+      failures.push(`KROK question ${question.id} has duplicate option ids`);
+    }
+    if (!optionIds.has(question.correctOptionId)) {
+      failures.push(`KROK question ${question.id} correctOptionId does not match options`);
+    } else {
+      krokCorrectAnswerCount += 1;
+    }
+  }
+}
+
+if (krokQuestionCount !== 450) {
+  failures.push(`Expected 450 KROK questions, got ${krokQuestionCount}`);
+}
+if (krokCorrectAnswerCount !== 450) {
+  failures.push(`Expected 450 KROK correct answers, got ${krokCorrectAnswerCount}`);
+}
+
 if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без МРТ/КТ, ${imagingCount} МРТ/КТ), ${publicRefs.length} public assets`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без МРТ/КТ, ${imagingCount} МРТ/КТ), ${publicRefs.length} public assets, ${krokQuestionCount} KROK questions`
 );
