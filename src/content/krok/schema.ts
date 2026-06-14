@@ -19,12 +19,34 @@ export interface KrokQuestion {
   correctOptionId: string;
 }
 
+export interface KrokAnswerExplanation {
+  questionId: string;
+  explanation: string;
+  reviewNote?: string;
+}
+
+export interface KrokAnswerOverride {
+  questionId: string;
+  correctOptionId: string;
+  reason: string;
+  confirmedAt: string;
+}
+
+export interface KrokResolvedQuestion extends KrokQuestion {
+  explanation: string;
+  reviewNote?: string;
+}
+
 export interface KrokBooklet {
   id: KrokBookletId;
   title: string;
   year: number;
   sourceFile: string;
   questions: KrokQuestion[];
+}
+
+export interface KrokResolvedBooklet extends Omit<KrokBooklet, "questions"> {
+  questions: KrokResolvedQuestion[];
 }
 
 export interface KrokSession {

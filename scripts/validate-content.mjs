@@ -4,6 +4,8 @@ import path from "node:path";
 const root = process.cwd();
 const casesRoot = path.join(root, "src/content/cases");
 const krokGeneratedPath = path.join(root, "src/content/krok/generated.ts");
+const krokExplanationsPath = path.join(root, "src/content/krok/explanations.ts");
+const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -113,13 +115,53 @@ function parseGeneratedKrokBooklets() {
   }
 }
 
+function parseExportedArray(filePath, exportName, typeName) {
+  if (!fs.existsSync(filePath)) {
+    failures.push(`Missing KROK data file: ${filePath}`);
+    return [];
+  }
+
+  const source = fs.readFileSync(filePath, "utf8");
+  const prefix = `export const ${exportName} = `;
+  const suffix = ` satisfies ${typeName}[];`;
+  const start = source.indexOf(prefix);
+  const typedPrefix = `export const ${exportName}: ${typeName}[] = `;
+  const typedStart = source.indexOf(typedPrefix);
+  const effectivePrefix = start >= 0 ? prefix : typedPrefix;
+  const effectiveStart = start >= 0 ? start : typedStart;
+  const end = source.lastIndexOf(suffix);
+  const effectiveEnd = end >= 0 ? end : source.lastIndexOf(";");
+  if (effectiveStart < 0 || effectiveEnd < 0 || effectiveEnd <= effectiveStart) {
+    failures.push(`Unable to locate ${exportName} data literal`);
+    return [];
+  }
+
+  try {
+    return JSON.parse(source.slice(effectiveStart + effectivePrefix.length, effectiveEnd));
+  } catch (error) {
+    failures.push(`Unable to parse ${exportName}: ${error.message}`);
+    return [];
+  }
+}
+
 const krokBooklets = parseGeneratedKrokBooklets();
+const krokAnswerExplanations = parseExportedArray(
+  krokExplanationsPath,
+  "krokAnswerExplanations",
+  "KrokAnswerExplanation"
+);
+const krokAnswerOverrides = parseExportedArray(
+  krokOverridesPath,
+  "krokAnswerOverrides",
+  "KrokAnswerOverride"
+);
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
 
 const krokQuestionIds = new Set();
+const krokOptionIdsByQuestionId = new Map();
 let krokQuestionCount = 0;
 let krokCorrectAnswerCount = 0;
 for (const booklet of krokBooklets) {
@@ -153,6 +195,7 @@ for (const booklet of krokBooklets) {
     }
 
     const optionIds = new Set(question.options.map((option) => option.id));
+    krokOptionIdsByQuestionId.set(question.id, optionIds);
     if (optionIds.size !== question.options.length) {
       failures.push(`KROK question ${question.id} has duplicate option ids`);
     }
@@ -169,6 +212,58 @@ if (krokQuestionCount !== 450) {
 }
 if (krokCorrectAnswerCount !== 450) {
   failures.push(`Expected 450 KROK correct answers, got ${krokCorrectAnswerCount}`);
+}
+
+const explanationQuestionIds = new Set();
+for (const item of krokAnswerExplanations) {
+  if (typeof item.questionId !== "string" || item.questionId.trim().length === 0) {
+    failures.push("KROK explanation has empty questionId");
+    continue;
+  }
+  if (explanationQuestionIds.has(item.questionId)) {
+    failures.push(`Duplicate KROK explanation for ${item.questionId}`);
+  }
+  explanationQuestionIds.add(item.questionId);
+  if (!krokQuestionIds.has(item.questionId)) {
+    failures.push(`KROK explanation references missing question ${item.questionId}`);
+  }
+  if (typeof item.explanation !== "string" || item.explanation.trim().length < 20) {
+    failures.push(`KROK explanation for ${item.questionId} is too short`);
+  }
+}
+if (krokAnswerExplanations.length !== 450) {
+  failures.push(`Expected 450 KROK explanations, got ${krokAnswerExplanations.length}`);
+}
+for (const questionId of krokQuestionIds) {
+  if (!explanationQuestionIds.has(questionId)) {
+    failures.push(`Missing KROK explanation for ${questionId}`);
+  }
+}
+
+const overrideQuestionIds = new Set();
+for (const item of krokAnswerOverrides) {
+  if (typeof item.questionId !== "string" || item.questionId.trim().length === 0) {
+    failures.push("KROK answer override has empty questionId");
+    continue;
+  }
+  if (overrideQuestionIds.has(item.questionId)) {
+    failures.push(`Duplicate KROK answer override for ${item.questionId}`);
+  }
+  overrideQuestionIds.add(item.questionId);
+  const optionIds = krokOptionIdsByQuestionId.get(item.questionId);
+  if (!optionIds) {
+    failures.push(`KROK answer override references missing question ${item.questionId}`);
+    continue;
+  }
+  if (!optionIds.has(item.correctOptionId)) {
+    failures.push(`KROK answer override for ${item.questionId} references missing option ${item.correctOptionId}`);
+  }
+  if (typeof item.reason !== "string" || item.reason.trim().length < 10) {
+    failures.push(`KROK answer override for ${item.questionId} needs a reason`);
+  }
+  if (typeof item.confirmedAt !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.confirmedAt)) {
+    failures.push(`KROK answer override for ${item.questionId} needs confirmedAt YYYY-MM-DD`);
+  }
 }
 
 if (failures.length > 0) {

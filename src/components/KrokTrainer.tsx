@@ -7,6 +7,8 @@ import {
   Brain,
   CheckCircle2,
   ClipboardList,
+  Eye,
+  EyeOff,
   Flag,
   Home,
   ListChecks,
@@ -17,11 +19,11 @@ import {
 } from "lucide-react";
 
 import type {
-  KrokBooklet,
   KrokBookletId,
   KrokOption,
-  KrokQuestion,
   KrokQuestionOrderMode,
+  KrokResolvedBooklet,
+  KrokResolvedQuestion,
   KrokSession,
   KrokSessionBookletId
 } from "@/content/krok/schema";
@@ -30,7 +32,7 @@ import { cn } from "@/lib/cn";
 type Filter = "all" | "unanswered" | "wrong" | "correct" | "flagged";
 
 interface KrokTrainerProps {
-  booklets: KrokBooklet[];
+  booklets: KrokResolvedBooklet[];
 }
 
 interface CookieSession {
@@ -58,6 +60,7 @@ interface KrokResult {
 
 const COOKIE_NAME = "krokSessionV1";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+const EXPLANATIONS_STORAGE_KEY = "krokShowExplanationsV1";
 
 const filterLabels: Record<Filter, string> = {
   all: "Усі",
@@ -201,7 +204,7 @@ function updateChar(value: string, index: number, char: string) {
   return `${value.slice(0, index)}${char}${value.slice(index + 1)}`;
 }
 
-function resolveAnswerIndex(question: KrokQuestion, optionId: string) {
+function resolveAnswerIndex(question: KrokResolvedQuestion, optionId: string) {
   return question.options.findIndex((option) => option.id === optionId);
 }
 
@@ -213,8 +216,8 @@ function createSession({
 }: {
   bookletId: KrokSessionBookletId;
   mode: KrokQuestionOrderMode;
-  allQuestions: KrokQuestion[];
-  bookletQuestions: KrokQuestion[];
+  allQuestions: KrokResolvedQuestion[];
+  bookletQuestions: KrokResolvedQuestion[];
 }): KrokSession {
   const seed = createSeed();
   const sourceQuestions =
@@ -242,7 +245,7 @@ function formatBookletLabel(bookletId: KrokSessionBookletId) {
   return bookletId === "random" ? "Випадковий буклет" : `КРОК ${bookletId}`;
 }
 
-function calculateResult(session: KrokSession, questions: KrokQuestion[]) {
+function calculateResult(session: KrokSession, questions: KrokResolvedQuestion[]) {
   const byId = new Map(questions.map((question) => [question.id, question]));
   let correct = 0;
   let wrong = 0;
@@ -278,6 +281,38 @@ function calculateResult(session: KrokSession, questions: KrokQuestion[]) {
       ? Math.round((correct / session.questionIds.length) * 1000) / 10
       : 0
   } satisfies KrokResult;
+}
+
+function ExplanationToggle({
+  enabled,
+  compact = false,
+  onToggle
+}: {
+  enabled: boolean;
+  compact?: boolean;
+  onToggle: () => void;
+}) {
+  const Icon = enabled ? Eye : EyeOff;
+
+  return (
+    <button
+      aria-label={`Обґрунтування відповідей ${enabled ? "увімкнено" : "вимкнено"}`}
+      aria-pressed={enabled}
+      className={cn(
+        "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-extrabold transition",
+        enabled
+          ? "border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong"
+          : "border-clinical-line bg-white text-clinical-muted hover:border-clinical-line-strong",
+        compact && "px-2 text-xs"
+      )}
+      data-krok-explanation-toggle={enabled ? "on" : "off"}
+      type="button"
+      onClick={onToggle}
+    >
+      <Icon size={compact ? 15 : 16} />
+      {compact ? (enabled ? "Поясн." : "Без") : `Пояснення: ${enabled ? "увімк." : "вимк."}`}
+    </button>
+  );
 }
 
 function BookletCard({
@@ -411,22 +446,22 @@ function QuestionCard({
   selectedOptionId,
   flagged,
   finished,
+  showExplanations,
   optionOrder,
   onAnswer,
   onToggleFlag
 }: {
-  question: KrokQuestion;
+  question: KrokResolvedQuestion;
   index: number;
   selectedOptionId?: string;
   flagged: boolean;
   finished: boolean;
+  showExplanations: boolean;
   optionOrder: KrokOption[];
   onAnswer: (optionId: string) => void;
   onToggleFlag: () => void;
 }) {
   const answered = Boolean(selectedOptionId);
-  const correct = selectedOptionId === question.correctOptionId;
-
   return (
     <article
       className="krok-question-card scroll-mt-4 rounded-lg border border-clinical-line bg-white/92 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.06)] [contain-intrinsic-size:360px] [content-visibility:auto] max-md:p-3"
@@ -496,17 +531,23 @@ function QuestionCard({
         })}
       </div>
 
-      {answered ? (
+      {answered && showExplanations ? (
         <div
           className={cn(
-            "mt-3 rounded-lg border p-3 text-sm font-extrabold",
-            correct
+            "mt-3 rounded-lg border p-3 text-sm leading-relaxed",
+            selectedOptionId === question.correctOptionId
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : "border-rose-200 bg-rose-50 text-rose-800"
           )}
+          data-krok-answer-explanation={question.id}
         >
-          {correct ? "Правильно." : "Помилка."} Правильна відповідь:{" "}
-          {question.options.find((option) => option.id === question.correctOptionId)?.text}
+          <p className="text-xs font-black uppercase tracking-[0.08em]">Обґрунтування</p>
+          <p className="mt-1 font-bold">{question.explanation}</p>
+          {question.reviewNote ? (
+            <p className="mt-2 border-t border-current/15 pt-2 text-xs font-extrabold opacity-80">
+              {question.reviewNote}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </article>
@@ -518,6 +559,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
   const [showSession, setShowSession] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [showExplanations, setShowExplanations] = useState(true);
 
   const allQuestions = useMemo(() => booklets.flatMap((booklet) => booklet.questions), [booklets]);
   const questionsById = useMemo(
@@ -533,6 +575,20 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
     }
   }, [questionsById]);
 
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(EXPLANATIONS_STORAGE_KEY);
+      if (saved === "0") {
+        setShowExplanations(false);
+      }
+      if (saved === "1") {
+        setShowExplanations(true);
+      }
+    } catch {
+      // Local storage is optional; the trainer still works without persistence.
+    }
+  }, []);
+
   const sessionQuestions = useMemo(() => {
     if (!session) {
       return undefined;
@@ -540,7 +596,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
 
     return session.questionIds
       .map((id) => questionsById.get(id))
-      .filter((question): question is KrokQuestion => Boolean(question));
+      .filter((question): question is KrokResolvedQuestion => Boolean(question));
   }, [questionsById, session]);
 
   const result = useMemo(
@@ -614,6 +670,18 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
     writeSessionCookie(next);
   }
 
+  function toggleExplanations() {
+    setShowExplanations((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem(EXPLANATIONS_STORAGE_KEY, next ? "1" : "0");
+      } catch {
+        // Ignore storage errors; the in-memory setting still updates.
+      }
+      return next;
+    });
+  }
+
   function startSession(bookletId: KrokSessionBookletId, mode: KrokQuestionOrderMode) {
     if (session && !session.finishedAt) {
       const confirmed = window.confirm("Поточний прогрес буде замінено новим тестом. Почати заново?");
@@ -647,7 +715,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
     window.scrollTo({ top: 0 });
   }
 
-  function answerQuestion(question: KrokQuestion, optionId: string) {
+  function answerQuestion(question: KrokResolvedQuestion, optionId: string) {
     if (!session || session.finishedAt) {
       return;
     }
@@ -833,6 +901,10 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
           </div>
         </div>
 
+        <div className="mt-3">
+          <ExplanationToggle enabled={showExplanations} onToggle={toggleExplanations} />
+        </div>
+
         <nav className="mt-4 grid gap-1.5" aria-label="Фільтри питань">
           {(Object.keys(filterLabels) as Filter[]).map((item) => (
             <button
@@ -901,6 +973,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <ExplanationToggle enabled={showExplanations} onToggle={toggleExplanations} />
             <Link
               className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
               href="/krok"
@@ -966,6 +1039,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
                 key={question.id}
                 optionOrder={optionOrder}
                 question={question}
+                showExplanations={showExplanations}
                 selectedOptionId={selectedOptionId}
                 onAnswer={(optionId) => answerQuestion(question, optionId)}
                 onToggleFlag={() => toggleFlag(question.id)}
@@ -1001,7 +1075,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
           <button
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-xs font-extrabold text-clinical-text"
             data-krok-mobile-panel-trigger="button"
@@ -1011,6 +1085,11 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             <ListChecks size={16} />
             Питання
           </button>
+          <ExplanationToggle
+            compact
+            enabled={showExplanations}
+            onToggle={toggleExplanations}
+          />
           <button
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3 text-xs font-extrabold text-[#201900]"
             type="button"

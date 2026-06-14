@@ -12,16 +12,39 @@ const generatedKrokSource = readFileSync(
   path.join(process.cwd(), "src/content/krok/generated.ts"),
   "utf8"
 );
+const answerOverridesSource = readFileSync(
+  path.join(process.cwd(), "src/content/krok/answer-overrides.ts"),
+  "utf8"
+);
 const generatedKrokPrefix = "export const krokBooklets = ";
 const generatedKrokJson = generatedKrokSource
   .slice(generatedKrokSource.indexOf(generatedKrokPrefix) + generatedKrokPrefix.length)
   .replace(/\s+satisfies KrokBooklet\[];\s*$/, "");
+function parseAnswerOverrides(source) {
+  const plainPrefix = "export const krokAnswerOverrides = ";
+  const typedPrefix = "export const krokAnswerOverrides: KrokAnswerOverride[] = ";
+  const plainStart = source.indexOf(plainPrefix);
+  const typedStart = source.indexOf(typedPrefix);
+  const prefix = plainStart >= 0 ? plainPrefix : typedPrefix;
+  const start = plainStart >= 0 ? plainStart : typedStart;
+  if (start < 0) {
+    return [];
+  }
+  return JSON.parse(
+    source
+      .slice(start + prefix.length, source.lastIndexOf(";"))
+      .replace(/\s+satisfies KrokAnswerOverride\[]\s*$/, "")
+  );
+}
 const krokCorrectOptionByQuestionId = new Map();
 
 for (const booklet of JSON.parse(generatedKrokJson)) {
   for (const question of booklet.questions) {
     krokCorrectOptionByQuestionId.set(question.id, question.correctOptionId);
   }
+}
+for (const override of parseAnswerOverrides(answerOverridesSource)) {
+  krokCorrectOptionByQuestionId.set(override.questionId, override.correctOptionId);
 }
 
 function getCorrectOptionId(questionId) {
@@ -429,10 +452,27 @@ async function inspect(name, url, viewport, selector) {
       );
 
     await page.locator("[data-krok-question-card]").first().locator("[data-krok-option]").first().click();
-    interactions.answerFeedback = await page
+    interactions.legacyAnswerFeedback = await page
       .locator("[data-krok-question-card]")
       .first()
       .getByText("Правильна відповідь:")
+      .count();
+    interactions.answerExplanation = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .locator("[data-krok-answer-explanation]")
+      .count();
+    await page.locator("[data-krok-explanation-toggle]").first().click();
+    interactions.answerExplanationHidden = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .locator("[data-krok-answer-explanation]")
+      .count();
+    await page.locator("[data-krok-explanation-toggle]").first().click();
+    interactions.answerExplanationRestored = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .locator("[data-krok-answer-explanation]")
       .count();
 
     await page.reload({ waitUntil: "networkidle" });
@@ -775,8 +815,17 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && !result.interactions.orderedHasShuffledOptions) {
     issues.push(`${result.name}: option order does not appear shuffled`);
   }
-  if (result.name === "desktop-krok" && result.interactions.answerFeedback !== 1) {
-    issues.push(`${result.name}: answer feedback did not render`);
+  if (result.name === "desktop-krok" && result.interactions.legacyAnswerFeedback !== 0) {
+    issues.push(`${result.name}: legacy correct-answer feedback still renders`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.answerExplanation !== 1) {
+    issues.push(`${result.name}: answer explanation did not render`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.answerExplanationHidden !== 0) {
+    issues.push(`${result.name}: explanation toggle did not hide answer explanation`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.answerExplanationRestored !== 1) {
+    issues.push(`${result.name}: explanation toggle did not restore answer explanation`);
   }
   if (result.name === "desktop-krok" && result.interactions.resumeCard !== 1) {
     issues.push(`${result.name}: resume card did not render after reload`);
