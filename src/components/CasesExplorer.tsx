@@ -7,7 +7,6 @@ import {
   BookOpen,
   ClipboardList,
   FileText,
-  GraduationCap,
   Search,
   Star
 } from "lucide-react";
@@ -15,6 +14,7 @@ import {
 import type { CaseSummary } from "@/content/schema";
 import { cn } from "@/lib/cn";
 import { CaseCard } from "./CaseCard";
+import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 type Filter = "all" | "non-imaging" | "imaging" | "favorites";
 
@@ -120,22 +120,9 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           </span>
           <span>ОСКІ Неврологія</span>
         </Link>
-        <Link
-          className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
-          href="/krok"
-        >
-          <GraduationCap size={16} />
-          КРОК тести
-        </Link>
-        <Link
-          className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
-          href="/notes"
-        >
-          <BookOpen size={16} />
-          Конспект
-        </Link>
+        <SiteSectionLinks active="cases" className="mt-6 border-b border-clinical-line pb-4" />
 
-        <nav className="mt-8 grid gap-1.5" aria-label="Основна навігація">
+        <nav className="mt-4 grid gap-1.5" aria-label="Фільтр станцій">
           {navigationItems.map(({ filter: itemFilter, label, Icon }) => (
             <button
               aria-pressed={filter === itemFilter}
@@ -166,20 +153,6 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
             </h1>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
-              href="/krok"
-            >
-              <GraduationCap size={16} />
-              КРОК
-            </Link>
-            <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
-              href="/notes"
-            >
-              <BookOpen size={16} />
-              Конспект
-            </Link>
             {lastCase ? (
               <Link
                 className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]"
@@ -241,24 +214,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
         </div>
       </section>
 
-      <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-4 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
-        {navigationItems.map(({ filter: itemFilter, mobileLabel, Icon }) => (
-          <button
-            aria-pressed={filter === itemFilter}
-            className={cn(
-              "flex min-w-0 flex-col items-center justify-center gap-1 px-1 text-[10px] leading-tight text-[#5d6470]",
-              filter === itemFilter && "font-extrabold text-clinical-accent-strong"
-            )}
-            data-filter={itemFilter}
-            key={itemFilter}
-            type="button"
-            onClick={() => setFilter(itemFilter)}
-          >
-            <Icon size={19} />
-            <span className="max-w-full text-center">{mobileLabel}</span>
-          </button>
-        ))}
-      </nav>
+      <SiteMobileTabbar active="cases" />
     </main>
   );
 }

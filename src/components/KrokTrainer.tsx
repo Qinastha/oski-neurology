@@ -5,13 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
-  BookOpen,
   CheckCircle2,
   ClipboardList,
   Eye,
   EyeOff,
   Flag,
-  Home,
   ListChecks,
   RotateCcw,
   Shuffle,
@@ -29,6 +27,7 @@ import type {
   KrokSessionBookletId
 } from "@/content/krok/schema";
 import { cn } from "@/lib/cn";
+import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 type Filter = "all" | "unanswered" | "wrong" | "correct" | "flagged";
 
@@ -815,22 +814,12 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
     return (
       <main className="min-h-dvh p-5 max-md:p-0" data-krok-page="start">
         <section className="mx-auto grid max-w-6xl gap-5 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
+          <SiteSectionLinks
+            active="krok"
+            className="grid-cols-3 border-b border-clinical-line pb-4 max-md:hidden [&>a]:justify-center"
+          />
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <Link
-                className="mb-5 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
-                href="/cases"
-              >
-                <Home size={17} />
-                ОСКІ станції
-              </Link>
-              <Link
-                className="mb-5 ml-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
-                href="/notes"
-              >
-                <BookOpen size={17} />
-                Конспект
-              </Link>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
                 {officialQuestions.length} офіційних питань · {trainingQuestionCount} тренувальних
               </p>
@@ -940,6 +929,7 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
             </section>
           </div>
         </section>
+        <SiteMobileTabbar active="krok" />
       </main>
     );
   }
@@ -965,22 +955,9 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
           </span>
           <span>КРОК тести</span>
         </Link>
-        <Link
-          className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
-          href="/cases"
-        >
-          <Home size={16} />
-          ОСКІ станції
-        </Link>
-        <Link
-          className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
-          href="/notes"
-        >
-          <BookOpen size={16} />
-          Конспект
-        </Link>
+        <SiteSectionLinks active="krok" className="mt-6 border-b border-clinical-line pb-4" />
 
-        <div className="mt-6 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+        <div className="mt-4 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
           <p className="text-xs font-black uppercase text-clinical-accent-strong">
             {formatBookletLabel(session.bookletId)}
           </p>

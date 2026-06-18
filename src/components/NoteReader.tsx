@@ -11,8 +11,6 @@ import {
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
-  ClipboardList,
-  GraduationCap,
   Map,
   Search,
   Sparkles
@@ -20,6 +18,7 @@ import {
 
 import type { NoteBlock, NoteContentBlock, NotePoint, ResolvedNoteSection } from "@/content/notes/schema";
 import { cn } from "@/lib/cn";
+import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 interface NoteReaderProps {
   sections: ResolvedNoteSection[];
@@ -197,7 +196,8 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
           </span>
           <span>Конспект</span>
         </Link>
-        <nav className="mt-7 grid gap-1.5 overflow-auto pr-0.5" aria-label="Блоки конспекту">
+        <SiteSectionLinks active="notes" className="mt-6 border-b border-clinical-line pb-4" />
+        <nav className="mt-4 grid gap-1.5 overflow-auto pr-0.5" aria-label="Блоки конспекту">
           {sections.map((item) =>
             item.block ? (
               <Link
@@ -346,20 +346,7 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
         </footer>
       </section>
 
-      <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-3 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/cases">
-          <ClipboardList size={19} />
-          ОСКІ
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/krok">
-          <GraduationCap size={19} />
-          КРОК
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] font-extrabold text-clinical-accent-strong" href="/notes">
-          <BookOpen size={19} />
-          Конспект
-        </Link>
-      </nav>
+      <SiteMobileTabbar active="notes" />
     </main>
   );
 }

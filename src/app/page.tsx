@@ -14,6 +14,7 @@ import {
 import { getCaseSummaries } from "@/content/loader";
 import { getKrokStats } from "@/content/krok/loader";
 import { getNoteCatalogStats } from "@/content/notes/loader";
+import { SiteMobileTabbar } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "Навчальний хаб",
@@ -210,20 +211,7 @@ export default function HomePage() {
         </section>
       </section>
 
-      <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-3 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/cases">
-          <ClipboardList size={19} />
-          ОСКІ
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/krok">
-          <GraduationCap size={19} />
-          КРОК
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/notes">
-          <BookOpen size={19} />
-          Конспект
-        </Link>
-      </nav>
+      <SiteMobileTabbar active="home" />
     </main>
   );
 }

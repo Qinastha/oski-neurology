@@ -8,14 +8,13 @@ import {
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
-  ClipboardList,
-  GraduationCap,
   Search,
   Sparkles
 } from "lucide-react";
 
 import type { ResolvedNoteSection } from "@/content/notes/schema";
 import { cn } from "@/lib/cn";
+import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 export interface ExplorerNoteSection extends ResolvedNoteSection {
   search: string;
@@ -124,30 +123,7 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
           </span>
           <span>Конспект</span>
         </Link>
-        <nav className="mt-6 grid gap-1.5" aria-label="Навігація сайту">
-          <Link
-            className="flex min-h-[42px] items-center gap-2.5 rounded-lg px-2.5 text-[#3d434b] transition hover:bg-clinical-accent-soft"
-            href="/cases"
-          >
-            <ClipboardList size={18} />
-            ОСКІ станції
-          </Link>
-          <Link
-            className="flex min-h-[42px] items-center gap-2.5 rounded-lg px-2.5 text-[#3d434b] transition hover:bg-clinical-accent-soft"
-            href="/krok"
-          >
-            <GraduationCap size={18} />
-            КРОК тести
-          </Link>
-          <Link
-            aria-current="page"
-            className="flex min-h-[42px] items-center gap-2.5 rounded-lg bg-clinical-accent-soft px-2.5 font-extrabold text-[#171a1f]"
-            href="/notes"
-          >
-            <BookOpen size={18} />
-            Конспект
-          </Link>
-        </nav>
+        <SiteSectionLinks active="notes" className="mt-6 border-b border-clinical-line pb-4" />
 
         <div className="mt-auto rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
           <p className="text-xs font-black uppercase text-clinical-accent-strong">Прогрес</p>
@@ -175,13 +151,6 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
             </h1>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
-              href="/krok"
-            >
-              <GraduationCap size={16} />
-              КРОК
-            </Link>
             {lastAvailable ? (
               <Link
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]"
@@ -295,20 +264,7 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
         </div>
       </section>
 
-      <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-3 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/cases">
-          <ClipboardList size={19} />
-          ОСКІ
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/krok">
-          <GraduationCap size={19} />
-          КРОК
-        </Link>
-        <Link className="flex flex-col items-center justify-center gap-1 text-[11px] font-extrabold text-clinical-accent-strong" href="/notes">
-          <BookOpen size={19} />
-          Конспект
-        </Link>
-      </nav>
+      <SiteMobileTabbar active="notes" />
     </main>
   );
 }

@@ -427,20 +427,17 @@ async function inspect(name, url, viewport, selector) {
 
     interactions.topMenuTriggers = await page.locator('[data-mobile-menu-trigger="top"]').count();
     interactions.bottomMenuTriggers = await page.locator('[data-mobile-menu-trigger="bottom"]').count();
+    interactions.siteMobileTabs = await page.locator('[data-site-mobile-tabbar="primary"] a').count();
 
     await page.locator('[data-mobile-menu-trigger="top"]').click();
     await page.waitForSelector('[data-mobile-case-menu="open"]', { timeout: 5000 });
     interactions.openedFromTop = await page.locator('[data-mobile-case-menu="open"]').count();
+    interactions.menuLinks = await page.locator('[data-mobile-case-menu="open"] nav a').count();
     await page.locator('[data-mobile-menu-close="button"]').click();
     await page.waitForSelector('[data-mobile-case-menu="open"]', {
       state: "detached",
       timeout: 5000
     });
-
-    await page.locator('[data-mobile-menu-trigger="bottom"]').click();
-    await page.waitForSelector('[data-mobile-case-menu="open"]', { timeout: 5000 });
-    interactions.openedFromBottom = await page.locator('[data-mobile-case-menu="open"]').count();
-    interactions.menuLinks = await page.locator('[data-mobile-case-menu="open"] nav a').count();
   }
 
   if (name === "desktop-krok") {
@@ -1007,8 +1004,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-cases" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: search did not narrow to one Mini-Cog card`);
   }
-  if (result.name === "desktop-cases" && result.metrics.mobileTabs !== 4) {
-    issues.push(`${result.name}: expected four mobile filter tabs`);
+  if (result.name === "desktop-cases" && result.metrics.mobileTabs !== 3) {
+    issues.push(`${result.name}: expected three global mobile tabs`);
   }
   if (result.name === "desktop-cases" && result.interactions.initialActive !== 1) {
     issues.push(`${result.name}: all filter was not active initially`);
@@ -1723,14 +1720,14 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-stroke" && result.interactions.topMenuTriggers !== 1) {
     issues.push(`${result.name}: expected one top mobile menu trigger`);
   }
-  if (result.name === "mobile-stroke" && result.interactions.bottomMenuTriggers !== 1) {
-    issues.push(`${result.name}: expected one bottom mobile menu trigger`);
+  if (result.name === "mobile-stroke" && result.interactions.bottomMenuTriggers !== 0) {
+    issues.push(`${result.name}: unexpected bottom mobile menu trigger`);
+  }
+  if (result.name === "mobile-stroke" && result.interactions.siteMobileTabs !== 3) {
+    issues.push(`${result.name}: expected three global mobile tabs`);
   }
   if (result.name === "mobile-stroke" && result.interactions.openedFromTop !== 1) {
     issues.push(`${result.name}: top mobile menu trigger did not open the menu`);
-  }
-  if (result.name === "mobile-stroke" && result.interactions.openedFromBottom !== 1) {
-    issues.push(`${result.name}: bottom mobile menu trigger did not open the menu`);
   }
   if (result.name === "mobile-stroke" && result.interactions.menuLinks < 4) {
     issues.push(`${result.name}: mobile menu is missing section links`);
