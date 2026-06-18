@@ -173,11 +173,6 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
             <h1 className="mt-1 text-[clamp(30px,4vw,46px)] font-black leading-[1.04]">
               Конспект КРОК 3 Неврологія
             </h1>
-            <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-clinical-muted">
-              Стислі high-yield блоки за структурою іспиту: ключові маркери, топіка,
-              диференціація і типові підказки, які найчастіше перетворюються на тестове
-              запитання.
-            </p>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
             <Link

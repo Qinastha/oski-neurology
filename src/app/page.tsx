@@ -117,35 +117,35 @@ export default function HomePage() {
             структурою іспиту.
           </p>
 
-          <div className="mt-6 grid gap-3">
-            <div className="rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
-              <p className="text-xs font-black uppercase text-clinical-accent-strong">Матеріали</p>
-              <p className="mt-1 text-3xl font-black">
-                {cases.length + krokStats.questionCount + notesStats.sectionCount}
-              </p>
-              <p className="text-sm text-clinical-muted">станцій, тестів і тем</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-clinical-line bg-white p-3">
-                <p className="text-xs font-black text-clinical-accent-strong">ОСКІ</p>
-                <p className="mt-1 text-xl font-black">{cases.length}</p>
-              </div>
-              <div className="rounded-lg border border-clinical-line bg-white p-3">
-                <p className="text-xs font-black text-clinical-accent-strong">КТ/МРТ</p>
-                <p className="mt-1 text-xl font-black">{imagingCases}</p>
-              </div>
-              <div className="rounded-lg border border-clinical-line bg-white p-3">
-                <p className="text-xs font-black text-clinical-accent-strong">КРОК</p>
-                <p className="mt-1 text-xl font-black">{krokStats.questionCount}</p>
-              </div>
-              <div className="rounded-lg border border-clinical-line bg-white p-3">
-                <p className="text-xs font-black text-clinical-accent-strong">Конспект</p>
-                <p className="mt-1 text-xl font-black">
-                  {notesStats.availableCount}/{notesStats.sectionCount}
-                </p>
-              </div>
-            </div>
-          </div>
+          {/*<div className="mt-6 grid gap-3">*/}
+          {/*  <div className="rounded-lg border border-clinical-line bg-[#fffaf0] p-3">*/}
+          {/*    <p className="text-xs font-black uppercase text-clinical-accent-strong">Матеріали</p>*/}
+          {/*    <p className="mt-1 text-3xl font-black">*/}
+          {/*      {cases.length + krokStats.questionCount + notesStats.sectionCount}*/}
+          {/*    </p>*/}
+          {/*    <p className="text-sm text-clinical-muted">станцій, тестів і тем</p>*/}
+          {/*  </div>*/}
+          {/*  <div className="grid grid-cols-2 gap-3">*/}
+          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
+          {/*      <p className="text-xs font-black text-clinical-accent-strong">ОСКІ</p>*/}
+          {/*      <p className="mt-1 text-xl font-black">{cases.length}</p>*/}
+          {/*    </div>*/}
+          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
+          {/*      <p className="text-xs font-black text-clinical-accent-strong">КТ/МРТ</p>*/}
+          {/*      <p className="mt-1 text-xl font-black">{imagingCases}</p>*/}
+          {/*    </div>*/}
+          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
+          {/*      <p className="text-xs font-black text-clinical-accent-strong">КРОК</p>*/}
+          {/*      <p className="mt-1 text-xl font-black">{krokStats.questionCount}</p>*/}
+          {/*    </div>*/}
+          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
+          {/*      <p className="text-xs font-black text-clinical-accent-strong">Конспект</p>*/}
+          {/*      <p className="mt-1 text-xl font-black">*/}
+          {/*        {notesStats.availableCount}/{notesStats.sectionCount}*/}
+          {/*      </p>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
         </aside>
 
         <section className="rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
@@ -157,10 +157,6 @@ export default function HomePage() {
               <h2 className="mt-1 text-[clamp(28px,4vw,44px)] font-black leading-[1.04]">
                 З чого почнемо?
               </h2>
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-lg border border-clinical-line bg-[#fffaf0] px-3 py-2 text-sm font-extrabold text-[#3d434b]">
-              <CheckCircle2 size={17} className="text-clinical-accent-strong" />
-              Світла тема · локальні дані
             </div>
           </header>
 
