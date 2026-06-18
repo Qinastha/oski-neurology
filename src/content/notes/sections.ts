@@ -49,7 +49,7 @@ export const noteSections = [
     "slug": "neurological-examination",
     "title": "Методи обстеження в неврології",
     "weight": 10,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "3.1.0.0", "title": "Неврологічний статус" },
       { "code": "3.2.0.0", "title": "Нейропсихологічне і психометричне обстеження" },
@@ -65,7 +65,7 @@ export const noteSections = [
     "slug": "hereditary-neurodegenerative-neuromuscular",
     "title": "Спадкові, нейродегенеративні та нервово-м’язові захворювання",
     "weight": 6,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "4.1.0.0", "title": "Гепато-церебральна дегенерація" },
       { "code": "4.4.0.0", "title": "Хвороба Паркінсона" },
@@ -81,7 +81,7 @@ export const noteSections = [
     "slug": "peripheral-nervous-system",
     "title": "Ураження периферичного відділу нервової системи",
     "weight": 10,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "5.3.0.0", "title": "Невралгії" },
       { "code": "5.4.0.0", "title": "Нейропатії" },
@@ -95,7 +95,7 @@ export const noteSections = [
     "slug": "inflammatory-infectious-autoimmune",
     "title": "Запальні, інфекційні, аутоімунні та імуноопосередковані захворювання",
     "weight": 10,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "6.2.0.0", "title": "Менінгіти" },
       { "code": "6.3.0.0", "title": "Енцефаліти" },
@@ -111,7 +111,7 @@ export const noteSections = [
     "slug": "vascular-neurology",
     "title": "Судинні ураження нервової системи",
     "weight": 10,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "7.4.0.0", "title": "Хронічна ішемія головного мозку" },
       { "code": "7.5.1.0", "title": "Ішемічні порушення мозкового кровообігу" },
@@ -125,7 +125,7 @@ export const noteSections = [
     "slug": "autonomic-pathology",
     "title": "Патологія вегетативної нервової системи",
     "weight": 2,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "8.1.0.0", "title": "Вегетативні синдроми" },
       { "code": "8.2.0.0", "title": "Мігрень" },
@@ -138,7 +138,7 @@ export const noteSections = [
     "slug": "neurotrauma",
     "title": "Травми нервової системи",
     "weight": 2,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "9.1.0.0", "title": "Черепно-мозкова травма" },
       { "code": "9.1.3.0", "title": "Внутрішньочерепний крововилив" },
@@ -150,7 +150,7 @@ export const noteSections = [
     "slug": "neuro-oncology",
     "title": "Пухлини нервової системи",
     "weight": 2,
-    "status": "planned",
+    "status": "available",
     "subtopics": [
       { "code": "10.1.0.0", "title": "Пухлини головного мозку" },
       { "code": "10.1.1.0", "title": "Загальномозкові, вогнищеві та психопатологічні симптоми" },

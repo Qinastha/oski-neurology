@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,18 +10,15 @@ import {
   BookOpen,
   Bookmark,
   BookmarkCheck,
-  Brain,
   CheckCircle2,
   ClipboardList,
   GraduationCap,
-  Lightbulb,
   Map,
   Search,
-  Sparkles,
-  Stethoscope
+  Sparkles
 } from "lucide-react";
 
-import type { NoteBlock, NotePoint, ResolvedNoteSection } from "@/content/notes/schema";
+import type { NoteBlock, NoteContentBlock, NotePoint, ResolvedNoteSection } from "@/content/notes/schema";
 import { cn } from "@/lib/cn";
 
 interface NoteReaderProps {
@@ -55,28 +53,52 @@ function writeStringSet(key: string, value: Set<string>) {
   window.localStorage.setItem(key, JSON.stringify([...value]));
 }
 
-function PointCard({ point }: { point: NotePoint }) {
+function ContentBlock({ block }: { block: NoteContentBlock }) {
+  const isCallout = block.type === "clinical_note";
+
   return (
-    <article className="rounded-lg border border-clinical-line bg-white p-3">
-      <h3 className="text-base font-black leading-tight">{point.title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-clinical-muted">{point.text}</p>
-      {point.tags?.length ? (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {point.tags.map((tag) => (
-            <span
-              className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs font-extrabold text-clinical-accent-strong"
-              key={tag}
-            >
-              {tag}
-            </span>
+    <section
+      className={cn(
+        "scroll-mt-24 border-t border-clinical-line py-7 first:border-t-0 first:pt-2",
+        isCallout && "border-l-4 border-t-0 border-clinical-accent bg-[#fffaf0] px-4 py-4"
+      )}
+      data-note-content-block={block.id}
+    >
+      {block.title ? (
+        <h2
+          className={cn(
+            "text-[clamp(22px,3vw,30px)] font-black leading-tight text-clinical-text",
+            isCallout && "text-xl"
+          )}
+        >
+          {block.title}
+        </h2>
+      ) : null}
+      {block.lead ? (
+        <p className="mt-2 text-[15px] font-semibold leading-relaxed text-[#4e5561]">{block.lead}</p>
+      ) : null}
+      {block.paragraphs?.length ? (
+        <div className="mt-4 grid gap-4 text-[16px] leading-8 text-[#4e5561] max-md:text-[15px] max-md:leading-7">
+          {block.paragraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
       ) : null}
-    </article>
+      {block.items?.length ? (
+        <ul className="mt-4 grid gap-3 text-[15px] leading-7 text-[#4e5561]">
+          {block.items.map((item) => (
+            <li className="flex gap-3" key={item}>
+              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clinical-accent-strong" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
   );
 }
 
-function PointSection({
+function PointFlowSection({
   id,
   title,
   icon,
@@ -84,20 +106,31 @@ function PointSection({
 }: {
   id: string;
   title: string;
-  icon: React.ReactNode;
-  points: NotePoint[];
+  icon: ReactNode;
+  points: NotePoint[] | undefined;
 }) {
+  if (!points?.length) {
+    return null;
+  }
+
   return (
-    <section className="scroll-mt-4 rounded-lg border border-clinical-line bg-[#fffdf8] p-4" id={id}>
-      <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong">
+    <section className="scroll-mt-24 border-t border-clinical-line py-7" id={id}>
+      <div className="mb-5 flex items-center gap-3">
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong">
           {icon}
         </span>
-        <h2 className="text-lg font-black">{title}</h2>
+        <h2 className="text-[clamp(22px,3vw,30px)] font-black leading-tight">{title}</h2>
       </div>
-      <div className="grid gap-2 lg:grid-cols-2">
+      <div className="grid gap-4">
         {points.map((point) => (
-          <PointCard key={point.title} point={point} />
+          <div
+            className="border-l-2 border-clinical-line-strong pl-4"
+            data-note-point-item={id}
+            key={point.title}
+          >
+            <h3 className="text-[17px] font-black leading-tight text-clinical-text">{point.title}</h3>
+            <p className="mt-1.5 text-[15px] leading-7 text-[#4e5561]">{point.text}</p>
+          </div>
         ))}
       </div>
     </section>
@@ -122,41 +155,35 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
   }, [section.slug]);
 
   function toggleBookmark() {
-    const next = readStringSet(BOOKMARKS_KEY);
-    if (next.has(section.slug)) {
-      next.delete(section.slug);
+    const nextBookmarks = readStringSet(BOOKMARKS_KEY);
+    if (nextBookmarks.has(section.slug)) {
+      nextBookmarks.delete(section.slug);
       setBookmarked(false);
     } else {
-      next.add(section.slug);
+      nextBookmarks.add(section.slug);
       setBookmarked(true);
     }
-    writeStringSet(BOOKMARKS_KEY, next);
+    writeStringSet(BOOKMARKS_KEY, nextBookmarks);
   }
 
   function toggleRead() {
-    const next = readStringSet(READ_KEY);
-    if (next.has(section.slug)) {
-      next.delete(section.slug);
+    const nextRead = readStringSet(READ_KEY);
+    if (nextRead.has(section.slug)) {
+      nextRead.delete(section.slug);
       setRead(false);
     } else {
-      next.add(section.slug);
+      nextRead.add(section.slug);
       setRead(true);
     }
-    writeStringSet(READ_KEY, next);
+    writeStringSet(READ_KEY, nextRead);
   }
 
-  const anchors = [
-    ["high-yield", "Що треба знати"],
-    ["localization", "Топіка"],
-    ["clues", "Діагностичні підказки"],
-    ["differentials", "Диференціювати з"],
-    ["krok-patterns", "Типові підказки КРОК"],
-    ["pitfalls", "Пастки"]
-  ] as const;
-
   return (
-    <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,780px)] xl:grid-cols-[240px_minmax(0,780px)_250px] max-md:block max-md:p-0 max-md:pb-20">
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
+    <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,900px)] max-md:block max-md:p-0 max-md:pb-20">
+      <aside
+        className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden"
+        data-note-left-nav="blocks"
+      >
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/notes">
           <span className="inline-flex h-12 w-12 items-center justify-center">
             <Image
@@ -199,12 +226,12 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
         </nav>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/90 p-[18px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
         <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
           <Link
+            aria-label="До списку блоків конспекту"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white"
             href="/notes"
-            aria-label="До списку блоків конспекту"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -224,80 +251,67 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
           </button>
         </header>
 
-        <div className="flex items-start justify-between gap-4 pb-4 max-md:block max-md:pt-4">
-          <div>
-            <p className="text-[13px] font-extrabold text-clinical-accent-strong">
-              Конспект / {section.code.split(".")[0]}.0 · вага {section.weight}%
-            </p>
-            <h1 className="mt-1 text-[clamp(26px,4vw,42px)] font-black leading-[1.05]">
-              {section.title}
-            </h1>
-            <p className="mt-2.5 max-w-[70ch] leading-relaxed text-clinical-muted">
-              {block.summary}
-            </p>
+        <article className="[overflow-wrap:anywhere]" data-note-reader={section.slug}>
+          <div className="flex items-start justify-between gap-4 pb-5 max-md:block max-md:pt-4">
+            <div>
+              <p className="text-[13px] font-extrabold text-clinical-accent-strong">
+                Конспект / {section.code.split(".")[0]}.0 · вага {section.weight}%
+              </p>
+              <h1 className="mt-1 max-w-[14ch] text-[clamp(34px,5vw,58px)] font-black leading-[0.98] tracking-normal text-clinical-text md:max-w-[15ch]">
+                {section.title}
+              </h1>
+              <p className="mt-4 max-w-[68ch] text-[17px] leading-8 text-[#606773] max-md:text-base max-md:leading-7">
+                {block.summary}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2 max-md:mt-3">
+              <button
+                aria-pressed={bookmarked}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                type="button"
+                onClick={toggleBookmark}
+              >
+                {bookmarked ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
+                {bookmarked ? "В обраному" : "До обраного"}
+              </button>
+              <button
+                aria-pressed={read}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3 text-sm font-extrabold text-[#201900]"
+                type="button"
+                onClick={toggleRead}
+              >
+                <CheckCircle2 size={17} />
+                {read ? "Прочитано" : "Позначити"}
+              </button>
+            </div>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2 max-md:mt-3">
-            <button
-              aria-pressed={bookmarked}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
-              type="button"
-              onClick={toggleBookmark}
-            >
-              {bookmarked ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
-              {bookmarked ? "В обраному" : "До обраного"}
-            </button>
-            <button
-              aria-pressed={read}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3 text-sm font-extrabold text-[#201900]"
-              type="button"
-              onClick={toggleRead}
-            >
-              <CheckCircle2 size={17} />
-              {read ? "Прочитано" : "Позначити"}
-            </button>
+
+          <div className="mt-2">
+            {block.content.map((contentBlock) => (
+              <ContentBlock block={contentBlock} key={contentBlock.id} />
+            ))}
+            <PointFlowSection
+              icon={<Map size={18} />}
+              id="topical"
+              points={block.topical}
+              title="Топіка"
+            />
+            <PointFlowSection
+              icon={<Search size={18} />}
+              id="krok-patterns"
+              points={block.krokPatterns}
+              title="Типові підказки КРОК"
+            />
+            <PointFlowSection
+              icon={<AlertTriangle size={18} />}
+              id="pitfalls"
+              points={block.pitfalls}
+              title="Пастки"
+            />
           </div>
-        </div>
+        </article>
 
-        <div className="grid gap-3" data-note-reader={section.slug}>
-          <PointSection
-            id="high-yield"
-            icon={<Lightbulb size={18} />}
-            points={block.highYield}
-            title="Що треба знати"
-          />
-          <PointSection
-            id="localization"
-            icon={<Map size={18} />}
-            points={block.localization}
-            title="Топіка"
-          />
-          <PointSection
-            id="clues"
-            icon={<Stethoscope size={18} />}
-            points={block.diagnosticClues}
-            title="Діагностичні підказки"
-          />
-          <PointSection
-            id="differentials"
-            icon={<Brain size={18} />}
-            points={block.differentials}
-            title="Диференціювати з"
-          />
-          <PointSection
-            id="krok-patterns"
-            icon={<Search size={18} />}
-            points={block.krokPatterns}
-            title="Типові підказки КРОК"
-          />
-          <PointSection
-            id="pitfalls"
-            icon={<AlertTriangle size={18} />}
-            points={block.pitfalls}
-            title="Пастки"
-          />
-        </div>
-
-        <footer className="mt-4 flex items-center justify-between gap-4">
+        <footer className="mt-4 flex items-center justify-between gap-4 border-t border-clinical-line pt-5">
           {previous ? (
             <Link
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
@@ -331,45 +345,6 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
           )}
         </footer>
       </section>
-
-      <aside className="sticky top-5 hidden h-[calc(100dvh-40px)] overflow-auto rounded-lg border border-clinical-line/85 bg-white/90 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl xl:block">
-        <nav className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4" aria-label="Зміст блоку">
-          <strong className="text-sm">Зміст блоку</strong>
-          {anchors.map(([id, label]) => (
-            <a
-              className="text-[13px] leading-normal text-clinical-muted hover:text-clinical-accent-strong"
-              href={`#${id}`}
-              key={id}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-
-        <section className="mb-4 grid gap-2.5 border-b border-clinical-line pb-4">
-          <strong className="text-sm">КРОК-маркери</strong>
-          <div className="flex flex-wrap gap-1.5">
-            {block.krokSearchTerms.map((term) => (
-              <span
-                className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs text-[#595f68]"
-                key={term}
-              >
-                {term}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-2.5">
-          <strong className="text-sm">Підтеми PDF</strong>
-          {section.subtopics.slice(0, 12).map((subtopic) => (
-            <p className="m-0 text-[13px] leading-normal text-clinical-muted" key={subtopic.code}>
-              <span className="font-black text-clinical-accent-strong">{subtopic.code}</span>{" "}
-              {subtopic.title}
-            </p>
-          ))}
-        </section>
-      </aside>
 
       <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-3 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid">
         <Link className="flex flex-col items-center justify-center gap-1 text-[11px] text-[#5d6470]" href="/cases">

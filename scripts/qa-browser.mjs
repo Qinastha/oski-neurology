@@ -100,8 +100,9 @@ async function inspect(name, url, viewport, selector) {
     krokResultPanels: document.querySelectorAll('[data-krok-result="summary"]').length,
     krokMobileNavigatorItems: document.querySelectorAll("[data-krok-mobile-question-link]").length,
     noteSectionCards: document.querySelectorAll("[data-note-section-card]").length,
-    noteReaderCards: document.querySelectorAll("[data-note-reader] article").length,
+    noteContentBlocks: document.querySelectorAll("[data-note-content-block]").length,
     noteSourceCards: document.querySelectorAll("#sources a, #sources p").length,
+    noteRightRails: document.querySelectorAll("[data-note-right-rail]").length,
     practicalSkillCards: document.querySelectorAll("[data-blueprint-practical-skills='list'] article")
       .length
   }));
@@ -642,22 +643,32 @@ async function inspect(name, url, viewport, selector) {
     interactions.availableCards = await page.locator('[data-note-section-status="available"]').count();
     interactions.plannedCards = await page.locator('[data-note-section-status="planned"]').count();
     const searchInput = page.getByPlaceholder("Пошук тем, провідників, синдромів, КРОК-маркерів...");
-    await searchInput.fill("головокружіння");
-    await page.waitForFunction(() => document.querySelectorAll("[data-note-section-card]").length === 1, {
-      timeout: 5000
-    });
+    await searchInput.fill("Adamkiewicz");
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-notes-search-shell="query"] input')?.value ===
+        "Adamkiewicz",
+      undefined,
+      { timeout: 5000 }
+    );
+    await page.waitForFunction(
+      () => document.querySelectorAll("[data-note-section-card]").length === 1,
+      undefined,
+      { timeout: 5000 }
+    );
     interactions.searchCards = await page.locator("[data-note-section-card]").count();
   }
 
   if (name.includes("note-reader")) {
     interactions.reader = await page.locator("[data-note-reader]").count();
-    interactions.highYieldCards = await page.locator("#high-yield article").count();
-    interactions.highYieldTags = await page.locator("#high-yield article span.rounded-full").count();
-    interactions.localizationCards = await page.locator("#localization article").count();
-    interactions.clueCards = await page.locator("#clues article").count();
-    interactions.differentialCards = await page.locator("#differentials article").count();
-    interactions.krokPatternCards = await page.locator("#krok-patterns article").count();
-    interactions.pitfallCards = await page.locator("#pitfalls article").count();
+    interactions.contentBlocks = await page.locator("[data-note-content-block]").count();
+    interactions.topicalItems = await page.locator('[data-note-point-item="topical"]').count();
+    interactions.krokPatternItems = await page.locator('[data-note-point-item="krok-patterns"]').count();
+    interactions.pitfallItems = await page.locator('[data-note-point-item="pitfalls"]').count();
+    interactions.rightRails = await page.locator("[data-note-right-rail]").count();
+    interactions.legacyHighYieldSections = await page.locator("#high-yield").count();
+    interactions.visibleKrokMarkerRailText = await page.getByText("КРОК-маркери").count();
+    interactions.visiblePdfSubtopicRailText = await page.getByText("Підтеми PDF").count();
     interactions.relatedSections = await page.locator("#related").count();
     interactions.sourceSections = await page.locator("#sources").count();
   }
@@ -706,6 +717,54 @@ await inspect(
   `/notes/syndromology-topical-diagnosis`,
   { width: 1440, height: 900 },
   '[data-note-reader="syndromology-topical-diagnosis"]'
+);
+await inspect(
+  "desktop-note-reader-examination",
+  `/notes/neurological-examination`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="neurological-examination"]'
+);
+await inspect(
+  "desktop-note-reader-neuromuscular",
+  `/notes/hereditary-neurodegenerative-neuromuscular`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="hereditary-neurodegenerative-neuromuscular"]'
+);
+await inspect(
+  "desktop-note-reader-peripheral",
+  `/notes/peripheral-nervous-system`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="peripheral-nervous-system"]'
+);
+await inspect(
+  "desktop-note-reader-inflammatory",
+  `/notes/inflammatory-infectious-autoimmune`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="inflammatory-infectious-autoimmune"]'
+);
+await inspect(
+  "desktop-note-reader-vascular",
+  `/notes/vascular-neurology`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="vascular-neurology"]'
+);
+await inspect(
+  "desktop-note-reader-autonomic",
+  `/notes/autonomic-pathology`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="autonomic-pathology"]'
+);
+await inspect(
+  "desktop-note-reader-neurotrauma",
+  `/notes/neurotrauma`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="neurotrauma"]'
+);
+await inspect(
+  "desktop-note-reader-neuro-oncology",
+  `/notes/neuro-oncology`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="neuro-oncology"]'
 );
 await inspect(
   "desktop-dementia",
@@ -857,6 +916,54 @@ await inspect(
   `/notes/syndromology-topical-diagnosis`,
   { width: 390, height: 844 },
   '[data-note-reader="syndromology-topical-diagnosis"]'
+);
+await inspect(
+  "mobile-note-reader-examination",
+  `/notes/neurological-examination`,
+  { width: 390, height: 844 },
+  '[data-note-reader="neurological-examination"]'
+);
+await inspect(
+  "mobile-note-reader-neuromuscular",
+  `/notes/hereditary-neurodegenerative-neuromuscular`,
+  { width: 390, height: 844 },
+  '[data-note-reader="hereditary-neurodegenerative-neuromuscular"]'
+);
+await inspect(
+  "mobile-note-reader-peripheral",
+  `/notes/peripheral-nervous-system`,
+  { width: 390, height: 844 },
+  '[data-note-reader="peripheral-nervous-system"]'
+);
+await inspect(
+  "mobile-note-reader-inflammatory",
+  `/notes/inflammatory-infectious-autoimmune`,
+  { width: 390, height: 844 },
+  '[data-note-reader="inflammatory-infectious-autoimmune"]'
+);
+await inspect(
+  "mobile-note-reader-vascular",
+  `/notes/vascular-neurology`,
+  { width: 390, height: 844 },
+  '[data-note-reader="vascular-neurology"]'
+);
+await inspect(
+  "mobile-note-reader-autonomic",
+  `/notes/autonomic-pathology`,
+  { width: 390, height: 844 },
+  '[data-note-reader="autonomic-pathology"]'
+);
+await inspect(
+  "mobile-note-reader-neurotrauma",
+  `/notes/neurotrauma`,
+  { width: 390, height: 844 },
+  '[data-note-reader="neurotrauma"]'
+);
+await inspect(
+  "mobile-note-reader-neuro-oncology",
+  `/notes/neuro-oncology`,
+  { width: 390, height: 844 },
+  '[data-note-reader="neuro-oncology"]'
 );
 
 await browser.close();
@@ -1046,11 +1153,11 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-notes" && result.interactions.sectionCards !== 15) {
     issues.push(`${result.name}: expected 15 note section cards`);
   }
-  if (result.name === "desktop-notes" && result.interactions.availableCards !== 2) {
-    issues.push(`${result.name}: expected two available note sections`);
+  if (result.name === "desktop-notes" && result.interactions.availableCards !== 10) {
+    issues.push(`${result.name}: expected ten available note sections`);
   }
-  if (result.name === "desktop-notes" && result.interactions.plannedCards !== 13) {
-    issues.push(`${result.name}: expected thirteen planned note sections`);
+  if (result.name === "desktop-notes" && result.interactions.plannedCards !== 5) {
+    issues.push(`${result.name}: expected five planned note sections`);
   }
   if (result.name === "desktop-notes" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: notes search did not narrow to one card`);
@@ -1058,26 +1165,26 @@ const failures = results.flatMap((result) => {
   if (result.name.includes("note-reader") && result.interactions.reader !== 1) {
     issues.push(`${result.name}: note reader did not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.highYieldCards < 8) {
-    issues.push(`${result.name}: high-yield cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.contentBlocks < 5) {
+    issues.push(`${result.name}: article content blocks did not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.highYieldTags !== 0) {
-    issues.push(`${result.name}: high-yield tags should not render`);
+  if (result.name.includes("note-reader") && result.interactions.krokPatternItems < 5) {
+    issues.push(`${result.name}: KROK pattern flow items did not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.localizationCards < 10) {
-    issues.push(`${result.name}: localization cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.pitfallItems < 5) {
+    issues.push(`${result.name}: pitfall flow items did not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.clueCards < 9) {
-    issues.push(`${result.name}: diagnostic clue cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.rightRails !== 0) {
+    issues.push(`${result.name}: note right rail should not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.differentialCards < 8) {
-    issues.push(`${result.name}: differential cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.legacyHighYieldSections !== 0) {
+    issues.push(`${result.name}: legacy high-yield card section should not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.krokPatternCards < 9) {
-    issues.push(`${result.name}: KROK pattern cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.visibleKrokMarkerRailText !== 0) {
+    issues.push(`${result.name}: KROK marker rail text should not render`);
   }
-  if (result.name.includes("note-reader") && result.interactions.pitfallCards < 9) {
-    issues.push(`${result.name}: pitfall cards did not render`);
+  if (result.name.includes("note-reader") && result.interactions.visiblePdfSubtopicRailText !== 0) {
+    issues.push(`${result.name}: PDF subtopic rail text should not render`);
   }
   if (result.name.includes("note-reader") && result.interactions.relatedSections !== 0) {
     issues.push(`${result.name}: related case section should not render in notes UI`);

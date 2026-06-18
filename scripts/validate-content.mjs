@@ -464,6 +464,143 @@ if (noteSectionWeightTotal !== 100) {
 }
 
 const noteBlockCodes = new Set();
+const deprecatedNoteBlockKeys = [
+  "highYield",
+  "localization",
+  "diagnosticClues",
+  "differentials",
+  "relatedCases"
+];
+const validNoteContentBlockTypes = new Set(["prose", "list", "subsection", "clinical_note"]);
+const expectedNoteSubtopicCoverage = new Map([
+  [
+    "1.0.0.0",
+    [
+      { code: "1.1.0.0", groups: [["кора"], ["стовбур"], ["спинний мозок"]] },
+      { code: "1.3.0.0", groups: [["вібрац", "пропріоцепц"], ["спіноталам"]] },
+      { code: "1.4.0.0", groups: [["рефлекс"], ["колінний", "ахіловий"]] },
+      { code: "1.6.0.0", groups: [["пірамід"], ["задні канатики"]] },
+      { code: "1.8.0.0", groups: [["спинний мозок"], ["тазові"]] },
+      { code: "1.9.0.0", groups: [["стовбур"], ["черепний нерв", "черепні нерви"]] },
+      { code: "1.10.0.0", groups: [["черепні нерви"], ["iii - птоз", "xii", "ix-x"]] },
+      { code: "1.11.0.0", groups: [["мозочок"], ["атаксі"]] },
+      { code: "1.12.0.0", groups: [["базальні"], ["таламус"]] },
+      { code: "1.13.0.0", groups: [["внутрішня капсула"], ["задня ніжка", "коліно"]] },
+      { code: "1.16.0.0", groups: [["афаз"], ["неглект", "апракс", "агноз"]] },
+      { code: "1.19.0.0", groups: [["aca"], ["mca"], ["pca"]] },
+      { code: "1.21.0.0", groups: [["ліквор"], ["хоріоїдаль", "шлуночк"]] },
+      { code: "1.24.0.0", groups: [["ацетилхолін"], ["дофамін"], ["гамк"], ["глутамат"]] }
+    ]
+  ],
+  [
+    "2.0.0.0",
+    [
+      { code: "2.1.0.0", groups: [["головний біль"], ["невралгі"]] },
+      { code: "2.2.0.0", groups: [["головокруж", "запамороч"], ["вестибуляр"]] },
+      { code: "2.6.0.0", groups: [["пам’ят", "пам'ят"], ["деменц"]] },
+      { code: "2.10.0.0", groups: [["чутлив"], ["stocking-glove", "дерматом"]] },
+      { code: "2.11.0.0", groups: [["рухов"], ["рефлекс"]] },
+      { code: "2.12.0.0", groups: [["атакс"], ["мозочков", "сенситивн"]] },
+      { code: "2.13.0.0", groups: [["спинний мозок"], ["мієлопат", "тазові"]] },
+      { code: "2.15.0.0", groups: [["стовбур"], ["альтернуюч"]] },
+      { code: "2.22.0.0", groups: [["кора"], ["афаз", "неглект"]] },
+      { code: "2.26.0.0", groups: [["периферич"], ["полінейропат", "корінець"]] },
+      { code: "2.27.0.0", groups: [["судин"], ["aca", "mca", "pca"]] }
+    ]
+  ],
+  [
+    "3.0.0.0",
+    [
+      { code: "3.1.0.0", groups: [["неврологічний статус"], ["черепні нерви", "рефлекси"]] },
+      { code: "3.2.0.0", groups: [["mini-cog"], ["moca"], ["mmse"]] },
+      { code: "3.5.0.0", groups: [["ліквор"], ["плеоцитоз", "олігоклональ"]] },
+      { code: "3.6.1.0", groups: [["еег"], ["епілеп"]] },
+      { code: "3.6.2.0", groups: [["емг"], ["енмг"]] },
+      { code: "3.6.6.0", groups: [["кт"], ["кров", "гематом"]] },
+      { code: "3.6.7.0", groups: [["мрт"], ["dwi", "flair"]] }
+    ]
+  ],
+  [
+    "4.0.0.0",
+    [
+      { code: "4.1.0.0", groups: [["вільсон"], ["церулоплазмін"], ["кайзера-флейшера"]] },
+      { code: "4.4.0.0", groups: [["паркінсон"], ["брадикінез"], ["дофамін"], ["леводоп"]] },
+      { code: "4.6.0.0", groups: [["альцгеймер"], ["амілоїд"], ["тау"], ["мемантин", "ацетилхолінестераз"]] },
+      { code: "4.7.1.0", groups: [["міастен"], ["ацетилхолін"], ["декремент"], ["піридостигмін"]] },
+      { code: "4.8.0.0", groups: [["дюшен"], ["беккер"], ["дистрофін"], ["говерс"]] },
+      { code: "4.9.0.0", groups: [["бас"], ["верхнього", "верхній"], ["нижнього", "нижній"], ["рилузол"]] },
+      { code: "4.10.0.0", groups: [["сирингомієлі"], ["дисоційована"], ["кіарі", "chiari"]] }
+    ]
+  ],
+  [
+    "5.0.0.0",
+    [
+      { code: "5.3.0.0", groups: [["невралгі"], ["трійчаст"], ["карбамазепін", "окскарбазепін"]] },
+      { code: "5.4.0.0", groups: [["нейропат"], ["полінейропат"], ["stocking-glove"], ["енмг"]] },
+      { code: "5.5.0.0", groups: [["радикулопат"], ["дерматом"], ["міотом"], ["lasègue", "straight leg"]] },
+      { code: "5.7.0.0", groups: [["плексопат"], ["плечове сплетення"], ["erb", "klumpke"]] },
+      { code: "5.8.0.0", groups: [["вертеброген"], ["грижа диска", "спінальний стеноз"], ["кінський хвіст", "сідлоподібна"]] }
+    ]
+  ],
+  [
+    "6.0.0.0",
+    [
+      { code: "6.2.0.0", groups: [["менінгіт"], ["нейтрофільний", "низька глюкоза"], ["ліквор"]] },
+      { code: "6.3.0.0", groups: [["енцефаліт"], ["зміна свідомості", "судоми"], ["мрт", "ліквор"]] },
+      { code: "6.8.1.0", groups: [["гійєна-барре", "gbs"], ["арефлекс"], ["альбуміноцитолог"], ["ivig", "плазмаферез"]] },
+      { code: "6.10.0.0", groups: [["нейробореліоз"], ["borrelia", "erythema"], ["парез лицевого", "радикулоневрит"], ["доксициклін", "цефтріаксон"]] },
+      { code: "6.12.0.0", groups: [["нейросифіліс"], ["vdrl", "rpr"], ["tabes", "argyll"], ["пеніцилін"]] },
+      { code: "6.13.1.0", groups: [["герпетичний енцефаліт", "hsv"], ["скронева"], ["ацикловір"], ["pcr"]] },
+      { code: "6.15.0.0", groups: [["розсіяний склероз"], ["дисемінація"], ["олігоклон"], ["перивентрикуляр"], ["ретробульбарний"]] }
+    ]
+  ],
+  [
+    "7.0.0.0",
+    [
+      { code: "7.4.0.0", groups: [["хронічна ішем"], ["лейкоареоз", "лакун"], ["судинн", "когнітив"], ["тиску", "ліпідів", "глюкози"]] },
+      { code: "7.5.1.0", groups: [["тіа", "транзитор"], ["ішемічний інсульт"], ["кт без контрасту"], ["тромболізис"], ["тромбектомія"], ["mca", "aca", "pca"]] },
+      { code: "7.5.2.0", groups: [["геморагіч", "крововилив"], ["субарахноїд"], ["thunderclap"], ["реверс антикоагуля"]] },
+      { code: "7.6.0.0", groups: [["передня спинномозкова"], ["adamkiewicz"], ["біль у спині"], ["пропріоцепц"]] },
+      { code: "7.7.0.0", groups: [["церебральний венозний тромбоз", "cvst"], ["папіледема"], ["ctv", "mrv"], ["антикоагуляц", "гепарин"]] }
+    ]
+  ],
+  [
+    "8.0.0.0",
+    [
+      { code: "8.1.0.0", groups: [["вегетатив"], ["ортостат"], ["20/10"], ["мідодрин", "флудрокортизон"]] },
+      { code: "8.2.0.0", groups: [["мігрень"], ["4-72"], ["аур"], ["триптан"], ["medication-overuse", "анальгетик"]] },
+      { code: "8.3.1.0", groups: [["рейно"], ["холод", "стрес"], ["системна склеродермія", "вторин"], ["ніфедипін", "амлодипін"]] },
+      { code: "8.4.0.0", groups: [["тригемінально-автоном", "прозопалгі"], ["кластер"], ["кисень"], ["індометацин"], ["sunct", "suna"]] }
+    ]
+  ],
+  [
+    "9.0.0.0",
+    [
+      { code: "9.1.0.0", groups: [["черепно-мозкова травма", "чмт"], ["gcs", "глазго"], ["струс"], ["забій"], ["дифузне аксональне"]] },
+      { code: "9.1.3.0", groups: [["внутрішньочерепний крововилив"], ["епідуральна"], ["субдуральна"], ["світлий проміжок"], ["лінзоподібна", "серпоподібна"]] },
+      { code: "9.2.0.0", groups: [["травма хребта"], ["травма спинного мозку"], ["спінальний шок"], ["нейрогенний шок"], ["сакральне збереження"], ["кт", "мрт"]] }
+    ]
+  ],
+  [
+    "10.0.0.0",
+    [
+      { code: "10.1.0.0", groups: [["пухлини головного мозку"], ["гліома", "гліобластома"], ["менінгіома"], ["метастаз"], ["мрт з контраст"]] },
+      { code: "10.1.1.0", groups: [["загальномозков"], ["вогнищев"], ["психопатолог"], ["застійні диски"], ["фокальні судоми"]] },
+      { code: "10.2.0.0", groups: [["пухлини спинного мозку"], ["екстрамедуляр"], ["інтрамедуляр"], ["сенсорний рівень"], ["метастатична компресія"]] }
+    ]
+  ]
+]);
+function validateNotePoint(block, key, point) {
+  if (
+    typeof point.title !== "string" ||
+    point.title.trim().length === 0 ||
+    typeof point.text !== "string" ||
+    point.text.trim().length < 20
+  ) {
+    failures.push(`Note block ${block.sectionCode} has invalid point in ${key}`);
+  }
+}
+
 for (const block of noteBlocks) {
   if (!noteSectionCodes.has(block.sectionCode)) {
     failures.push(`Note block references missing section ${block.sectionCode}`);
@@ -473,27 +610,64 @@ for (const block of noteBlocks) {
   }
   noteBlockCodes.add(block.sectionCode);
 
-  for (const key of [
-    "highYield",
-    "localization",
-    "diagnosticClues",
-    "differentials",
-    "krokPatterns",
-    "pitfalls"
-  ]) {
+  for (const key of deprecatedNoteBlockKeys) {
+    if (Object.hasOwn(block, key)) {
+      failures.push(`Note block ${block.sectionCode} still uses deprecated key ${key}`);
+    }
+  }
+
+  if (!Array.isArray(block.content) || block.content.length === 0) {
+    failures.push(`Note block ${block.sectionCode} needs content`);
+  }
+  for (const contentBlock of block.content ?? []) {
+    if (typeof contentBlock.id !== "string" || contentBlock.id.trim().length === 0) {
+      failures.push(`Note block ${block.sectionCode} has content block without id`);
+    }
+    if (!validNoteContentBlockTypes.has(contentBlock.type)) {
+      failures.push(`Note block ${block.sectionCode} has invalid content block type ${contentBlock.type}`);
+    }
+    if (contentBlock.title !== undefined && typeof contentBlock.title !== "string") {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} has invalid title`);
+    }
+    if (contentBlock.lead !== undefined && typeof contentBlock.lead !== "string") {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} has invalid lead`);
+    }
+
+    const paragraphs = contentBlock.paragraphs ?? [];
+    const items = contentBlock.items ?? [];
+    if (!Array.isArray(paragraphs) || !Array.isArray(items)) {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} has invalid text arrays`);
+      continue;
+    }
+
+    const textCount =
+      paragraphs.filter((item) => typeof item === "string" && item.trim().length >= 20).length +
+      items.filter((item) => typeof item === "string" && item.trim().length >= 20).length;
+    if (textCount === 0) {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} needs text`);
+    }
+    if (
+      (contentBlock.type === "prose" || contentBlock.type === "subsection") &&
+      paragraphs.length === 0
+    ) {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} needs paragraphs`);
+    }
+    if (contentBlock.type === "list" && items.length === 0) {
+      failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} needs list items`);
+    }
+  }
+
+  for (const point of block.topical ?? []) {
+    validateNotePoint(block, "topical", point);
+  }
+
+  for (const key of ["krokPatterns", "pitfalls"]) {
     if (!Array.isArray(block[key]) || block[key].length === 0) {
       failures.push(`Note block ${block.sectionCode} needs ${key}`);
       continue;
     }
     for (const point of block[key]) {
-      if (
-        typeof point.title !== "string" ||
-        point.title.trim().length === 0 ||
-        typeof point.text !== "string" ||
-        point.text.trim().length < 20
-      ) {
-        failures.push(`Note block ${block.sectionCode} has invalid point in ${key}`);
-      }
+      validateNotePoint(block, key, point);
     }
   }
 
@@ -511,16 +685,39 @@ for (const block of noteBlocks) {
       failures.push(`Note block ${block.sectionCode} has invalid source href`);
     }
   }
-  for (const relatedCase of block.relatedCases ?? []) {
-    if (!slugs.includes(relatedCase.slug)) {
-      failures.push(`Note block ${block.sectionCode} references missing case ${relatedCase.slug}`);
-    }
-    if (typeof relatedCase.reason !== "string" || relatedCase.reason.trim().length < 10) {
-      failures.push(`Note block ${block.sectionCode} related case ${relatedCase.slug} needs a reason`);
-    }
-  }
   if (!Array.isArray(block.krokSearchTerms) || block.krokSearchTerms.length === 0) {
     failures.push(`Note block ${block.sectionCode} needs krokSearchTerms`);
+  }
+
+  const coverageRules = expectedNoteSubtopicCoverage.get(block.sectionCode);
+  if (coverageRules) {
+    const section = noteSections.find((item) => item.code === block.sectionCode);
+    const subtopicCodes = new Set(section?.subtopics?.map((subtopic) => subtopic.code) ?? []);
+    const searchableNoteText = [
+      block.summary,
+      ...(block.content ?? []).flatMap((contentBlock) => [
+        contentBlock.title ?? "",
+        contentBlock.lead ?? "",
+        ...(contentBlock.paragraphs ?? []),
+        ...(contentBlock.items ?? [])
+      ]),
+      ...(block.topical ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
+      ...(block.krokPatterns ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
+      ...(block.pitfalls ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
+      ...(block.krokSearchTerms ?? [])
+    ].join("\n").toLowerCase();
+
+    for (const rule of coverageRules) {
+      if (!subtopicCodes.has(rule.code)) {
+        failures.push(`Note block ${block.sectionCode} has coverage rule for missing subtopic ${rule.code}`);
+        continue;
+      }
+      for (const group of rule.groups) {
+        if (!group.some((term) => searchableNoteText.includes(term.toLowerCase()))) {
+          failures.push(`Note block ${block.sectionCode} does not cover subtopic ${rule.code}: ${group.join(" | ")}`);
+        }
+      }
+    }
   }
 }
 
