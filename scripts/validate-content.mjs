@@ -163,7 +163,7 @@ const krokTrainingBooklets = parseExportedArray(
 );
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002"]);
-const forbiddenAi002StemPatterns = [
+const forbiddenTrainingStemPatterns = [
   /ключова ознака/i,
   /клінічному завданні/i,
   /найкраще відповідає цій ситуації/i
@@ -290,10 +290,7 @@ for (const booklet of krokTrainingBooklets) {
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`KROK training question ${question.id} has empty text`);
     }
-    if (
-      booklet.id === "ai-002" &&
-      forbiddenAi002StemPatterns.some((pattern) => pattern.test(question.text))
-    ) {
+    if (forbiddenTrainingStemPatterns.some((pattern) => pattern.test(question.text))) {
       failures.push(`KROK training question ${question.id} uses a forbidden meta-style stem phrase`);
     }
     if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
