@@ -3,16 +3,19 @@ import "server-only";
 import { krokAnswerOverrides } from "./answer-overrides";
 import { krokAnswerExplanations } from "./explanations";
 import { krokBooklets } from "./generated";
+import { krokTrainingBooklets } from "./training";
 import type {
   KrokAnswerExplanation,
   KrokBooklet,
   KrokBookletId,
   KrokQuestion,
   KrokResolvedBooklet,
-  KrokResolvedQuestion
+  KrokResolvedQuestion,
+  KrokTrainingBooklet
 } from "./schema";
 
 const typedKrokBooklets = krokBooklets as KrokBooklet[];
+const typedKrokTrainingBooklets = krokTrainingBooklets as KrokTrainingBooklet[];
 const typedKrokAnswerExplanations = krokAnswerExplanations as KrokAnswerExplanation[];
 const explanationByQuestionId = new Map(
   typedKrokAnswerExplanations.map((item) => [item.questionId, item])
@@ -35,27 +38,52 @@ function resolveQuestion(question: KrokQuestion): KrokResolvedQuestion {
 
 const resolvedKrokBooklets: KrokResolvedBooklet[] = typedKrokBooklets.map((booklet) => ({
   ...booklet,
+  kind: "official",
   questions: booklet.questions.map(resolveQuestion)
 }));
 
-export function getKrokBooklets(): KrokResolvedBooklet[] {
-  return resolvedKrokBooklets;
-}
+const resolvedKrokTrainingBooklets: KrokResolvedBooklet[] = typedKrokTrainingBooklets.map(
+  (booklet) => ({
+    ...booklet,
+    questions: booklet.questions.map((question) => ({
+      ...question,
+      explanation: question.explanation
+    }))
+  })
+);
+
+const allResolvedKrokBooklets = [...resolvedKrokBooklets, ...resolvedKrokTrainingBooklets];
 
 export function getKrokBooklet(id: KrokBookletId): KrokResolvedBooklet | undefined {
-  return resolvedKrokBooklets.find((booklet) => booklet.id === id);
+  return allResolvedKrokBooklets.find((booklet) => booklet.id === id);
 }
 
 export function getAllKrokQuestions(): KrokResolvedQuestion[] {
+  return allResolvedKrokBooklets.flatMap((booklet) => booklet.questions);
+}
+
+export function getOfficialKrokQuestions(): KrokResolvedQuestion[] {
   return resolvedKrokBooklets.flatMap((booklet) => booklet.questions);
+}
+
+export function getKrokCatalog() {
+  return {
+    officialBooklets: resolvedKrokBooklets,
+    trainingBooklets: resolvedKrokTrainingBooklets,
+    allBooklets: allResolvedKrokBooklets,
+    officialQuestions: getOfficialKrokQuestions()
+  };
 }
 
 export function getKrokStats() {
   const questions = getAllKrokQuestions();
 
   return {
-    bookletCount: typedKrokBooklets.length,
+    bookletCount: allResolvedKrokBooklets.length,
+    officialBookletCount: typedKrokBooklets.length,
+    trainingBookletCount: typedKrokTrainingBooklets.length,
     questionCount: questions.length,
+    officialQuestionCount: getOfficialKrokQuestions().length,
     optionCount: questions.reduce((sum, question) => sum + question.options.length, 0)
   };
 }

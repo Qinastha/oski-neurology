@@ -35,13 +35,11 @@ import type {
 import { cn } from "@/lib/cn";
 import {
   formatAnswerBlockType,
-  formatBlueprintVerdict,
   formatEvidenceType,
   formatGroup,
   formatPracticalSkillKind,
   formatPracticalStepRole,
   formatStationType,
-  formatStatus,
   formatTaskCoverage
 } from "@/lib/case-format";
 import { MarkdownView } from "./MarkdownView";
@@ -63,6 +61,9 @@ const iconButtonClass =
   "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong";
 const yellowButtonClass =
   "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]";
+const BRAND_ICON_SRC = "/metadata/apple-icon.png";
+const BRAND_ICON_CLASS =
+  "[filter:drop-shadow(0_0_9px_rgba(250,204,21,0.42))_drop-shadow(0_2px_5px_rgba(124,58,237,0.16))]";
 const answerBlockOrder: Record<StationAnswerBlockType, number> = {
   task_summary: 10,
   actor_communication: 20,
@@ -306,16 +307,13 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
 
   return (
     <div className="grid gap-3">
-      <div className="grid gap-2 rounded-lg border border-clinical-line bg-[#fffaf0] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+      <div className="rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
         <div>
           <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
             {formatStationType(blueprint.stationType)}
           </p>
           <h3 className="mt-1 text-lg font-black leading-tight">Карта підготовки</h3>
         </div>
-        <span className="inline-flex min-h-8 items-center justify-center rounded-lg border border-clinical-line-strong bg-white px-2.5 text-xs font-extrabold text-[#51421a]">
-          {formatBlueprintVerdict(blueprint.reviewVerdict)}
-        </span>
       </div>
 
       <section className="rounded-lg border border-clinical-line bg-white p-3">
@@ -617,11 +615,18 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
   ] as const;
 
   return (
-    <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[210px_minmax(0,760px)] xl:grid-cols-[210px_minmax(0,760px)_240px] max-md:block max-md:p-0 max-md:pb-20">
+    <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,760px)] xl:grid-cols-[240px_minmax(0,760px)_240px] max-md:block max-md:p-0 max-md:pb-20">
       <aside className={cn(panelClass, "sticky top-5 flex h-[calc(100dvh-40px)] flex-col p-[18px_14px] max-md:hidden")}>
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/cases">
-          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
-            <Brain size={24} />
+          <span className="inline-flex h-12 w-12 items-center justify-center">
+            <Image
+              alt=""
+              aria-hidden="true"
+              className={BRAND_ICON_CLASS}
+              height={46}
+              src={BRAND_ICON_SRC}
+              width={46}
+            />
           </span>
           <span>ОСКІ Неврологія</span>
         </Link>
@@ -691,7 +696,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
         </div>
 
         <SectionBlock id="original" title="Оригінальне завдання" icon={<FileText size={19} />}>
-          <div className="mb-3 flex items-center justify-between gap-4 text-[13px] text-clinical-muted">
+          <div className="mb-3 text-[13px] text-clinical-muted">
             <a
               className="font-extrabold text-clinical-accent-strong underline underline-offset-4"
               href={studyCase.sourcePdf.href}
@@ -699,7 +704,6 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             >
               {studyCase.sourcePdf.label}
             </a>
-            <span>{formatStatus(studyCase.reviewStatus)}</span>
           </div>
           <MarkdownView markdown={studyCase.originalMarkdown} />
           <OriginalPagesDisclosure pages={studyCase.originalPages} onOpen={setLightboxImage} />

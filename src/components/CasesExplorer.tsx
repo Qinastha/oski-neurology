@@ -1,10 +1,10 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
-  Brain,
   ClipboardList,
   FileText,
   GraduationCap,
@@ -28,6 +28,9 @@ const filterLabels: Record<Filter, string> = {
   imaging: "КТ/МРТ",
   favorites: "Обране"
 };
+const BRAND_ICON_SRC = "/metadata/apple-icon.png";
+const BRAND_ICON_CLASS =
+  "[filter:drop-shadow(0_0_9px_rgba(250,204,21,0.42))_drop-shadow(0_2px_5px_rgba(124,58,237,0.16))]";
 
 const navigationItems = [
   { filter: "all", label: "Усі станції", mobileLabel: "Усі", Icon: ClipboardList },
@@ -102,11 +105,18 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
   }
 
   return (
-    <main className="grid min-h-dvh gap-[18px] p-5 md:grid-cols-[210px_minmax(0,1fr)] max-md:block max-md:p-0 max-md:pb-20">
+    <main className="grid min-h-dvh gap-[18px] p-5 md:grid-cols-[240px_minmax(0,1fr)] max-md:block max-md:p-0 max-md:pb-20">
       <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/cases">
-          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
-            <Brain size={24} />
+          <span className="inline-flex h-12 w-12 items-center justify-center">
+            <Image
+              alt=""
+              aria-hidden="true"
+              className={BRAND_ICON_CLASS}
+              height={46}
+              src={BRAND_ICON_SRC}
+              width={46}
+            />
           </span>
           <span>ОСКІ Неврологія</span>
         </Link>

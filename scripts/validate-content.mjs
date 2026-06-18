@@ -6,6 +6,7 @@ const casesRoot = path.join(root, "src/content/cases");
 const krokGeneratedPath = path.join(root, "src/content/krok/generated.ts");
 const krokExplanationsPath = path.join(root, "src/content/krok/explanations.ts");
 const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts");
+const krokTrainingPath = path.join(root, "src/content/krok/training.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -155,12 +156,44 @@ const krokAnswerOverrides = parseExportedArray(
   "krokAnswerOverrides",
   "KrokAnswerOverride"
 );
+const krokTrainingBooklets = parseExportedArray(
+  krokTrainingPath,
+  "krokTrainingBooklets",
+  "KrokTrainingBooklet"
+);
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
+const expectedTrainingBookletIds = new Set(["ai-001", "ai-002"]);
+const forbiddenAi002StemPatterns = [
+  /ключова ознака/i,
+  /клінічному завданні/i,
+  /найкраще відповідає цій ситуації/i
+];
+const expectedTrainingSectionCounts = new Map([
+  ["1", 15],
+  ["2", 30],
+  ["3", 15],
+  ["4", 9],
+  ["5", 15],
+  ["6", 15],
+  ["7", 15],
+  ["8", 3],
+  ["9", 3],
+  ["10", 3],
+  ["11", 3],
+  ["12", 9],
+  ["13", 3],
+  ["14", 6],
+  ["15", 6]
+]);
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
+if (krokTrainingBooklets.length !== 2) {
+  failures.push(`Expected 2 KROK training booklets, got ${krokTrainingBooklets.length}`);
+}
 
 const krokQuestionIds = new Set();
+const normalizedKrokQuestionTexts = new Set();
 const krokOptionIdsByQuestionId = new Map();
 let krokQuestionCount = 0;
 let krokCorrectAnswerCount = 0;
@@ -189,6 +222,7 @@ for (const booklet of krokBooklets) {
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`KROK question ${question.id} has empty text`);
     }
+    normalizedKrokQuestionTexts.add(normalizeQuestionText(question.text));
     if (!Array.isArray(question.options) || question.options.length < 3 || question.options.length > 5) {
       failures.push(`KROK question ${question.id} has invalid option count`);
       continue;
@@ -212,6 +246,103 @@ if (krokQuestionCount !== 450) {
 }
 if (krokCorrectAnswerCount !== 450) {
   failures.push(`Expected 450 KROK correct answers, got ${krokCorrectAnswerCount}`);
+}
+
+function normalizeQuestionText(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[’']/g, "'")
+    .replace(/[^a-zа-яіїєґ0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const allQuestionIds = new Set(krokQuestionIds);
+let trainingQuestionCount = 0;
+let trainingCorrectAnswerCount = 0;
+for (const booklet of krokTrainingBooklets) {
+  if (!expectedTrainingBookletIds.has(booklet.id)) {
+    failures.push(`Unexpected KROK training booklet id: ${booklet.id}`);
+  }
+  if (booklet.kind !== "training") {
+    failures.push(`KROK training booklet ${booklet.id} must have kind "training"`);
+  }
+  if (!Array.isArray(booklet.questions) || booklet.questions.length !== 150) {
+    failures.push(`Expected 150 KROK training questions for ${booklet.id}, got ${booklet.questions?.length}`);
+    continue;
+  }
+
+  const sectionCounts = new Map();
+  const normalizedTrainingTexts = new Set();
+  for (const question of booklet.questions) {
+    trainingQuestionCount += 1;
+    if (allQuestionIds.has(question.id)) {
+      failures.push(`Duplicate KROK question id across official/training data: ${question.id}`);
+    }
+    allQuestionIds.add(question.id);
+
+    if (question.bookletId !== booklet.id) {
+      failures.push(`KROK training question ${question.id} has wrong bookletId ${question.bookletId}`);
+    }
+    if (!Number.isInteger(question.sourceNumber) || question.sourceNumber < 1) {
+      failures.push(`KROK training question ${question.id} has invalid sourceNumber`);
+    }
+    if (typeof question.text !== "string" || question.text.trim().length === 0) {
+      failures.push(`KROK training question ${question.id} has empty text`);
+    }
+    if (
+      booklet.id === "ai-002" &&
+      forbiddenAi002StemPatterns.some((pattern) => pattern.test(question.text))
+    ) {
+      failures.push(`KROK training question ${question.id} uses a forbidden meta-style stem phrase`);
+    }
+    if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
+      failures.push(`KROK training question ${question.id} needs an explanation`);
+    }
+    if (typeof question.contentSection !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(question.contentSection)) {
+      failures.push(`KROK training question ${question.id} has invalid contentSection`);
+    } else {
+      const majorSection = question.contentSection.split(".")[0];
+      sectionCounts.set(majorSection, (sectionCounts.get(majorSection) ?? 0) + 1);
+    }
+
+    const normalized = normalizeQuestionText(question.text);
+    if (normalizedTrainingTexts.has(normalized)) {
+      failures.push(`Duplicate KROK training question text: ${question.id}`);
+    }
+    normalizedTrainingTexts.add(normalized);
+    if (normalizedKrokQuestionTexts.has(normalized)) {
+      failures.push(`KROK training question duplicates official question text: ${question.id}`);
+    }
+
+    if (!Array.isArray(question.options) || question.options.length < 3 || question.options.length > 5) {
+      failures.push(`KROK training question ${question.id} has invalid option count`);
+      continue;
+    }
+    const optionIds = new Set(question.options.map((option) => option.id));
+    if (optionIds.size !== question.options.length) {
+      failures.push(`KROK training question ${question.id} has duplicate option ids`);
+    }
+    if (!optionIds.has(question.correctOptionId)) {
+      failures.push(`KROK training question ${question.id} correctOptionId does not match options`);
+    } else {
+      trainingCorrectAnswerCount += 1;
+    }
+  }
+
+  for (const [section, expectedCount] of expectedTrainingSectionCounts) {
+    const actualCount = sectionCounts.get(section) ?? 0;
+    if (actualCount !== expectedCount) {
+      failures.push(`KROK training booklet ${booklet.id} section ${section}.0.0.0 expected ${expectedCount}, got ${actualCount}`);
+    }
+  }
+}
+
+if (trainingQuestionCount !== 300) {
+  failures.push(`Expected 300 KROK training questions, got ${trainingQuestionCount}`);
+}
+if (trainingCorrectAnswerCount !== 300) {
+  failures.push(`Expected 300 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
 }
 
 const explanationQuestionIds = new Set();
@@ -272,5 +403,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} KROK questions`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions`
 );

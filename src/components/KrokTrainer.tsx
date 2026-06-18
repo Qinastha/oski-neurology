@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
-  Brain,
   CheckCircle2,
   ClipboardList,
   Eye,
@@ -32,7 +32,8 @@ import { cn } from "@/lib/cn";
 type Filter = "all" | "unanswered" | "wrong" | "correct" | "flagged";
 
 interface KrokTrainerProps {
-  booklets: KrokResolvedBooklet[];
+  officialBooklets: KrokResolvedBooklet[];
+  trainingBooklets: KrokResolvedBooklet[];
 }
 
 interface CookieSession {
@@ -61,6 +62,9 @@ interface KrokResult {
 const COOKIE_NAME = "krokSessionV1";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 const EXPLANATIONS_STORAGE_KEY = "krokShowExplanationsV1";
+const BRAND_ICON_SRC = "/metadata/apple-icon.png";
+const BRAND_ICON_CLASS =
+  "[filter:drop-shadow(0_0_9px_rgba(250,204,21,0.42))_drop-shadow(0_2px_5px_rgba(124,58,237,0.16))]";
 
 const filterLabels: Record<Filter, string> = {
   all: "Усі",
@@ -242,7 +246,16 @@ function createSession({
 }
 
 function formatBookletLabel(bookletId: KrokSessionBookletId) {
-  return bookletId === "random" ? "Випадковий буклет" : `КРОК ${bookletId}`;
+  if (bookletId === "random") {
+    return "Випадковий буклет";
+  }
+  if (bookletId.startsWith("ai-")) {
+    const bookletNumber = Number(bookletId.slice(3));
+    return Number.isFinite(bookletNumber)
+      ? `Тренувальний буклет ${bookletNumber}`
+      : "Тренувальний буклет";
+  }
+  return `КРОК ${bookletId}`;
 }
 
 function calculateResult(session: KrokSession, questions: KrokResolvedQuestion[]) {
@@ -320,13 +333,15 @@ function BookletCard({
   title,
   description,
   count,
+  badge,
   onStartOrdered,
   onStartShuffled
 }: {
   bookletId: KrokSessionBookletId;
   title: string;
-  description: string;
+  description?: string;
   count: number;
+  badge?: string;
   onStartOrdered?: () => void;
   onStartShuffled: () => void;
 }) {
@@ -336,13 +351,25 @@ function BookletCard({
       data-krok-start-card={bookletId}
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-xl font-black leading-tight">{title}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-clinical-muted">{description}</p>
+          {description ? (
+            <p className="mt-1 text-sm leading-relaxed text-clinical-muted">{description}</p>
+          ) : null}
         </div>
-        <span className="rounded-lg border border-clinical-line bg-[#fffaf0] px-2.5 py-1 text-sm font-black text-clinical-accent-strong">
-          {count}
-        </span>
+        <div className="flex shrink-0 flex-wrap items-start justify-end gap-1.5">
+          {badge ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-clinical-line-strong bg-clinical-accent-soft px-2.5 py-1 text-xs font-black uppercase tracking-[0.08em] text-clinical-accent-strong">
+              <span>{badge}</span>
+              <span aria-hidden="true">·</span>
+              <span className="normal-case tracking-normal">{count} питань</span>
+            </span>
+          ) : (
+            <span className="rounded-full border border-clinical-line bg-[#fffaf0] px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
+              {count} питань
+            </span>
+          )}
+        </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {onStartOrdered ? (
@@ -554,14 +581,29 @@ function QuestionCard({
   );
 }
 
-export function KrokTrainer({ booklets }: KrokTrainerProps) {
+export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerProps) {
   const [session, setSession] = useState<KrokSession | null>(null);
   const [showSession, setShowSession] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [showExplanations, setShowExplanations] = useState(true);
 
-  const allQuestions = useMemo(() => booklets.flatMap((booklet) => booklet.questions), [booklets]);
+  const allBooklets = useMemo(
+    () => [...officialBooklets, ...trainingBooklets],
+    [officialBooklets, trainingBooklets]
+  );
+  const officialQuestions = useMemo(
+    () => officialBooklets.flatMap((booklet) => booklet.questions),
+    [officialBooklets]
+  );
+  const trainingQuestionCount = useMemo(
+    () => trainingBooklets.reduce((sum, booklet) => sum + booklet.questions.length, 0),
+    [trainingBooklets]
+  );
+  const allQuestions = useMemo(
+    () => allBooklets.flatMap((booklet) => booklet.questions),
+    [allBooklets]
+  );
   const questionsById = useMemo(
     () => new Map(allQuestions.map((question) => [question.id, question])),
     [allQuestions]
@@ -693,11 +735,11 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
     const bookletQuestions =
       bookletId === "random"
         ? []
-        : booklets.find((booklet) => booklet.id === bookletId)?.questions ?? [];
+        : allBooklets.find((booklet) => booklet.id === bookletId)?.questions ?? [];
     const next = createSession({
       bookletId,
       mode,
-      allQuestions,
+      allQuestions: officialQuestions,
       bookletQuestions
     });
     setFilter("all");
@@ -782,18 +824,22 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
                 ОСКІ станції
               </Link>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
-                450 питань · 3 буклети
+                {officialQuestions.length} офіційних питань · {trainingQuestionCount} тренувальних
               </p>
               <h1 className="mt-1 text-[clamp(30px,4vw,46px)] font-black leading-[1.04]">
                 КРОК 3 Неврологія
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-clinical-muted">
-                Тренувальний режим із миттєвою перевіркою відповіді, позначками для
-                повторення та збереженням прогресу на 7 днів у cookies.
-              </p>
             </div>
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
-              <Brain size={26} />
+            <span className="inline-flex h-16 w-16 items-center justify-center">
+              <Image
+                alt=""
+                aria-hidden="true"
+                className={BRAND_ICON_CLASS}
+                height={60}
+                priority
+                src={BRAND_ICON_SRC}
+                width={60}
+              />
             </span>
           </header>
 
@@ -811,8 +857,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
                   /{resumeState.result.total}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-clinical-muted">
-                  Прогрес збережено в cookies на 7 днів. Можна продовжити з тим самим
-                  порядком питань і відповідей або почати заново.
+                  Продовжити з того ж місця або почати заново.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -838,25 +883,53 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             </section>
           ) : null}
 
-          <div className="grid gap-3 md:grid-cols-2">
-            {booklets.map((booklet) => (
-              <BookletCard
-                bookletId={booklet.id}
-                count={booklet.questions.length}
-                description="Окремий буклет можна пройти в оригінальному порядку або перемішати питання."
-                key={booklet.id}
-                title={`КРОК ${booklet.id}`}
-                onStartOrdered={() => startSession(booklet.id, "ordered")}
-                onStartShuffled={() => startSession(booklet.id, "shuffled")}
-              />
-            ))}
-            <BookletCard
-              bookletId="random"
-              count={150}
-              description="150 випадкових питань із загального банку без повторів. Порядок збережеться після оновлення сторінки."
-              title="Випадковий буклет"
-              onStartShuffled={() => startSession("random", "shuffled")}
-            />
+          <div className="grid gap-5">
+            <section>
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black">Офіційні буклети</h2>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {officialBooklets.map((booklet) => (
+                  <BookletCard
+                    bookletId={booklet.id}
+                    count={booklet.questions.length}
+                    key={booklet.id}
+                    title={`КРОК ${booklet.id}`}
+                    onStartOrdered={() => startSession(booklet.id, "ordered")}
+                    onStartShuffled={() => startSession(booklet.id, "shuffled")}
+                  />
+                ))}
+                <BookletCard
+                  bookletId="random"
+                  count={150}
+                  title="Випадковий буклет"
+                  onStartShuffled={() => startSession("random", "shuffled")}
+                />
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black">Тренувальні буклети</h2>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {trainingBooklets.map((booklet) => (
+                  <BookletCard
+                    badge="AI"
+                    bookletId={booklet.id}
+                    count={booklet.questions.length}
+                    key={booklet.id}
+                    title={booklet.title}
+                    onStartOrdered={() => startSession(booklet.id, "ordered")}
+                    onStartShuffled={() => startSession(booklet.id, "shuffled")}
+                  />
+                ))}
+              </div>
+            </section>
           </div>
         </section>
       </main>
@@ -867,13 +940,20 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
 
   return (
     <main
-      className="grid min-h-dvh gap-[18px] p-5 lg:grid-cols-[260px_minmax(0,1fr)] max-lg:flex max-lg:h-dvh max-lg:flex-col max-lg:overflow-hidden max-lg:p-0"
+      className="grid min-h-dvh gap-[18px] p-5 lg:grid-cols-[292px_minmax(0,1fr)] max-lg:flex max-lg:h-dvh max-lg:flex-col max-lg:overflow-hidden max-lg:p-0"
       data-krok-page="session"
     >
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden">
+      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] min-h-0 flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden">
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/krok">
-          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-clinical-accent-soft text-clinical-accent-strong">
-            <ClipboardList size={21} />
+          <span className="inline-flex h-12 w-12 items-center justify-center">
+            <Image
+              alt=""
+              aria-hidden="true"
+              className={BRAND_ICON_CLASS}
+              height={46}
+              src={BRAND_ICON_SRC}
+              width={46}
+            />
           </span>
           <span>КРОК тести</span>
         </Link>
@@ -922,7 +1002,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
           ))}
         </nav>
 
-        <div className="mt-4 grid grid-cols-5 gap-1 overflow-y-auto pr-1">
+        <div className="mt-4 grid min-h-0 flex-1 grid-cols-6 content-start gap-1 overflow-y-auto pr-1">
           {sessionQuestions.map((question, index) => {
             const selectedOptionId = answerByQuestion.get(question.id);
             const flagged = (session.flags[index] ?? "0") === "1";
@@ -934,7 +1014,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             return (
               <a
                 className={cn(
-                  "inline-flex h-9 items-center justify-center rounded-lg border text-xs font-black",
+                  "inline-flex h-8 items-center justify-center rounded-lg border text-xs font-black",
                   stateClass,
                   flagged && "ring-2 ring-clinical-accent"
                 )}
@@ -948,7 +1028,8 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
         </div>
 
         <button
-          className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3 text-sm font-extrabold text-[#201900]"
+          className="mt-3 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3 text-sm font-extrabold text-[#201900]"
+          data-krok-finish-action="desktop"
           type="button"
           onClick={isFinished ? restart : finishSession}
         >
@@ -973,7 +1054,6 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <ExplanationToggle enabled={showExplanations} onToggle={toggleExplanations} />
             <Link
               className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
               href="/krok"
@@ -1024,7 +1104,7 @@ export function KrokTrainer({ booklets }: KrokTrainerProps) {
 
         <div className="mt-4 grid gap-3">
           {visibleQuestions.map((question) => {
-            const realIndex = session.questionIds.indexOf(question.id);
+            const realIndex = (questionNumberById.get(question.id) ?? 1) - 1;
             const selectedOptionId = answerByQuestion.get(question.id);
             const optionOrder = shuffleWithSeed(
               question.options,

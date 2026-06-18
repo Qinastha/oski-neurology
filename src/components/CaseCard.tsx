@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 
 import type { CaseSummary } from "@/content/schema";
-import { formatGroup, formatStatus } from "@/lib/case-format";
+import { formatGroup } from "@/lib/case-format";
 
 interface CaseCardProps {
   studyCase: CaseSummary;
@@ -29,8 +29,7 @@ export function CaseCard({
         <span className="min-w-0">
           <strong className="block truncate text-[15px] leading-tight">{studyCase.title}</strong>
           <small className="mt-1 block text-xs text-clinical-muted">
-            {formatGroup(studyCase.group)} · {studyCase.checklistCount} пунктів ·{" "}
-            {formatStatus(studyCase.reviewStatus)}
+            {formatGroup(studyCase.group)} · {studyCase.checklistCount} пунктів
           </small>
         </span>
       </Link>
