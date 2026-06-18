@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
+  BookOpen,
   CheckCircle2,
   ClipboardList,
   Eye,
@@ -823,6 +824,13 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
                 <Home size={17} />
                 ОСКІ станції
               </Link>
+              <Link
+                className="mb-5 ml-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                href="/notes"
+              >
+                <BookOpen size={17} />
+                Конспект
+              </Link>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
                 {officialQuestions.length} офіційних питань · {trainingQuestionCount} тренувальних
               </p>
@@ -963,6 +971,13 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
         >
           <Home size={16} />
           ОСКІ станції
+        </Link>
+        <Link
+          className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+          href="/notes"
+        >
+          <BookOpen size={16} />
+          Конспект
         </Link>
 
         <div className="mt-6 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">

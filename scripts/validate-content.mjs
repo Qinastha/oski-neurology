@@ -7,6 +7,8 @@ const krokGeneratedPath = path.join(root, "src/content/krok/generated.ts");
 const krokExplanationsPath = path.join(root, "src/content/krok/explanations.ts");
 const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts");
 const krokTrainingPath = path.join(root, "src/content/krok/training.ts");
+const notesSectionsPath = path.join(root, "src/content/notes/sections.ts");
+const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -161,8 +163,27 @@ const krokTrainingBooklets = parseExportedArray(
   "krokTrainingBooklets",
   "KrokTrainingBooklet"
 );
+const noteSections = parseExportedArray(notesSectionsPath, "noteSections", "NoteSection");
+const noteBlocks = parseExportedArray(notesBlocksPath, "noteBlocks", "NoteBlock");
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002"]);
+const expectedNoteSectionWeights = new Map([
+  ["1.0.0.0", 10],
+  ["2.0.0.0", 20],
+  ["3.0.0.0", 10],
+  ["4.0.0.0", 6],
+  ["5.0.0.0", 10],
+  ["6.0.0.0", 10],
+  ["7.0.0.0", 10],
+  ["8.0.0.0", 2],
+  ["9.0.0.0", 2],
+  ["10.0.0.0", 2],
+  ["11.0.0.0", 2],
+  ["12.0.0.0", 6],
+  ["13.0.0.0", 2],
+  ["14.0.0.0", 4],
+  ["15.0.0.0", 4]
+]);
 const forbiddenTrainingStemPatterns = [
   /ключова ознака/i,
   /клінічному завданні/i,
@@ -394,11 +415,130 @@ for (const item of krokAnswerOverrides) {
   }
 }
 
+if (noteSections.length !== 15) {
+  failures.push(`Expected 15 note sections, got ${noteSections.length}`);
+}
+
+const noteSectionCodes = new Set();
+const noteSectionSlugs = new Set();
+let noteSectionWeightTotal = 0;
+for (const section of noteSections) {
+  if (typeof section.code !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(section.code)) {
+    failures.push(`Note section has invalid code: ${section.code}`);
+    continue;
+  }
+  if (noteSectionCodes.has(section.code)) {
+    failures.push(`Duplicate note section code: ${section.code}`);
+  }
+  noteSectionCodes.add(section.code);
+
+  if (typeof section.slug !== "string" || !/^[a-z0-9-]+$/.test(section.slug)) {
+    failures.push(`Note section ${section.code} has invalid slug`);
+  } else if (noteSectionSlugs.has(section.slug)) {
+    failures.push(`Duplicate note section slug: ${section.slug}`);
+  }
+  noteSectionSlugs.add(section.slug);
+
+  const expectedWeight = expectedNoteSectionWeights.get(section.code);
+  if (expectedWeight === undefined) {
+    failures.push(`Unexpected note section code: ${section.code}`);
+  } else if (section.weight !== expectedWeight) {
+    failures.push(`Note section ${section.code} expected weight ${expectedWeight}, got ${section.weight}`);
+  }
+  noteSectionWeightTotal += Number(section.weight ?? 0);
+
+  if (section.status !== "available" && section.status !== "planned") {
+    failures.push(`Note section ${section.code} has invalid status ${section.status}`);
+  }
+  if (!Array.isArray(section.subtopics) || section.subtopics.length === 0) {
+    failures.push(`Note section ${section.code} needs subtopics`);
+  }
+  for (const subtopic of section.subtopics ?? []) {
+    if (typeof subtopic.code !== "string" || typeof subtopic.title !== "string" || subtopic.title.trim().length === 0) {
+      failures.push(`Note section ${section.code} has invalid subtopic`);
+    }
+  }
+}
+if (noteSectionWeightTotal !== 100) {
+  failures.push(`Expected note section weights to sum to 100, got ${noteSectionWeightTotal}`);
+}
+
+const noteBlockCodes = new Set();
+for (const block of noteBlocks) {
+  if (!noteSectionCodes.has(block.sectionCode)) {
+    failures.push(`Note block references missing section ${block.sectionCode}`);
+  }
+  if (noteBlockCodes.has(block.sectionCode)) {
+    failures.push(`Duplicate note block for ${block.sectionCode}`);
+  }
+  noteBlockCodes.add(block.sectionCode);
+
+  for (const key of [
+    "highYield",
+    "localization",
+    "diagnosticClues",
+    "differentials",
+    "krokPatterns",
+    "pitfalls"
+  ]) {
+    if (!Array.isArray(block[key]) || block[key].length === 0) {
+      failures.push(`Note block ${block.sectionCode} needs ${key}`);
+      continue;
+    }
+    for (const point of block[key]) {
+      if (
+        typeof point.title !== "string" ||
+        point.title.trim().length === 0 ||
+        typeof point.text !== "string" ||
+        point.text.trim().length < 20
+      ) {
+        failures.push(`Note block ${block.sectionCode} has invalid point in ${key}`);
+      }
+    }
+  }
+
+  if (typeof block.summary !== "string" || block.summary.trim().length < 40) {
+    failures.push(`Note block ${block.sectionCode} needs a summary`);
+  }
+  if (!Array.isArray(block.sources) || block.sources.length === 0) {
+    failures.push(`Note block ${block.sectionCode} needs sources`);
+  }
+  for (const source of block.sources ?? []) {
+    if (typeof source.label !== "string" || source.label.trim().length === 0) {
+      failures.push(`Note block ${block.sectionCode} has source without label`);
+    }
+    if (source.href && typeof source.href !== "string") {
+      failures.push(`Note block ${block.sectionCode} has invalid source href`);
+    }
+  }
+  for (const relatedCase of block.relatedCases ?? []) {
+    if (!slugs.includes(relatedCase.slug)) {
+      failures.push(`Note block ${block.sectionCode} references missing case ${relatedCase.slug}`);
+    }
+    if (typeof relatedCase.reason !== "string" || relatedCase.reason.trim().length < 10) {
+      failures.push(`Note block ${block.sectionCode} related case ${relatedCase.slug} needs a reason`);
+    }
+  }
+  if (!Array.isArray(block.krokSearchTerms) || block.krokSearchTerms.length === 0) {
+    failures.push(`Note block ${block.sectionCode} needs krokSearchTerms`);
+  }
+}
+
+for (const section of noteSections) {
+  const hasBlock = noteBlockCodes.has(section.code);
+  if (section.status === "available" && !hasBlock) {
+    failures.push(`Note section ${section.code} is available but has no block`);
+  }
+  if (section.status === "planned" && hasBlock) {
+    failures.push(`Note section ${section.code} is planned but already has a block`);
+  }
+}
+
 if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions, ${noteSections.length} note sections, ${noteBlocks.length} note blocks`
 );

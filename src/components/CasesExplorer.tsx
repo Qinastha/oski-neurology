@@ -127,6 +127,13 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           <GraduationCap size={16} />
           КРОК тести
         </Link>
+        <Link
+          className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+          href="/notes"
+        >
+          <BookOpen size={16} />
+          Конспект
+        </Link>
 
         <nav className="mt-8 grid gap-1.5" aria-label="Основна навігація">
           {navigationItems.map(({ filter: itemFilter, label, Icon }) => (
@@ -165,6 +172,13 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
             >
               <GraduationCap size={16} />
               КРОК
+            </Link>
+            <Link
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+              href="/notes"
+            >
+              <BookOpen size={16} />
+              Конспект
             </Link>
             {lastCase ? (
               <Link

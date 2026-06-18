@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 const outputDir = "/private/tmp/osce-neurology-site-qa";
 await mkdir(outputDir, { recursive: true });
 
+const baseUrl = process.env.QA_BASE_URL ?? "http://127.0.0.1:3000";
 const browser = await chromium.launch();
 const results = [];
 const generatedKrokSource = readFileSync(
@@ -69,6 +70,7 @@ function getCorrectOptionId(questionId) {
 }
 
 async function inspect(name, url, viewport, selector) {
+  const targetUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
   const page = await browser.newPage({ viewport });
   const problems = [];
   page.on("console", (message) => {
@@ -82,7 +84,7 @@ async function inspect(name, url, viewport, selector) {
     await page.context().clearCookies();
   }
 
-  await page.goto(url, { waitUntil: "networkidle" });
+  await page.goto(targetUrl, { waitUntil: "networkidle" });
   await page.waitForSelector(selector, { timeout: 15000 });
 
   const metrics = await page.evaluate(() => ({
@@ -92,10 +94,14 @@ async function inspect(name, url, viewport, selector) {
     checklistCards: document.querySelectorAll(".check-step").length,
     imageCards: document.querySelectorAll(".image-grid figure").length,
     mobileTabs: document.querySelectorAll(".mobile-tabbar a, .mobile-tabbar button").length,
+    homeCards: document.querySelectorAll("[data-home-section-card]").length,
     krokStartCards: document.querySelectorAll("[data-krok-start-card]").length,
     krokQuestionCards: document.querySelectorAll("[data-krok-question-card]").length,
     krokResultPanels: document.querySelectorAll('[data-krok-result="summary"]').length,
     krokMobileNavigatorItems: document.querySelectorAll("[data-krok-mobile-question-link]").length,
+    noteSectionCards: document.querySelectorAll("[data-note-section-card]").length,
+    noteReaderCards: document.querySelectorAll("[data-note-reader] article").length,
+    noteSourceCards: document.querySelectorAll("#sources a, #sources p").length,
     practicalSkillCards: document.querySelectorAll("[data-blueprint-practical-skills='list'] article")
       .length
   }));
@@ -498,7 +504,7 @@ async function inspect(name, url, viewport, selector) {
       .evaluateAll((cards) => cards.slice(0, 3).map((card) => card.getAttribute("data-krok-question-card")));
 
     await page.context().clearCookies();
-    await page.goto(url, { waitUntil: "networkidle" });
+    await page.goto(targetUrl, { waitUntil: "networkidle" });
     await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
     await page.locator('[data-krok-start-card="2025"] [data-krok-start-mode="shuffled"]').click();
     await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
@@ -522,7 +528,7 @@ async function inspect(name, url, viewport, selector) {
       .evaluateAll((cards) => cards.slice(0, 5).map((card) => card.getAttribute("data-krok-question-card")));
 
     await page.context().clearCookies();
-    await page.goto(url, { waitUntil: "networkidle" });
+    await page.goto(targetUrl, { waitUntil: "networkidle" });
     await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
     await page.locator('[data-krok-start-card="random"] [data-krok-start-mode="shuffled"]').click();
     await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
@@ -631,151 +637,226 @@ async function inspect(name, url, viewport, selector) {
     interactions.bottomFinishButtons = await page.getByRole("button", { name: "Завершити" }).count();
   }
 
+  if (name === "desktop-notes") {
+    interactions.sectionCards = await page.locator("[data-note-section-card]").count();
+    interactions.availableCards = await page.locator('[data-note-section-status="available"]').count();
+    interactions.plannedCards = await page.locator('[data-note-section-status="planned"]').count();
+    const searchInput = page.getByPlaceholder("Пошук тем, провідників, синдромів, КРОК-маркерів...");
+    await searchInput.fill("головокружіння");
+    await page.waitForFunction(() => document.querySelectorAll("[data-note-section-card]").length === 1, {
+      timeout: 5000
+    });
+    interactions.searchCards = await page.locator("[data-note-section-card]").count();
+  }
+
+  if (name.includes("note-reader")) {
+    interactions.reader = await page.locator("[data-note-reader]").count();
+    interactions.highYieldCards = await page.locator("#high-yield article").count();
+    interactions.highYieldTags = await page.locator("#high-yield article span.rounded-full").count();
+    interactions.localizationCards = await page.locator("#localization article").count();
+    interactions.clueCards = await page.locator("#clues article").count();
+    interactions.differentialCards = await page.locator("#differentials article").count();
+    interactions.krokPatternCards = await page.locator("#krok-patterns article").count();
+    interactions.pitfallCards = await page.locator("#pitfalls article").count();
+    interactions.relatedSections = await page.locator("#related").count();
+    interactions.sourceSections = await page.locator("#sources").count();
+  }
+
+  if (name === "mobile-notes") {
+    interactions.sectionCards = await page.locator("[data-note-section-card]").count();
+    interactions.mobileTabs = await page.locator(".mobile-tabbar a").count();
+  }
+
+  if (name === "desktop-home" || name === "mobile-home") {
+    interactions.homeRoot = await page.locator('[data-home-hub="root"]').count();
+    interactions.homeCards = await page.locator("[data-home-section-card]").count();
+    interactions.homeLinks = await page.locator('[data-home-section-card] a[href^="/"]').count();
+    interactions.mobileTabs = await page.locator(".mobile-tabbar a").count();
+  }
+
   const screenshotPath = path.join(outputDir, `${name}.png`);
   await page.screenshot({ path: screenshotPath, fullPage: false });
   await page.close();
 
-  results.push({ name, url, viewport, metrics, interactions, problems, screenshotPath });
+  results.push({ name, url: targetUrl, viewport, metrics, interactions, problems, screenshotPath });
 }
 
-await inspect("desktop-cases", "http://127.0.0.1:3000/cases", { width: 1440, height: 900 }, ".case-list");
+await inspect("desktop-home", `/`, { width: 1440, height: 900 }, '[data-home-hub="root"]');
+await inspect("desktop-cases", `/cases`, { width: 1440, height: 900 }, ".case-list");
 await inspect(
   "desktop-krok",
-  "http://127.0.0.1:3000/krok",
+  `/krok`,
   { width: 1440, height: 900 },
   '[data-krok-page="start"]'
 );
 await inspect(
+  "desktop-notes",
+  `/notes`,
+  { width: 1440, height: 900 },
+  '[data-notes-section-list="catalog"]'
+);
+await inspect(
+  "desktop-note-reader",
+  `/notes/anatomy-physiology`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="anatomy-physiology"]'
+);
+await inspect(
+  "desktop-note-reader-syndromology",
+  `/notes/syndromology-topical-diagnosis`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="syndromology-topical-diagnosis"]'
+);
+await inspect(
   "desktop-dementia",
-  "http://127.0.0.1:3000/cases/dementia-mini-cog",
+  `/cases/dementia-mini-cog`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="dementia-mini-cog"]'
 );
 await inspect(
   "desktop-radiculopathy",
-  "http://127.0.0.1:3000/cases/radiculopathy-topic",
+  `/cases/radiculopathy-topic`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="radiculopathy-topic"]'
 );
 await inspect(
   "desktop-trigeminal-neuralgia",
-  "http://127.0.0.1:3000/cases/trigeminal-neuralgia-sensory",
+  `/cases/trigeminal-neuralgia-sensory`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="trigeminal-neuralgia-sensory"]'
 );
 await inspect(
   "desktop-neurosyphilis",
-  "http://127.0.0.1:3000/cases/neurosyphilis-vibration",
+  `/cases/neurosyphilis-vibration`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="neurosyphilis-vibration"]'
 );
 await inspect(
   "desktop-msa-orthostatic",
-  "http://127.0.0.1:3000/cases/msa-orthostatic",
+  `/cases/msa-orthostatic`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="msa-orthostatic"]'
 );
 await inspect(
   "desktop-bppv-dix-hallpike",
-  "http://127.0.0.1:3000/cases/bppv-dix-hallpike",
+  `/cases/bppv-dix-hallpike`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="bppv-dix-hallpike"]'
 );
 await inspect(
   "desktop-bppv-epley",
-  "http://127.0.0.1:3000/cases/bppv-epley",
+  `/cases/bppv-epley`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="bppv-epley"]'
 );
 await inspect(
   "desktop-hearing-rinne-weber",
-  "http://127.0.0.1:3000/cases/hearing-rinne-weber",
+  `/cases/hearing-rinne-weber`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="hearing-rinne-weber"]'
 );
 await inspect(
   "desktop-parkinson-gait-thevenard",
-  "http://127.0.0.1:3000/cases/parkinson-gait-thevenard",
+  `/cases/parkinson-gait-thevenard`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="parkinson-gait-thevenard"]'
 );
 await inspect(
   "desktop-cauda-equina",
-  "http://127.0.0.1:3000/cases/cauda-equina",
+  `/cases/cauda-equina`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="cauda-equina"]'
 );
 await inspect(
   "desktop-trigeminal-sensory",
-  "http://127.0.0.1:3000/cases/trigeminal-sensory",
+  `/cases/trigeminal-sensory`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="trigeminal-sensory"]'
 );
 await inspect(
   "desktop-weber-syndrome",
-  "http://127.0.0.1:3000/cases/weber-syndrome",
+  `/cases/weber-syndrome`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="weber-syndrome"]'
 );
 await inspect(
   "desktop-parietal-tumor-stereognosis",
-  "http://127.0.0.1:3000/cases/parietal-tumor-stereognosis",
+  `/cases/parietal-tumor-stereognosis`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="parietal-tumor-stereognosis"]'
 );
 await inspect(
   "desktop-ulnar-neuropathy-cubital",
-  "http://127.0.0.1:3000/cases/ulnar-neuropathy-cubital",
+  `/cases/ulnar-neuropathy-cubital`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="ulnar-neuropathy-cubital"]'
 );
 await inspect(
   "desktop-cerebellar-ataxia",
-  "http://127.0.0.1:3000/cases/cerebellar-ataxia",
+  `/cases/cerebellar-ataxia`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="cerebellar-ataxia"]'
 );
 await inspect(
   "desktop-stroke",
-  "http://127.0.0.1:3000/cases/stroke-ct-mca",
+  `/cases/stroke-ct-mca`,
   { width: 1440, height: 900 },
   ".check-step"
 );
 await inspect(
   "desktop-glioma-dislocation",
-  "http://127.0.0.1:3000/cases/glioma-dislocation",
+  `/cases/glioma-dislocation`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="glioma-dislocation"]'
 );
 await inspect(
   "desktop-multiple-sclerosis-mri",
-  "http://127.0.0.1:3000/cases/multiple-sclerosis-mri",
+  `/cases/multiple-sclerosis-mri`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="multiple-sclerosis-mri"]'
 );
 await inspect(
   "desktop-als-mri",
-  "http://127.0.0.1:3000/cases/als-mri",
+  `/cases/als-mri`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="als-mri"]'
 );
 await inspect(
   "desktop-cervical-myelopathy-mri",
-  "http://127.0.0.1:3000/cases/cervical-myelopathy-mri",
+  `/cases/cervical-myelopathy-mri`,
   { width: 1440, height: 900 },
   '[data-station-blueprint="cervical-myelopathy-mri"]'
 );
+await inspect("mobile-home", `/`, { width: 390, height: 844 }, '[data-home-hub="root"]');
 await inspect(
   "mobile-stroke",
-  "http://127.0.0.1:3000/cases/stroke-ct-mca",
+  `/cases/stroke-ct-mca`,
   { width: 390, height: 844 },
   ".mobile-tabbar"
 );
 await inspect(
   "mobile-krok",
-  "http://127.0.0.1:3000/krok",
+  `/krok`,
   { width: 390, height: 844 },
   '[data-krok-page="start"]'
+);
+await inspect(
+  "mobile-notes",
+  `/notes`,
+  { width: 390, height: 844 },
+  '[data-notes-section-list="catalog"]'
+);
+await inspect(
+  "mobile-note-reader",
+  `/notes/anatomy-physiology`,
+  { width: 390, height: 844 },
+  '[data-note-reader="anatomy-physiology"]'
+);
+await inspect(
+  "mobile-note-reader-syndromology",
+  `/notes/syndromology-topical-diagnosis`,
+  { width: 390, height: 844 },
+  '[data-note-reader="syndromology-topical-diagnosis"]'
 );
 
 await browser.close();
@@ -962,6 +1043,66 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-krok" && result.interactions.bottomFinishButtons !== 1) {
     issues.push(`${result.name}: mobile finish button is missing`);
   }
+  if (result.name === "desktop-notes" && result.interactions.sectionCards !== 15) {
+    issues.push(`${result.name}: expected 15 note section cards`);
+  }
+  if (result.name === "desktop-notes" && result.interactions.availableCards !== 2) {
+    issues.push(`${result.name}: expected two available note sections`);
+  }
+  if (result.name === "desktop-notes" && result.interactions.plannedCards !== 13) {
+    issues.push(`${result.name}: expected thirteen planned note sections`);
+  }
+  if (result.name === "desktop-notes" && result.interactions.searchCards !== 1) {
+    issues.push(`${result.name}: notes search did not narrow to one card`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.reader !== 1) {
+    issues.push(`${result.name}: note reader did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.highYieldCards < 8) {
+    issues.push(`${result.name}: high-yield cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.highYieldTags !== 0) {
+    issues.push(`${result.name}: high-yield tags should not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.localizationCards < 10) {
+    issues.push(`${result.name}: localization cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.clueCards < 9) {
+    issues.push(`${result.name}: diagnostic clue cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.differentialCards < 8) {
+    issues.push(`${result.name}: differential cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.krokPatternCards < 9) {
+    issues.push(`${result.name}: KROK pattern cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.pitfallCards < 9) {
+    issues.push(`${result.name}: pitfall cards did not render`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.relatedSections !== 0) {
+    issues.push(`${result.name}: related case section should not render in notes UI`);
+  }
+  if (result.name.includes("note-reader") && result.interactions.sourceSections !== 0) {
+    issues.push(`${result.name}: source section should not render in notes UI`);
+  }
+  if (result.name === "mobile-notes" && result.interactions.sectionCards !== 15) {
+    issues.push(`${result.name}: expected 15 note section cards on mobile`);
+  }
+  if (result.name === "mobile-notes" && result.interactions.mobileTabs !== 3) {
+    issues.push(`${result.name}: expected three global mobile nav links`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeRoot !== 1) {
+    issues.push(`${result.name}: home hub did not render`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeCards !== 3) {
+    issues.push(`${result.name}: expected three home section cards`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeLinks < 3) {
+    issues.push(`${result.name}: expected home cards to link to all sections`);
+  }
+  if (result.name === "mobile-home" && result.interactions.mobileTabs !== 3) {
+    issues.push(`${result.name}: expected three global mobile nav links`);
+  }
   if (result.name === "desktop-stroke" && result.metrics.checklistCards !== 12) {
     issues.push(`${result.name}: expected 12 checklist cards`);
   }
@@ -974,8 +1115,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-stroke" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-stroke" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-stroke" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-glioma-dislocation" && result.metrics.checklistCards !== 12) {
     issues.push(`${result.name}: expected 12 checklist cards`);
@@ -997,9 +1138,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-glioma-dislocation" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-glioma-dislocation" && result.interactions.scanLightboxOpen !== 1) {
     issues.push(`${result.name}: scan lightbox did not open`);
@@ -1030,9 +1171,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-multiple-sclerosis-mri" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (
     result.name === "desktop-multiple-sclerosis-mri" &&
@@ -1055,8 +1196,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-als-mri" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-als-mri" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-als-mri" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-als-mri" && result.interactions.scanLightboxOpen !== 1) {
     issues.push(`${result.name}: scan lightbox did not open`);
@@ -1087,9 +1228,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-cervical-myelopathy-mri" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (
     result.name === "desktop-cervical-myelopathy-mri" &&
@@ -1109,8 +1250,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-dementia" && result.interactions.blueprintSources !== 3) {
     issues.push(`${result.name}: expected three blueprint sources`);
   }
-  if (result.name === "desktop-dementia" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-dementia" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-dementia" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1127,8 +1268,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-radiculopathy" && result.interactions.blueprintSources !== 3) {
     issues.push(`${result.name}: expected three blueprint sources`);
   }
-  if (result.name === "desktop-radiculopathy" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-radiculopathy" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-radiculopathy" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1148,8 +1289,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.blueprintSources !== 3) {
     issues.push(`${result.name}: expected three blueprint sources`);
   }
-  if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-trigeminal-neuralgia" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-trigeminal-neuralgia" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1169,8 +1310,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-neurosyphilis" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-neurosyphilis" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-neurosyphilis" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-neurosyphilis" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1190,8 +1331,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-msa-orthostatic" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-msa-orthostatic" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-msa-orthostatic" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-msa-orthostatic" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1211,8 +1352,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-bppv-dix-hallpike" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (
     result.name === "desktop-bppv-dix-hallpike" &&
@@ -1244,8 +1385,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-bppv-epley" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-bppv-epley" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-bppv-epley" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-bppv-epley" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1265,8 +1406,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-hearing-rinne-weber" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-hearing-rinne-weber" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-hearing-rinne-weber" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-hearing-rinne-weber" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1294,9 +1435,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-parkinson-gait-thevenard" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-parkinson-gait-thevenard" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1316,8 +1457,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-cauda-equina" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-cauda-equina" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-cauda-equina" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-cauda-equina" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1337,8 +1478,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-trigeminal-sensory" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-trigeminal-sensory" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-trigeminal-sensory" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-trigeminal-sensory" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1358,8 +1499,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-weber-syndrome" && result.interactions.blueprintSources !== 4) {
     issues.push(`${result.name}: expected four blueprint sources`);
   }
-  if (result.name === "desktop-weber-syndrome" && result.interactions.checkedStatusText < 1) {
-    issues.push(`${result.name}: checked review status not visible`);
+  if (result.name === "desktop-weber-syndrome" && result.interactions.checkedStatusText !== 0) {
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-weber-syndrome" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1390,9 +1531,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-parietal-tumor-stereognosis" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (
     result.name === "desktop-parietal-tumor-stereognosis" &&
@@ -1423,9 +1564,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-ulnar-neuropathy-cubital" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-ulnar-neuropathy-cubital" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);
@@ -1453,9 +1594,9 @@ const failures = results.flatMap((result) => {
   }
   if (
     result.name === "desktop-cerebellar-ataxia" &&
-    result.interactions.checkedStatusText < 1
+    result.interactions.checkedStatusText !== 0
   ) {
-    issues.push(`${result.name}: checked review status not visible`);
+    issues.push(`${result.name}: checked review status should not be visible`);
   }
   if (result.name === "desktop-cerebellar-ataxia" && result.metrics.imageCards !== 0) {
     issues.push(`${result.name}: non-imaging case should not render scan gallery`);

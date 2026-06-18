@@ -6,12 +6,14 @@ import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
+  BookOpen,
   Bookmark,
   BookmarkCheck,
   Brain,
   ChevronDown,
   ClipboardList,
   FileText,
+  GraduationCap,
   Home,
   Images,
   Menu,
@@ -630,6 +632,22 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           </span>
           <span>ОСКІ Неврологія</span>
         </Link>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Link
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+            href="/krok"
+          >
+            <GraduationCap size={16} />
+            КРОК
+          </Link>
+          <Link
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+            href="/notes"
+          >
+            <BookOpen size={16} />
+            Конспект
+          </Link>
+        </div>
         <nav className="mt-7 grid gap-1.5 overflow-auto pr-0.5" aria-label="Станції">
           {cases.map((item) => (
             <Link
@@ -894,6 +912,20 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             </section>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
+              <Link
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                href="/krok"
+              >
+                <GraduationCap size={17} />
+                КРОК
+              </Link>
+              <Link
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                href="/notes"
+              >
+                <BookOpen size={17} />
+                Конспект
+              </Link>
               {previous ? (
                 <Link className={yellowButtonClass} href={`/cases/${previous.slug}`}>
                   <ArrowLeft size={17} />
