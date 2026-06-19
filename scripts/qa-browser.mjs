@@ -764,6 +764,18 @@ await inspect(
   '[data-note-reader="neuro-oncology"]'
 );
 await inspect(
+  "desktop-note-reader-neurologic-emergencies",
+  `/notes/neurologic-emergencies`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="neurologic-emergencies"]'
+);
+await inspect(
+  "desktop-note-reader-treatment-prevention",
+  `/notes/treatment-prevention`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="treatment-prevention"]'
+);
+await inspect(
   "desktop-dementia",
   `/cases/dementia-mini-cog`,
   { width: 1440, height: 900 },
@@ -962,6 +974,18 @@ await inspect(
   { width: 390, height: 844 },
   '[data-note-reader="neuro-oncology"]'
 );
+await inspect(
+  "mobile-note-reader-neurologic-emergencies",
+  `/notes/neurologic-emergencies`,
+  { width: 390, height: 844 },
+  '[data-note-reader="neurologic-emergencies"]'
+);
+await inspect(
+  "mobile-note-reader-treatment-prevention",
+  `/notes/treatment-prevention`,
+  { width: 390, height: 844 },
+  '[data-note-reader="treatment-prevention"]'
+);
 
 await browser.close();
 
@@ -1150,11 +1174,11 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-notes" && result.interactions.sectionCards !== 15) {
     issues.push(`${result.name}: expected 15 note section cards`);
   }
-  if (result.name === "desktop-notes" && result.interactions.availableCards !== 10) {
-    issues.push(`${result.name}: expected ten available note sections`);
+  if (result.name === "desktop-notes" && result.interactions.availableCards !== 15) {
+    issues.push(`${result.name}: expected fifteen available note sections`);
   }
-  if (result.name === "desktop-notes" && result.interactions.plannedCards !== 5) {
-    issues.push(`${result.name}: expected five planned note sections`);
+  if (result.name === "desktop-notes" && result.interactions.plannedCards !== 0) {
+    issues.push(`${result.name}: expected zero planned note sections`);
   }
   if (result.name === "desktop-notes" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: notes search did not narrow to one card`);
