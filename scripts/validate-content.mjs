@@ -166,7 +166,7 @@ const krokTrainingBooklets = parseExportedArray(
 const noteSections = parseExportedArray(notesSectionsPath, "noteSections", "NoteSection");
 const noteBlocks = parseExportedArray(notesBlocksPath, "noteBlocks", "NoteBlock");
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
-const expectedTrainingBookletIds = new Set(["ai-001", "ai-002"]);
+const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003"]);
 const expectedNoteSectionWeights = new Map([
   ["1.0.0.0", 10],
   ["2.0.0.0", 20],
@@ -187,8 +187,25 @@ const expectedNoteSectionWeights = new Map([
 const forbiddenTrainingStemPatterns = [
   /ключова ознака/i,
   /клінічному завданні/i,
-  /найкраще відповідає цій ситуації/i
+  /найкраще відповідає цій ситуації/i,
+  /пацієнт,\s*/i,
+  /:\s*пацієнт\./i,
+  /діагноз або наступний крок/i,
+  /діагноз або судинний синдром/i,
+  /судинний басейн, механізм або тактика/i
 ];
+const forbiddenTrainingExplanationPatterns = [
+  /бо [^.!?]+», бо/i,
+  /пацієнт,\s*/i,
+  /:\s*пацієнт\./i,
+  /діагноз або наступний крок/i
+];
+const trainingClinicalStemPattern =
+  /^(Пацієнт|Пацієнта|У пацієнта|До неврологічного|Під час огляду)/i;
+const minTrainingAverageStemWords = 34;
+const minTrainingMedianStemWords = 30;
+const maxShortTrainingStems = 45;
+const minTrainingClinicalStemRatio = 0.55;
 const expectedTrainingSectionCounts = new Map([
   ["1", 15],
   ["2", 30],
@@ -209,8 +226,8 @@ const expectedTrainingSectionCounts = new Map([
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
-if (krokTrainingBooklets.length !== 2) {
-  failures.push(`Expected 2 KROK training booklets, got ${krokTrainingBooklets.length}`);
+if (krokTrainingBooklets.length !== 3) {
+  failures.push(`Expected 3 KROK training booklets, got ${krokTrainingBooklets.length}`);
 }
 
 const krokQuestionIds = new Set();
@@ -278,7 +295,22 @@ function normalizeQuestionText(value) {
     .trim();
 }
 
+function countWords(value) {
+  return String(value).trim().split(/\s+/).filter(Boolean).length;
+}
+
+function median(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)] ?? 0;
+}
+
+function getFirstAgeFromText(value) {
+  const match = String(value).match(/віком\s+(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
+
 const allQuestionIds = new Set(krokQuestionIds);
+const normalizedAllTrainingQuestionTexts = new Set();
 let trainingQuestionCount = 0;
 let trainingCorrectAnswerCount = 0;
 for (const booklet of krokTrainingBooklets) {
@@ -295,6 +327,8 @@ for (const booklet of krokTrainingBooklets) {
 
   const sectionCounts = new Map();
   const normalizedTrainingTexts = new Set();
+  const trainingStemWordCounts = [];
+  let clinicalTrainingStemCount = 0;
   for (const question of booklet.questions) {
     trainingQuestionCount += 1;
     if (allQuestionIds.has(question.id)) {
@@ -311,11 +345,62 @@ for (const booklet of krokTrainingBooklets) {
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`KROK training question ${question.id} has empty text`);
     }
+    const stemWordCount = countWords(question.text);
+    trainingStemWordCounts.push(stemWordCount);
+    if (trainingClinicalStemPattern.test(question.text)) {
+      clinicalTrainingStemCount += 1;
+    }
     if (forbiddenTrainingStemPatterns.some((pattern) => pattern.test(question.text))) {
       failures.push(`KROK training question ${question.id} uses a forbidden meta-style stem phrase`);
     }
     if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
       failures.push(`KROK training question ${question.id} needs an explanation`);
+    } else if (forbiddenTrainingExplanationPatterns.some((pattern) => pattern.test(question.explanation))) {
+      failures.push(`KROK training question ${question.id} has a malformed explanation`);
+    } else if ((question.explanation.match(/,\s*бо/gi) ?? []).length > 1) {
+      failures.push(`KROK training question ${question.id} has a repeated explanatory connector`);
+    }
+    const firstAge = getFirstAgeFromText(question.text);
+    if (
+      firstAge !== null &&
+      firstAge >= 18 &&
+      /\b(?:дитина|дитини|хлопчик|немовля)\b/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} mixes adult age with pediatric context`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge < 60 &&
+      /похилого віку/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} mixes young age with older-adult context`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge >= 45 &&
+      /\bмолод(?:ий|а|ої|ого)\b/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} mixes older age with young-adult wording`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge >= 65 &&
+      /(?:Гантінгтон|хореїчні рухи)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically old age for Huntington-style vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge >= 60 &&
+      /розсіяним склерозом.*рецидив/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically old age for MS relapse vignette`);
+    }
+    if (/^Пацієнт\b[^.]+\.?\s*Пацієнтка\b/i.test(question.text)) {
+      failures.push(`KROK training question ${question.id} mixes patient gender in the stem`);
+    }
+    if (/^Пацієнт\w*\b/i.test(question.text) && /\b(?:породіл|вагітн|післяпологов|після пологів)/i.test(question.text)) {
+      failures.push(`KROK training question ${question.id} mixes male/default patient wording with obstetric context`);
     }
     if (typeof question.contentSection !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(question.contentSection)) {
       failures.push(`KROK training question ${question.id} has invalid contentSection`);
@@ -329,12 +414,16 @@ for (const booklet of krokTrainingBooklets) {
       failures.push(`Duplicate KROK training question text: ${question.id}`);
     }
     normalizedTrainingTexts.add(normalized);
+    if (normalizedAllTrainingQuestionTexts.has(normalized)) {
+      failures.push(`Duplicate KROK training question text across training booklets: ${question.id}`);
+    }
+    normalizedAllTrainingQuestionTexts.add(normalized);
     if (normalizedKrokQuestionTexts.has(normalized)) {
       failures.push(`KROK training question duplicates official question text: ${question.id}`);
     }
 
-    if (!Array.isArray(question.options) || question.options.length < 3 || question.options.length > 5) {
-      failures.push(`KROK training question ${question.id} has invalid option count`);
+    if (!Array.isArray(question.options) || question.options.length !== 5) {
+      failures.push(`KROK training question ${question.id} must have exactly 5 options`);
       continue;
     }
     const optionIds = new Set(question.options.map((option) => option.id));
@@ -348,6 +437,34 @@ for (const booklet of krokTrainingBooklets) {
     }
   }
 
+  const averageStemWords =
+    trainingStemWordCounts.reduce((sum, count) => sum + count, 0) /
+    Math.max(trainingStemWordCounts.length, 1);
+  const medianStemWords = median(trainingStemWordCounts);
+  const shortStemCount = trainingStemWordCounts.filter((count) => count < 24).length;
+  const clinicalStemRatio =
+    clinicalTrainingStemCount / Math.max(trainingStemWordCounts.length, 1);
+  if (averageStemWords < minTrainingAverageStemWords) {
+    failures.push(
+      `KROK training booklet ${booklet.id} average stem words expected >= ${minTrainingAverageStemWords}, got ${averageStemWords.toFixed(1)}`
+    );
+  }
+  if (medianStemWords < minTrainingMedianStemWords) {
+    failures.push(
+      `KROK training booklet ${booklet.id} median stem words expected >= ${minTrainingMedianStemWords}, got ${medianStemWords}`
+    );
+  }
+  if (shortStemCount > maxShortTrainingStems) {
+    failures.push(
+      `KROK training booklet ${booklet.id} short stems expected <= ${maxShortTrainingStems}, got ${shortStemCount}`
+    );
+  }
+  if (clinicalStemRatio < minTrainingClinicalStemRatio) {
+    failures.push(
+      `KROK training booklet ${booklet.id} clinical-style stems expected >= ${(minTrainingClinicalStemRatio * 100).toFixed(0)}%, got ${(clinicalStemRatio * 100).toFixed(1)}%`
+    );
+  }
+
   for (const [section, expectedCount] of expectedTrainingSectionCounts) {
     const actualCount = sectionCounts.get(section) ?? 0;
     if (actualCount !== expectedCount) {
@@ -356,11 +473,11 @@ for (const booklet of krokTrainingBooklets) {
   }
 }
 
-if (trainingQuestionCount !== 300) {
-  failures.push(`Expected 300 KROK training questions, got ${trainingQuestionCount}`);
+if (trainingQuestionCount !== 450) {
+  failures.push(`Expected 450 KROK training questions, got ${trainingQuestionCount}`);
 }
-if (trainingCorrectAnswerCount !== 300) {
-  failures.push(`Expected 300 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
+if (trainingCorrectAnswerCount !== 450) {
+  failures.push(`Expected 450 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
 }
 
 const explanationQuestionIds = new Set();
