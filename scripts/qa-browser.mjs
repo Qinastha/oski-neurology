@@ -104,7 +104,11 @@ async function inspect(name, url, viewport, selector) {
     noteSourceCards: document.querySelectorAll("#sources a, #sources p").length,
     noteRightRails: document.querySelectorAll("[data-note-right-rail]").length,
     practicalSkillCards: document.querySelectorAll("[data-blueprint-practical-skills='list'] article")
-      .length
+      .length,
+    ticketCards: document.querySelectorAll("[data-ticket-card]").length,
+    ticketQuestions: document.querySelectorAll("[data-ticket-question]").length,
+    ticketMediaFigures: document.querySelectorAll("[data-ticket-media-figure]").length,
+    missingExamQuestions: document.querySelectorAll("[data-missing-exam-question]").length
   }));
 
   const interactions = {};
@@ -656,6 +660,43 @@ async function inspect(name, url, viewport, selector) {
     interactions.searchCards = await page.locator("[data-note-section-card]").count();
   }
 
+  if (name === "desktop-tickets") {
+    interactions.ticketCards = await page.locator("[data-ticket-card]").count();
+    interactions.missingQuestions = await page.locator("[data-missing-exam-question]").count();
+    const searchInput = page.getByPlaceholder("Пошук за номером білета, темою або ключовим словом...");
+    await searchInput.fill("Епілепсія. Класифікація 2017");
+    await page.waitForFunction(() => document.querySelectorAll("[data-ticket-card]").length === 1, {
+      timeout: 5000
+    });
+    interactions.searchCards = await page.locator("[data-ticket-card]").count();
+  }
+
+  if (name === "desktop-ticket-11") {
+    interactions.reader = await page.locator('[data-ticket-reader="11"]').count();
+    interactions.questions = await page.locator("[data-ticket-question]").count();
+    interactions.pdfText = await page.getByText("Ураження гіпоталамо-гіпофізарної системи").count();
+  }
+
+  if (name === "desktop-ticket-21") {
+    interactions.reader = await page.locator('[data-ticket-reader="21"]').count();
+    interactions.questions = await page.locator("[data-ticket-question]").count();
+    interactions.mediaFigures = await page.locator("[data-ticket-media-figure]").count();
+    await page.locator("[data-ticket-media-open]").first().click();
+    await page.waitForSelector('[data-ticket-lightbox="open"]', { timeout: 5000 });
+    interactions.lightboxOpen = await page.locator('[data-ticket-lightbox="open"]').count();
+    await page.locator('[data-ticket-lightbox-close="button"]').click();
+    await page.waitForSelector('[data-ticket-lightbox="open"]', {
+      state: "detached",
+      timeout: 5000
+    });
+  }
+
+  if (name === "mobile-tickets") {
+    interactions.ticketCards = await page.locator("[data-ticket-card]").count();
+    interactions.mobileTabs = await page.locator(".mobile-tabbar a").count();
+    interactions.missingQuestions = await page.locator("[data-missing-exam-question]").count();
+  }
+
   if (name.includes("note-reader")) {
     interactions.reader = await page.locator("[data-note-reader]").count();
     interactions.contentBlocks = await page.locator("[data-note-content-block]").count();
@@ -702,6 +743,24 @@ await inspect(
   `/notes`,
   { width: 1440, height: 900 },
   '[data-notes-section-list="catalog"]'
+);
+await inspect(
+  "desktop-tickets",
+  `/tickets`,
+  { width: 1440, height: 900 },
+  '[data-ticket-list="catalog"]'
+);
+await inspect(
+  "desktop-ticket-11",
+  `/tickets/11`,
+  { width: 1440, height: 900 },
+  '[data-ticket-reader="11"]'
+);
+await inspect(
+  "desktop-ticket-21",
+  `/tickets/21`,
+  { width: 1440, height: 900 },
+  '[data-ticket-reader="21"]'
 );
 await inspect(
   "desktop-note-reader",
@@ -915,6 +974,12 @@ await inspect(
   '[data-notes-section-list="catalog"]'
 );
 await inspect(
+  "mobile-tickets",
+  `/tickets`,
+  { width: 390, height: 844 },
+  '[data-ticket-list="catalog"]'
+);
+await inspect(
   "mobile-note-reader",
   `/notes/anatomy-physiology`,
   { width: 390, height: 844 },
@@ -1028,8 +1093,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-cases" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: search did not narrow to one Mini-Cog card`);
   }
-  if (result.name === "desktop-cases" && result.metrics.mobileTabs !== 3) {
-    issues.push(`${result.name}: expected three global mobile tabs`);
+  if (result.name === "desktop-cases" && result.metrics.mobileTabs !== 4) {
+    issues.push(`${result.name}: expected four global mobile tabs`);
   }
   if (result.name === "desktop-cases" && result.interactions.initialActive !== 1) {
     issues.push(`${result.name}: all filter was not active initially`);
@@ -1183,6 +1248,33 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-notes" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: notes search did not narrow to one card`);
   }
+  if (result.name === "desktop-tickets" && result.interactions.ticketCards !== 23) {
+    issues.push(`${result.name}: expected 23 ticket cards`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.missingQuestions !== 6) {
+    issues.push(`${result.name}: expected six missing exam questions`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.searchCards !== 1) {
+    issues.push(`${result.name}: tickets search did not narrow to one card`);
+  }
+  if (result.name === "desktop-ticket-11" && result.interactions.reader !== 1) {
+    issues.push(`${result.name}: ticket 11 reader did not render`);
+  }
+  if (result.name === "desktop-ticket-11" && result.interactions.questions < 3) {
+    issues.push(`${result.name}: ticket 11 PDF content did not split into readable blocks`);
+  }
+  if (result.name === "desktop-ticket-11" && result.interactions.pdfText < 1) {
+    issues.push(`${result.name}: ticket 11 PDF text was not visible`);
+  }
+  if (result.name === "desktop-ticket-21" && result.interactions.reader !== 1) {
+    issues.push(`${result.name}: ticket 21 reader did not render`);
+  }
+  if (result.name === "desktop-ticket-21" && result.interactions.mediaFigures < 8) {
+    issues.push(`${result.name}: ticket 21 media figures did not render`);
+  }
+  if (result.name === "desktop-ticket-21" && result.interactions.lightboxOpen !== 1) {
+    issues.push(`${result.name}: ticket media lightbox did not open`);
+  }
   if (result.name.includes("note-reader") && result.interactions.reader !== 1) {
     issues.push(`${result.name}: note reader did not render`);
   }
@@ -1216,20 +1308,29 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-notes" && result.interactions.sectionCards !== 15) {
     issues.push(`${result.name}: expected 15 note section cards on mobile`);
   }
-  if (result.name === "mobile-notes" && result.interactions.mobileTabs !== 3) {
-    issues.push(`${result.name}: expected three global mobile nav links`);
+  if (result.name === "mobile-notes" && result.interactions.mobileTabs !== 4) {
+    issues.push(`${result.name}: expected four global mobile nav links`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.ticketCards !== 23) {
+    issues.push(`${result.name}: expected 23 ticket cards on mobile`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.missingQuestions !== 6) {
+    issues.push(`${result.name}: expected six missing exam questions on mobile`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.mobileTabs !== 4) {
+    issues.push(`${result.name}: expected four global mobile nav links`);
   }
   if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeRoot !== 1) {
     issues.push(`${result.name}: home hub did not render`);
   }
-  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeCards !== 3) {
-    issues.push(`${result.name}: expected three home section cards`);
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeCards !== 4) {
+    issues.push(`${result.name}: expected four home section cards`);
   }
-  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeLinks < 3) {
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeLinks < 4) {
     issues.push(`${result.name}: expected home cards to link to all sections`);
   }
-  if (result.name === "mobile-home" && result.interactions.mobileTabs !== 3) {
-    issues.push(`${result.name}: expected three global mobile nav links`);
+  if (result.name === "mobile-home" && result.interactions.mobileTabs !== 4) {
+    issues.push(`${result.name}: expected four global mobile nav links`);
   }
   if (result.name === "desktop-stroke" && result.metrics.checklistCards !== 12) {
     issues.push(`${result.name}: expected 12 checklist cards`);
@@ -1747,8 +1848,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-stroke" && result.interactions.bottomMenuTriggers !== 0) {
     issues.push(`${result.name}: unexpected bottom mobile menu trigger`);
   }
-  if (result.name === "mobile-stroke" && result.interactions.siteMobileTabs !== 3) {
-    issues.push(`${result.name}: expected three global mobile tabs`);
+  if (result.name === "mobile-stroke" && result.interactions.siteMobileTabs !== 4) {
+    issues.push(`${result.name}: expected four global mobile tabs`);
   }
   if (result.name === "mobile-stroke" && result.interactions.openedFromTop !== 1) {
     issues.push(`${result.name}: top mobile menu trigger did not open the menu`);

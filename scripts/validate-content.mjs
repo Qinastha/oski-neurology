@@ -9,6 +9,9 @@ const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts"
 const krokTrainingPath = path.join(root, "src/content/krok/training.ts");
 const notesSectionsPath = path.join(root, "src/content/notes/sections.ts");
 const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
+const ticketsGeneratedPath = path.join(root, "src/content/tickets/generated.ts");
+const ticketsCoveragePath = path.join(root, "src/content/tickets/coverage.ts");
+const ticketsCuratedPath = path.join(root, "src/content/tickets/curated.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -165,6 +168,18 @@ const krokTrainingBooklets = parseExportedArray(
 );
 const noteSections = parseExportedArray(notesSectionsPath, "noteSections", "NoteSection");
 const noteBlocks = parseExportedArray(notesBlocksPath, "noteBlocks", "NoteBlock");
+const examTickets = parseExportedArray(ticketsGeneratedPath, "examTickets", "ExamTicket");
+const examQuestions = parseExportedArray(ticketsCoveragePath, "examQuestions", "ExamQuestion");
+const missingExamQuestions = parseExportedArray(
+  ticketsCoveragePath,
+  "missingExamQuestions",
+  "MissingExamQuestion"
+);
+const examTicketQuestionOverrides = parseExportedArray(
+  ticketsCuratedPath,
+  "examTicketQuestionOverrides",
+  "ExamTicketQuestionOverride"
+);
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003"]);
 const expectedNoteSectionWeights = new Map([
@@ -223,6 +238,8 @@ const expectedTrainingSectionCounts = new Map([
   ["14", 6],
   ["15", 6]
 ]);
+const expectedTicketNumbers = new Set(Array.from({ length: 23 }, (_, index) => index + 1));
+const expectedMissingExamQuestionNumbers = [34, 35, 53, 57, 59, 83];
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
@@ -529,6 +546,246 @@ for (const item of krokAnswerOverrides) {
   }
   if (typeof item.confirmedAt !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.confirmedAt)) {
     failures.push(`KROK answer override for ${item.questionId} needs confirmedAt YYYY-MM-DD`);
+  }
+}
+
+if (examTickets.length !== 23) {
+  failures.push(`Expected 23 exam tickets, got ${examTickets.length}`);
+}
+const seenTicketNumbers = new Set();
+let examTicketMediaCount = 0;
+for (const ticket of examTickets) {
+  if (!expectedTicketNumbers.has(ticket.number)) {
+    failures.push(`Unexpected exam ticket number: ${ticket.number}`);
+  }
+  if (seenTicketNumbers.has(ticket.number)) {
+    failures.push(`Duplicate exam ticket number: ${ticket.number}`);
+  }
+  seenTicketNumbers.add(ticket.number);
+
+  if (typeof ticket.id !== "string" || !/^ticket-\d{2}$/.test(ticket.id)) {
+    failures.push(`Exam ticket ${ticket.number} has invalid id ${ticket.id}`);
+  }
+  if (typeof ticket.title !== "string" || !ticket.title.includes(String(ticket.number))) {
+    failures.push(`Exam ticket ${ticket.number} has invalid title`);
+  }
+  if (ticket.sourceType !== "docx" && ticket.sourceType !== "pdf") {
+    failures.push(`Exam ticket ${ticket.number} has invalid sourceType ${ticket.sourceType}`);
+  }
+  if (ticket.number === 11 && ticket.sourceType !== "pdf") {
+    failures.push("Exam ticket 11 must be imported from PDF");
+  }
+  if (ticket.number !== 11 && ticket.sourceType !== "docx") {
+    failures.push(`Exam ticket ${ticket.number} must be imported from DOCX`);
+  }
+  if (typeof ticket.sourceFile !== "string" || ticket.sourceFile.trim().length === 0) {
+    failures.push(`Exam ticket ${ticket.number} needs sourceFile`);
+  }
+  if (!Array.isArray(ticket.questions) || ticket.questions.length === 0) {
+    failures.push(`Exam ticket ${ticket.number} needs questions`);
+  } else if (ticket.questions.length !== 4) {
+    failures.push(`Exam ticket ${ticket.number} must have exactly 4 questions, got ${ticket.questions.length}`);
+  }
+
+  const ticketMedia = [...(ticket.gallery ?? [])];
+  for (const question of ticket.questions ?? []) {
+    if (question.ticketNumber !== ticket.number) {
+      failures.push(`Exam ticket ${ticket.number} has question with wrong ticketNumber`);
+    }
+    if (typeof question.title !== "string" || question.title.trim().length === 0) {
+      failures.push(`Exam ticket ${ticket.number} question ${question.number} needs title`);
+    }
+    if (!Array.isArray(question.blocks) || question.blocks.length === 0) {
+      failures.push(`Exam ticket ${ticket.number} question ${question.number} needs content blocks`);
+    }
+    for (const block of question.blocks ?? []) {
+      if (!["paragraph", "heading", "list_item"].includes(block.type)) {
+        failures.push(`Exam ticket ${ticket.number} question ${question.number} has invalid block type ${block.type}`);
+      }
+      if (typeof block.text !== "string" || block.text.trim().length === 0) {
+        failures.push(`Exam ticket ${ticket.number} question ${question.number} has empty block`);
+      }
+    }
+    ticketMedia.push(...(question.media ?? []));
+  }
+
+  for (const media of ticketMedia) {
+    examTicketMediaCount += 1;
+    if (typeof media.src !== "string" || !media.src.startsWith("/exam/tickets/")) {
+      failures.push(`Exam ticket ${ticket.number} has invalid media src ${media.src}`);
+      continue;
+    }
+    const mediaPath = path.join(publicRoot, media.src.replace(/^\//, ""));
+    if (!fs.existsSync(mediaPath)) {
+      failures.push(`Missing exam ticket media asset ${media.src}`);
+    }
+    if (typeof media.width !== "number" || media.width <= 0 || typeof media.height !== "number" || media.height <= 0) {
+      failures.push(`Exam ticket ${ticket.number} media ${media.src} needs dimensions`);
+    } else if (media.width <= 4 || media.height <= 4) {
+      failures.push(`Exam ticket ${ticket.number} media ${media.src} looks like a placeholder image`);
+    }
+  }
+}
+for (const number of expectedTicketNumbers) {
+  if (!seenTicketNumbers.has(number)) {
+    failures.push(`Missing exam ticket number ${number}`);
+  }
+}
+if (examQuestions.length !== 92) {
+  failures.push(`Expected 92 exam questions, got ${examQuestions.length}`);
+}
+const seenExamQuestionNumbers = new Set();
+for (const question of examQuestions) {
+  if (typeof question.number !== "number" || question.number < 1 || question.number > 92) {
+    failures.push(`Invalid exam question number ${question.number}`);
+  }
+  if (seenExamQuestionNumbers.has(question.number)) {
+    failures.push(`Duplicate exam question number ${question.number}`);
+  }
+  seenExamQuestionNumbers.add(question.number);
+  if (typeof question.text !== "string" || question.text.trim().length < 20) {
+    failures.push(`Exam question ${question.number} needs text`);
+  }
+}
+const actualMissingExamQuestionNumbers = missingExamQuestions.map((question) => question.number).sort((a, b) => a - b);
+if (JSON.stringify(actualMissingExamQuestionNumbers) !== JSON.stringify(expectedMissingExamQuestionNumbers)) {
+  failures.push(
+    `Expected missing exam questions ${expectedMissingExamQuestionNumbers.join(", ")}, got ${actualMissingExamQuestionNumbers.join(", ")}`
+  );
+}
+for (const question of missingExamQuestions) {
+  if (!seenExamQuestionNumbers.has(question.number)) {
+    failures.push(`Missing exam question ${question.number} is not in source question list`);
+  }
+  if (typeof question.reason !== "string" || question.reason.trim().length < 10) {
+    failures.push(`Missing exam question ${question.number} needs reason`);
+  }
+}
+if (examTicketMediaCount !== 23) {
+  failures.push(`Expected 23 exam ticket media assets, got ${examTicketMediaCount}`);
+}
+
+const examTicketsByNumber = new Map(examTickets.map((ticket) => [ticket.number, ticket]));
+const curatedMediaRefsByTicket = new Map();
+function validateRichBlock(block, context, mediaIds, usedMediaIds) {
+  if (!block || typeof block !== "object") {
+    failures.push(`${context} has invalid rich block`);
+    return;
+  }
+  if (typeof block.id !== "string" || block.id.trim().length === 0) {
+    failures.push(`${context} has rich block without id`);
+  }
+  if (!["paragraph", "heading", "list", "definition_list", "table", "media"].includes(block.type)) {
+    failures.push(`${context} has invalid rich block type ${block.type}`);
+    return;
+  }
+  if (block.type === "paragraph" || block.type === "heading") {
+    if (typeof block.text !== "string" || block.text.trim().length === 0) {
+      failures.push(`${context} ${block.id} needs text`);
+    }
+    return;
+  }
+  if (block.type === "list") {
+    if (block.style !== "ordered" && block.style !== "unordered") {
+      failures.push(`${context} ${block.id} has invalid list style`);
+    }
+    if (!Array.isArray(block.items) || block.items.length === 0) {
+      failures.push(`${context} ${block.id} needs list items`);
+    }
+    for (const item of block.items ?? []) {
+      if (typeof item !== "string" || item.trim().length === 0) {
+        failures.push(`${context} ${block.id} has empty list item`);
+      }
+    }
+    return;
+  }
+  if (block.type === "definition_list") {
+    if (!Array.isArray(block.items) || block.items.length === 0) {
+      failures.push(`${context} ${block.id} needs definition list items`);
+    }
+    for (const item of block.items ?? []) {
+      if (typeof item?.term !== "string" || item.term.trim().length === 0) {
+        failures.push(`${context} ${block.id} has empty definition term`);
+      }
+      const descriptions = Array.isArray(item?.description) ? item.description : [item?.description];
+      if (descriptions.length === 0 || descriptions.some((description) => typeof description !== "string" || description.trim().length === 0)) {
+        failures.push(`${context} ${block.id} has empty definition description`);
+      }
+    }
+    return;
+  }
+  if (block.type === "table") {
+    if (!Array.isArray(block.columns) || block.columns.length === 0) {
+      failures.push(`${context} ${block.id} needs table columns`);
+    }
+    if (!Array.isArray(block.rows) || block.rows.length === 0) {
+      failures.push(`${context} ${block.id} needs table rows`);
+    }
+    for (const column of block.columns ?? []) {
+      if (typeof column !== "string" || column.trim().length === 0) {
+        failures.push(`${context} ${block.id} has empty table column`);
+      }
+    }
+    for (const [rowIndex, row] of (block.rows ?? []).entries()) {
+      if (!Array.isArray(row) || row.length !== block.columns.length) {
+        failures.push(`${context} ${block.id} row ${rowIndex + 1} has wrong cell count`);
+      }
+      for (const cell of row ?? []) {
+        if (typeof cell !== "string" || cell.trim().length === 0) {
+          failures.push(`${context} ${block.id} has empty table cell`);
+        }
+      }
+    }
+    return;
+  }
+  if (!Array.isArray(block.mediaIds) || block.mediaIds.length === 0) {
+    failures.push(`${context} ${block.id} needs mediaIds`);
+    return;
+  }
+  for (const mediaId of block.mediaIds) {
+    if (typeof mediaId !== "string" || !mediaIds.has(mediaId)) {
+      failures.push(`${context} ${block.id} references missing media ${mediaId}`);
+      continue;
+    }
+    if (usedMediaIds.has(mediaId)) {
+      failures.push(`${context} references media ${mediaId} more than once`);
+    }
+    usedMediaIds.add(mediaId);
+  }
+}
+
+for (const override of examTicketQuestionOverrides) {
+  const ticket = examTicketsByNumber.get(override.ticketNumber);
+  if (!ticket) {
+    failures.push(`Curated ticket override references missing ticket ${override.ticketNumber}`);
+    continue;
+  }
+  const question = ticket.questions.find((item) => item.number === override.questionNumber);
+  if (!question) {
+    failures.push(`Curated ticket ${override.ticketNumber} references missing question ${override.questionNumber}`);
+    continue;
+  }
+  if (override.title !== undefined && (typeof override.title !== "string" || override.title.trim().length === 0)) {
+    failures.push(`Curated ticket ${override.ticketNumber} question ${override.questionNumber} has invalid title`);
+  }
+  if (!Array.isArray(override.richBlocks) || override.richBlocks.length === 0) {
+    failures.push(`Curated ticket ${override.ticketNumber} question ${override.questionNumber} needs richBlocks`);
+    continue;
+  }
+  const ticketMediaIds = new Set([
+    ...(ticket.gallery ?? []).map((media) => media.id),
+    ...ticket.questions.flatMap((item) => (item.media ?? []).map((media) => media.id))
+  ]);
+  const usedMediaIds =
+    curatedMediaRefsByTicket.get(ticket.number) ?? new Set();
+  curatedMediaRefsByTicket.set(ticket.number, usedMediaIds);
+  for (const block of override.richBlocks) {
+    validateRichBlock(
+      block,
+      `Curated ticket ${override.ticketNumber} question ${override.questionNumber}`,
+      ticketMediaIds,
+      usedMediaIds
+    );
   }
 }
 
@@ -921,5 +1178,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions, ${noteSections.length} note sections, ${noteBlocks.length} note blocks`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions, ${noteSections.length} note sections, ${noteBlocks.length} note blocks, ${examTickets.length} exam tickets, ${examQuestions.length} exam questions`
 );

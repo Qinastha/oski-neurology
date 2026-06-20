@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, ClipboardList, GraduationCap } from "lucide-react";
+import { BookOpen, ClipboardList, FileText, GraduationCap } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
-export type SiteSection = "cases" | "krok" | "notes" | "home";
+export type SiteSection = "cases" | "krok" | "notes" | "tickets" | "home";
 
 const siteNavItems = [
   {
@@ -28,6 +28,13 @@ const siteNavItems = [
     label: "Конспект",
     mobileLabel: "Конспект",
     Icon: BookOpen
+  },
+  {
+    href: "/tickets",
+    key: "tickets",
+    label: "Білети",
+    mobileLabel: "Білети",
+    Icon: FileText
   }
 ] as const;
 
@@ -66,7 +73,7 @@ export function SiteMobileTabbar({ active }: { active: SiteSection }) {
   return (
     <nav
       aria-label="Основні розділи"
-      className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-3 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid"
+      className="mobile-tabbar fixed inset-x-0 bottom-0 z-20 hidden min-h-16 grid-cols-4 border-t border-clinical-line bg-clinical-bg/95 px-1.5 pb-2 pt-1.5 backdrop-blur-xl max-md:grid"
       data-site-mobile-tabbar="primary"
     >
       {siteNavItems.map(({ href, key, mobileLabel, Icon }) => {

@@ -5,8 +5,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
-  CheckCircle2,
   ClipboardList,
+  FileText,
   GraduationCap,
   Layers3
 } from "lucide-react";
@@ -14,12 +14,13 @@ import {
 import { getCaseSummaries } from "@/content/loader";
 import { getKrokStats } from "@/content/krok/loader";
 import { getNoteCatalogStats } from "@/content/notes/loader";
+import { getExamTicketStats } from "@/content/tickets/loader";
 import { SiteMobileTabbar } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "Навчальний хаб",
   description:
-    "Стартова сторінка підготовки з неврології: ОСКІ станції, КРОК тести та стислий конспект."
+    "Стартова сторінка підготовки з неврології: ОСКІ станції, КРОК тести, стислий конспект і білети держіспиту."
 };
 
 export const dynamic = "force-static";
@@ -84,7 +85,7 @@ export default function HomePage() {
   const cases = getCaseSummaries();
   const krokStats = getKrokStats();
   const notesStats = getNoteCatalogStats();
-  const imagingCases = cases.filter((item) => item.hasImaging).length;
+  const ticketStats = getExamTicketStats();
 
   return (
     <main
@@ -114,39 +115,9 @@ export default function HomePage() {
           </div>
 
           <p className="mt-5 text-[15px] leading-relaxed text-clinical-muted">
-            Один вхід для практичних станцій, тестів КРОК і короткого конспекту за
-            структурою іспиту.
+            Один вхід для практичних станцій, тестів КРОК, короткого конспекту і
+            білетів держіспиту.
           </p>
-
-          {/*<div className="mt-6 grid gap-3">*/}
-          {/*  <div className="rounded-lg border border-clinical-line bg-[#fffaf0] p-3">*/}
-          {/*    <p className="text-xs font-black uppercase text-clinical-accent-strong">Матеріали</p>*/}
-          {/*    <p className="mt-1 text-3xl font-black">*/}
-          {/*      {cases.length + krokStats.questionCount + notesStats.sectionCount}*/}
-          {/*    </p>*/}
-          {/*    <p className="text-sm text-clinical-muted">станцій, тестів і тем</p>*/}
-          {/*  </div>*/}
-          {/*  <div className="grid grid-cols-2 gap-3">*/}
-          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
-          {/*      <p className="text-xs font-black text-clinical-accent-strong">ОСКІ</p>*/}
-          {/*      <p className="mt-1 text-xl font-black">{cases.length}</p>*/}
-          {/*    </div>*/}
-          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
-          {/*      <p className="text-xs font-black text-clinical-accent-strong">КТ/МРТ</p>*/}
-          {/*      <p className="mt-1 text-xl font-black">{imagingCases}</p>*/}
-          {/*    </div>*/}
-          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
-          {/*      <p className="text-xs font-black text-clinical-accent-strong">КРОК</p>*/}
-          {/*      <p className="mt-1 text-xl font-black">{krokStats.questionCount}</p>*/}
-          {/*    </div>*/}
-          {/*    <div className="rounded-lg border border-clinical-line bg-white p-3">*/}
-          {/*      <p className="text-xs font-black text-clinical-accent-strong">Конспект</p>*/}
-          {/*      <p className="mt-1 text-xl font-black">*/}
-          {/*        {notesStats.availableCount}/{notesStats.sectionCount}*/}
-          {/*      </p>*/}
-          {/*    </div>*/}
-          {/*  </div>*/}
-          {/*</div>*/}
         </aside>
 
         <section className="rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
@@ -161,7 +132,7 @@ export default function HomePage() {
             </div>
           </header>
 
-          <div className="grid gap-4 xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <SectionCard
               accent="bg-clinical-accent-soft text-clinical-accent-strong"
               eyebrow="Практика"
@@ -192,6 +163,16 @@ export default function HomePage() {
               text="Короткі high-yield блоки за структурою КРОК: топіка, діагностичні підказки, патерни і пастки."
               title="Конспект"
             />
+            <SectionCard
+              accent="bg-[#fff5dc] text-[#8a5c00]"
+              eyebrow="Держіспит"
+              href="/tickets"
+              icon={<FileText size={22} />}
+              stat={`${ticketStats.ticketCount} білети`}
+              testId="tickets"
+              text="Екзаменаційні білети у читальному форматі, зображення з DOCX і список питань, яких немає в білетах."
+              title="Білети"
+            />
           </div>
 
           <div className="mt-5 rounded-lg border border-clinical-line bg-[#fffdf8] p-4">
@@ -202,8 +183,9 @@ export default function HomePage() {
               <div className="min-w-0">
                 <h3 className="font-black">Поточна структура</h3>
                 <p className="mt-1 text-sm leading-relaxed text-clinical-muted">
-                  ОСКІ лишається окремим практичним блоком, КРОК - тестовим режимом, а
-                  Конспект - швидким теоретичним шаром для повторення ключових тем.
+                  ОСКІ лишається окремим практичним блоком, КРОК - тестовим режимом,
+                  Конспект - теоретичним шаром, а Білети - читальним режимом для
+                  держіспиту.
                 </p>
               </div>
             </div>
