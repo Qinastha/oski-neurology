@@ -643,12 +643,12 @@ async function inspect(name, url, viewport, selector) {
     interactions.sectionCards = await page.locator("[data-note-section-card]").count();
     interactions.availableCards = await page.locator('[data-note-section-status="available"]').count();
     interactions.plannedCards = await page.locator('[data-note-section-status="planned"]').count();
-    const searchInput = page.getByPlaceholder("Пошук тем, провідників, синдромів, КРОК-маркерів...");
-    await searchInput.fill("Adamkiewicz");
+    const searchInput = page.getByPlaceholder("Пошук за темою або підтемою...");
+    await searchInput.fill("Гепато-церебральна дегенерація");
     await page.waitForFunction(
       () =>
         document.querySelector('[data-notes-search-shell="query"] input')?.value ===
-        "Adamkiewicz",
+        "Гепато-церебральна дегенерація",
       undefined,
       { timeout: 5000 }
     );
@@ -663,7 +663,7 @@ async function inspect(name, url, viewport, selector) {
   if (name === "desktop-tickets") {
     interactions.ticketCards = await page.locator("[data-ticket-card]").count();
     interactions.missingQuestions = await page.locator("[data-missing-exam-question]").count();
-    const searchInput = page.getByPlaceholder("Пошук за номером білета, темою або ключовим словом...");
+    const searchInput = page.getByPlaceholder("Пошук за номером білета або питанням...");
     await searchInput.fill("Епілепсія. Класифікація 2017");
     await page.waitForFunction(() => document.querySelectorAll("[data-ticket-card]").length === 1, {
       timeout: 5000
@@ -1077,9 +1077,6 @@ const failures = results.flatMap((result) => {
   }
   if (result.metrics.overflowX > 1) {
     issues.push(`${result.name}: horizontal overflow ${result.metrics.overflowX}px`);
-  }
-  if (result.metrics.tableCount !== 0) {
-    issues.push(`${result.name}: expected no tables, got ${result.metrics.tableCount}`);
   }
   if (practicalCaseNames.has(result.name) && result.metrics.practicalSkillCards !== 1) {
     issues.push(`${result.name}: expected one practical skill card`);

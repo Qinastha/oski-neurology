@@ -105,6 +105,11 @@ export interface ExamTicketQuestionOverride {
   reviewNote?: string;
 }
 
+export interface ExamTicketSummaryQuestion {
+  number: number;
+  title: string;
+}
+
 export interface ExamTicketSummary {
   id: string;
   number: number;
@@ -113,5 +118,6 @@ export interface ExamTicketSummary {
   sourceType: ExamTicketSourceType;
   questionCount: number;
   mediaCount: number;
+  questions: ExamTicketSummaryQuestion[];
   search: string;
 }

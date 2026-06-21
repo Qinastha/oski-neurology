@@ -3,19 +3,26 @@ import "server-only";
 import { notFound } from "next/navigation";
 
 import { stripMarkdown } from "@/content/markdown";
+import { normalizeSearchText } from "@/lib/search";
 import { examQuestions, missingExamQuestions } from "./coverage";
 import { examTicketQuestionOverrides } from "./curated";
+import { ticket21To22Overrides } from "./curated-21-22";
+import { ticket23Overrides } from "./curated-23";
 import { examTickets } from "./generated";
 import type {
   ExamTicket,
   ExamTicketQuestionOverride,
-  ExamTicketRichBlock,
   ExamTicketSummary
 } from "./schema";
 
 const typedExamTickets = examTickets as ExamTicket[];
+const allExamTicketQuestionOverrides = [
+  ...(examTicketQuestionOverrides as ExamTicketQuestionOverride[]),
+  ...(ticket21To22Overrides as ExamTicketQuestionOverride[]),
+  ...(ticket23Overrides as ExamTicketQuestionOverride[])
+];
 const overridesByQuestion = new Map(
-  (examTicketQuestionOverrides as ExamTicketQuestionOverride[]).map((override) => [
+  allExamTicketQuestionOverrides.map((override) => [
     `${override.ticketNumber}:${override.questionNumber}`,
     override
   ])
@@ -64,45 +71,25 @@ export function getExamTicketSummaries(): ExamTicketSummary[] {
     mediaCount:
       ticket.gallery.length +
       ticket.questions.reduce((sum, question) => sum + question.media.length, 0),
+    questions: ticket.questions.map((question) => ({
+      number: question.number,
+      title: question.title
+    })),
     search: getExamTicketSearchBlob(ticket)
   }));
 }
 
-function getRichBlockSearchText(block: ExamTicketRichBlock): string[] {
-  if (block.type === "paragraph" || block.type === "heading") {
-    return [block.text];
-  }
-  if (block.type === "list") {
-    return block.items;
-  }
-  if (block.type === "definition_list") {
-    return block.items.flatMap((item) => [
-      item.term,
-      ...(Array.isArray(item.description) ? item.description : [item.description])
-    ]);
-  }
-  if (block.type === "table") {
-    return [...block.columns, ...block.rows.flat()];
-  }
-  if (block.type === "media") {
-    return [block.caption ?? "", ...block.mediaIds];
-  }
-  return [];
-}
-
 export function getExamTicketSearchBlob(ticket: ExamTicket) {
-  return stripMarkdown(
+  return normalizeSearchText(
+    stripMarkdown(
     [
+      ticket.number.toString(),
+      `Білет ${ticket.number}`,
       ticket.title,
-      ticket.sourceFile,
-      ticket.sourceType,
-      ...ticket.questions.flatMap((question) => [
-        question.title,
-        ...question.blocks.map((block) => block.text),
-        ...(question.richBlocks ?? []).flatMap(getRichBlockSearchText)
-      ])
+      ...ticket.questions.map((question) => question.title)
     ].join("\n")
-  ).toLowerCase();
+    )
+  );
 }
 
 export function getExamQuestionCoverage() {

@@ -3,6 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 
 import { stripMarkdown } from "@/content/markdown";
+import { normalizeSearchText } from "@/lib/search";
 import { noteBlocks } from "./blocks";
 import { noteSections } from "./sections";
 import type { NoteBlock, NoteSection, ResolvedNoteSection } from "./schema";
@@ -48,25 +49,14 @@ export function getNoteCatalogStats() {
 }
 
 export function getNoteSearchBlob(section: ResolvedNoteSection) {
-  return stripMarkdown(
+  return normalizeSearchText(
+    stripMarkdown(
     [
       section.code,
       section.title,
-      section.weight.toString(),
       ...section.subtopics.flatMap((subtopic) => [subtopic.code, subtopic.title]),
-      section.block?.summary ?? "",
-      ...(section.block?.content.flatMap((item) => [
-        item.id,
-        item.type,
-        item.title ?? "",
-        item.lead ?? "",
-        ...(item.paragraphs ?? []),
-        ...(item.items ?? [])
-      ]) ?? []),
-      ...(section.block?.topical?.flatMap((item) => [item.title, item.text, ...(item.tags ?? [])]) ?? []),
-      ...(section.block?.krokPatterns.flatMap((item) => [item.title, item.text, ...(item.tags ?? [])]) ?? []),
-      ...(section.block?.pitfalls.flatMap((item) => [item.title, item.text, ...(item.tags ?? [])]) ?? []),
-      ...(section.block?.krokSearchTerms ?? [])
+      ...(section.block?.content.flatMap((item) => [item.title ?? ""]) ?? [])
     ].join("\n")
-  ).toLowerCase();
+    )
+  );
 }

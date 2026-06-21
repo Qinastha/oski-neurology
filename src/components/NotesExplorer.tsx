@@ -14,6 +14,7 @@ import {
 
 import type { ResolvedNoteSection } from "@/content/notes/schema";
 import { cn } from "@/lib/cn";
+import { normalizeSearchText } from "@/lib/search";
 import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 export interface ExplorerNoteSection extends ResolvedNoteSection {
@@ -63,15 +64,11 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
     setLastNote(window.localStorage.getItem(LAST_NOTE_KEY));
   }, []);
 
-  const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(deferredQuery);
   const filteredSections = useMemo(
     () =>
       sections.filter(
-        (section) =>
-          normalizedQuery.length === 0 ||
-          section.search.includes(normalizedQuery) ||
-          section.title.toLowerCase().includes(normalizedQuery) ||
-          section.code.includes(normalizedQuery)
+        (section) => normalizedQuery.length === 0 || section.search.includes(normalizedQuery)
       ),
     [normalizedQuery, sections]
   );
@@ -170,7 +167,7 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
               className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-[#8f96a3]"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Пошук тем, провідників, синдромів, КРОК-маркерів..."
+              placeholder="Пошук за темою або підтемою..."
             />
           </label>
         </div>

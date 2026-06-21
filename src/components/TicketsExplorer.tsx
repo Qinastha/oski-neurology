@@ -6,12 +6,11 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
-  Image as ImageIcon,
   Search
 } from "lucide-react";
 
 import type { ExamTicketSummary, MissingExamQuestion } from "@/content/tickets/schema";
-import { cn } from "@/lib/cn";
+import { normalizeSearchText } from "@/lib/search";
 import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
 
 const BRAND_ICON_SRC = "/metadata/apple-icon.png";
@@ -27,20 +26,24 @@ export function TicketsExplorer({
 }) {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
-  const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(deferredQuery);
 
   const filteredTickets = useMemo(
     () =>
       tickets.filter(
-        (ticket) =>
-          normalizedQuery.length === 0 ||
-          ticket.search.includes(normalizedQuery) ||
-          ticket.title.toLowerCase().includes(normalizedQuery) ||
-          String(ticket.number).includes(normalizedQuery)
+        (ticket) => normalizedQuery.length === 0 || ticket.search.includes(normalizedQuery)
       ),
     [normalizedQuery, tickets]
   );
-  const mediaCount = tickets.reduce((sum, ticket) => sum + ticket.mediaCount, 0);
+  const filteredMissingQuestions = useMemo(
+    () =>
+      missingQuestions.filter(
+        (question) =>
+          normalizedQuery.length === 0 ||
+          normalizeSearchText(`${question.number} ${question.text}`).includes(normalizedQuery)
+      ),
+    [missingQuestions, normalizedQuery]
+  );
 
   return (
     <main className="grid min-h-dvh gap-[18px] p-5 md:grid-cols-[240px_minmax(0,1fr)] max-md:block max-md:p-0 max-md:pb-20">
@@ -71,7 +74,7 @@ export function TicketsExplorer({
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[13px] font-extrabold text-clinical-accent-strong">
-              {tickets.length} білетів · {mediaCount} зображень
+              {tickets.length} білетів
             </p>
             <h1 className="mt-1 text-[clamp(30px,4vw,46px)] font-black leading-[1.04]">
               Білети держіспиту
@@ -86,7 +89,7 @@ export function TicketsExplorer({
               className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-[#8f96a3]"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Пошук за номером білета, темою або ключовим словом..."
+              placeholder="Пошук за номером білета або питанням..."
             />
           </label>
         </div>
@@ -99,21 +102,15 @@ export function TicketsExplorer({
               key={ticket.id}
             >
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex min-h-8 items-center rounded-lg border border-clinical-line-strong bg-clinical-accent-soft px-2.5 text-sm font-black text-clinical-accent-strong">
-                    № {ticket.number}
-                  </span>
-                  <span className="rounded-full border border-clinical-line bg-[#fffaf0] px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
-                    {ticket.questionCount} питання
-                  </span>
-                  {ticket.mediaCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-clinical-line bg-white px-2.5 py-1 text-xs font-extrabold text-clinical-muted">
-                      <ImageIcon size={13} />
-                      {ticket.mediaCount}
-                    </span>
-                  ) : null}
-                </div>
-                <h2 className="mt-3 text-xl font-black leading-tight">{ticket.title}</h2>
+                <h2 className="text-xl font-black leading-tight">{ticket.title}</h2>
+                <ul className="mt-3 space-y-1.5 text-[13px] leading-5 text-clinical-muted">
+                  {ticket.questions.map((question) => (
+                    <li className="flex gap-2" key={`${ticket.id}-${question.number}`}>
+                      <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clinical-accent/70" />
+                      <span>{question.title}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               <Link
@@ -143,19 +140,20 @@ export function TicketsExplorer({
               </p>
             </div>
           </div>
-          <div className="mt-4 grid gap-2">
-            {missingQuestions.map((question) => (
-              <div
-                className={cn(
-                  "grid gap-2 rounded-lg border border-clinical-line bg-white p-3 text-sm leading-relaxed",
-                  "md:grid-cols-[52px_minmax(0,1fr)]"
-                )}
+          <div className="mt-4 grid gap-3">
+            {filteredMissingQuestions.map((question) => (
+              <article
+                className="scroll-mt-5 rounded-lg border border-clinical-line bg-white p-4 shadow-[0_14px_42px_rgba(84,67,20,0.045)]"
                 data-missing-exam-question={question.number}
+                id={`missing-question-${question.number}`}
                 key={question.number}
               >
-                <span className="font-black text-clinical-accent-strong">№ {question.number}</span>
-                <span className="text-[#4e5561]">{question.text}</span>
-              </div>
+                <h3 className="text-[18px] font-black leading-snug text-clinical-text md:text-xl">
+                  <a className="outline-none transition hover:text-clinical-accent-strong focus:text-clinical-accent-strong" href={`#missing-question-${question.number}`}>
+                    {question.text}
+                  </a>
+                </h3>
+              </article>
             ))}
           </div>
         </section>

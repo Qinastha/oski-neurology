@@ -12,6 +12,8 @@ const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
 const ticketsGeneratedPath = path.join(root, "src/content/tickets/generated.ts");
 const ticketsCoveragePath = path.join(root, "src/content/tickets/coverage.ts");
 const ticketsCuratedPath = path.join(root, "src/content/tickets/curated.ts");
+const ticketsCurated21To22Path = path.join(root, "src/content/tickets/curated-21-22.ts");
+const ticketsCurated23Path = path.join(root, "src/content/tickets/curated-23.ts");
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -175,11 +177,11 @@ const missingExamQuestions = parseExportedArray(
   "missingExamQuestions",
   "MissingExamQuestion"
 );
-const examTicketQuestionOverrides = parseExportedArray(
-  ticketsCuratedPath,
-  "examTicketQuestionOverrides",
-  "ExamTicketQuestionOverride"
-);
+const examTicketQuestionOverrides = [
+  ...parseExportedArray(ticketsCuratedPath, "examTicketQuestionOverrides", "ExamTicketQuestionOverride"),
+  ...parseExportedArray(ticketsCurated21To22Path, "ticket21To22Overrides", "ExamTicketQuestionOverride"),
+  ...parseExportedArray(ticketsCurated23Path, "ticket23Overrides", "ExamTicketQuestionOverride")
+];
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003"]);
 const expectedNoteSectionWeights = new Map([
