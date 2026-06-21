@@ -4,7 +4,6 @@ import { useDeferredValue, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  AlertTriangle,
   ArrowRight,
   Search
 } from "lucide-react";
@@ -19,14 +18,20 @@ const BRAND_ICON_CLASS =
 
 export function TicketsExplorer({
   tickets,
-  missingQuestions
+  missingQuestions,
+  answeredMissingQuestionNumbers
 }: {
   tickets: ExamTicketSummary[];
   missingQuestions: MissingExamQuestion[];
+  answeredMissingQuestionNumbers: number[];
 }) {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = normalizeSearchText(deferredQuery);
+  const answeredMissingQuestionSet = useMemo(
+    () => new Set(answeredMissingQuestionNumbers),
+    [answeredMissingQuestionNumbers]
+  );
 
   const filteredTickets = useMemo(
     () =>
@@ -124,38 +129,65 @@ export function TicketsExplorer({
           ))}
         </div>
 
-        <section
-          className="mt-5 rounded-lg border border-amber-200 bg-[#fffaf0] p-4"
-          data-missing-exam-questions="list"
-        >
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-white text-clinical-accent-strong">
-              <AlertTriangle size={19} />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-black leading-tight">Питання поза білетами</h2>
-              <p className="mt-1 text-sm leading-relaxed text-clinical-muted">
-                Ці формулювання є в загальному списку, але не знайдені як самостійні питання у
-                наданих 23 білетах.
-              </p>
+        <section className="mt-6 border-t border-clinical-line pt-5" data-missing-exam-questions="list">
+          <div className="min-w-0">
+            <h2 className="text-xl font-black leading-tight">Питання поза білетами</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-clinical-muted">
+              Окремі формулювання із загального списку. Перші відповіді вже відкриваються як
+              сторінки з перевіреними клінічними джерелами.
+            </p>
+          </div>
+          {filteredMissingQuestions.length > 0 ? (
+            <div className="mt-4 divide-y divide-clinical-line rounded-lg border border-clinical-line bg-white">
+              {filteredMissingQuestions.map((question) => {
+                const hasAnswer = answeredMissingQuestionSet.has(question.number);
+                const content = (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clinical-accent/70"
+                    />
+                    <span className="min-w-0 flex-1">{question.text}</span>
+                    {hasAnswer ? (
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="mt-0.5 shrink-0 text-clinical-muted transition group-hover:text-clinical-accent-strong"
+                        size={16}
+                      />
+                    ) : null}
+                  </>
+                );
+
+                return (
+                  <article
+                    className="scroll-mt-5 px-4 py-3 text-[13px] leading-5 text-clinical-muted"
+                    data-missing-exam-question={question.number}
+                    id={`missing-question-${question.number}`}
+                    key={question.number}
+                  >
+                    {hasAnswer ? (
+                      <Link
+                        className="group flex min-h-8 items-start gap-2 outline-none transition hover:text-clinical-text focus:text-clinical-text"
+                        data-missing-exam-question-link={question.number}
+                        href={`/tickets/questions/${question.number}`}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <p className="flex min-h-8 items-start gap-2">{content}</p>
+                    )}
+                  </article>
+                );
+              })}
             </div>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {filteredMissingQuestions.map((question) => (
-              <article
-                className="scroll-mt-5 rounded-lg border border-clinical-line bg-white p-4 shadow-[0_14px_42px_rgba(84,67,20,0.045)]"
-                data-missing-exam-question={question.number}
-                id={`missing-question-${question.number}`}
-                key={question.number}
-              >
-                <h3 className="text-[18px] font-black leading-snug text-clinical-text md:text-xl">
-                  <a className="outline-none transition hover:text-clinical-accent-strong focus:text-clinical-accent-strong" href={`#missing-question-${question.number}`}>
-                    {question.text}
-                  </a>
-                </h3>
-              </article>
-            ))}
-          </div>
+          ) : (
+            <div
+              className="mt-4 rounded-lg border border-dashed border-clinical-line bg-white p-4 text-sm font-bold text-clinical-muted"
+              data-missing-exam-questions-empty="true"
+            >
+              За поточним пошуком питань поза білетами не знайдено.
+            </div>
+          )}
         </section>
       </section>
 

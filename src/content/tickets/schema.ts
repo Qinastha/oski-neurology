@@ -97,6 +97,28 @@ export interface MissingExamQuestion extends ExamQuestion {
   reason: string;
 }
 
+export interface MissingExamQuestionAnswerSection {
+  id: string;
+  title: string;
+  paragraphs?: string[];
+  items?: string[];
+}
+
+export interface MissingExamQuestionAnswerSource {
+  title: string;
+  publisher: string;
+  url: string;
+}
+
+export interface MissingExamQuestionAnswer {
+  number: number;
+  title: string;
+  lead: string;
+  reviewedAt: string;
+  sections: MissingExamQuestionAnswerSection[];
+  sources: MissingExamQuestionAnswerSource[];
+}
+
 export interface ExamTicketQuestionOverride {
   ticketNumber: number;
   questionNumber: number;

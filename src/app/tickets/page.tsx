@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 
 import { TicketsExplorer } from "@/components/TicketsExplorer";
-import { getExamQuestionCoverage, getExamTicketSummaries } from "@/content/tickets/loader";
+import {
+  getExamQuestionCoverage,
+  getExamTicketSummaries,
+  getMissingExamQuestionAnswerNumbers
+} from "@/content/tickets/loader";
 
 export const metadata: Metadata = {
   title: "Білети",
@@ -14,5 +18,11 @@ export const dynamic = "force-static";
 export default function TicketsPage() {
   const { missing } = getExamQuestionCoverage();
 
-  return <TicketsExplorer missingQuestions={missing} tickets={getExamTicketSummaries()} />;
+  return (
+    <TicketsExplorer
+      answeredMissingQuestionNumbers={getMissingExamQuestionAnswerNumbers()}
+      missingQuestions={missing}
+      tickets={getExamTicketSummaries()}
+    />
+  );
 }

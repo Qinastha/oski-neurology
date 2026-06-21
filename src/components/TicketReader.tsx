@@ -16,7 +16,8 @@ import type {
   ExamTicket,
   ExamTicketContentBlock,
   ExamTicketMedia,
-  ExamTicketRichBlock
+  ExamTicketRichBlock,
+  ExamTicketRichTableBlock
 } from "@/content/tickets/schema";
 import { cn } from "@/lib/cn";
 import { SiteMobileTabbar, SiteSectionLinks } from "./SiteNav";
@@ -118,6 +119,101 @@ function MediaFigure({
   );
 }
 
+function getColumnWidth(columnCount: number, columnIndex: number) {
+  if (columnCount <= 1) {
+    return "100%";
+  }
+
+  const firstColumnWidth = columnCount === 2 ? 34 : columnCount === 3 ? 28 : 22;
+  if (columnIndex === 0) {
+    return `${firstColumnWidth}%`;
+  }
+
+  return `${(100 - firstColumnWidth) / (columnCount - 1)}%`;
+}
+
+function RichTableBlock({ block }: { block: ExamTicketRichTableBlock }) {
+  return (
+    <div className="mt-4" data-ticket-table={block.id}>
+      <div
+        className="hidden rounded-lg border border-clinical-line bg-white/80 md:block"
+        data-ticket-table-scroll={block.id}
+      >
+        <table className="w-full table-fixed border-collapse text-left text-[13px] leading-6">
+          <colgroup>
+            {block.columns.map((column, columnIndex) => (
+              <col key={column} style={{ width: getColumnWidth(block.columns.length, columnIndex) }} />
+            ))}
+          </colgroup>
+          <thead className="bg-clinical-accent-soft text-clinical-accent-strong">
+            <tr>
+              {block.columns.map((column) => (
+                <th className="border-b border-clinical-line px-3 py-2 font-black [overflow-wrap:anywhere]" key={column}>
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.rows.map((row, rowIndex) => (
+              <tr className="odd:bg-white even:bg-[#fffaf0]" key={`${block.id}-${rowIndex}`}>
+                {row.map((cell, cellIndex) => (
+                  <td
+                    className="border-b border-clinical-line px-3 py-2 align-top text-[#4e5561] [overflow-wrap:anywhere]"
+                    key={`${block.id}-${rowIndex}-${cellIndex}`}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-3 md:hidden" data-ticket-table-card-list={block.id}>
+        {block.rows.map((row, rowIndex) => {
+          const rowTitle = row[0] || `Рядок ${rowIndex + 1}`;
+          const details = block.columns.slice(1).map((column, columnIndex) => ({
+            label: column,
+            value: row[columnIndex + 1] ?? ""
+          }));
+
+          return (
+            <article
+              className="rounded-lg border border-clinical-line bg-white/80 p-3"
+              data-ticket-table-card-row={block.id}
+              key={`${block.id}-card-${rowIndex}`}
+            >
+              <p className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
+                {block.columns[0] ?? "Пункт"}
+              </p>
+              <h4 className="mt-0.5 text-[15px] font-black leading-6 text-clinical-text [overflow-wrap:anywhere]">
+                {rowTitle}
+              </h4>
+
+              {details.length > 0 ? (
+                <dl className="mt-3 grid gap-2">
+                  {details.map((item) => (
+                    <div className="rounded-lg bg-[#fffaf0] px-3 py-2" key={`${block.id}-card-${rowIndex}-${item.label}`}>
+                      <dt className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
+                        {item.label}
+                      </dt>
+                      <dd className="m-0 mt-0.5 text-[14px] leading-6 text-[#4e5561] [overflow-wrap:anywhere]">
+                        {item.value || "-"}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function RichBlock({
   block,
   mediaById,
@@ -177,32 +273,7 @@ function RichBlock({
   }
 
   if (block.type === "table") {
-    return (
-      <div className="mt-4 w-full max-w-[calc(100vw-28px)] overflow-x-auto rounded-lg border border-clinical-line bg-white/80 md:max-w-full">
-        <table className="min-w-[620px] border-collapse text-left text-[14px] leading-6">
-          <thead className="bg-clinical-accent-soft text-clinical-accent-strong">
-            <tr>
-              {block.columns.map((column) => (
-                <th className="border-b border-clinical-line px-3 py-2 font-black" key={column}>
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {block.rows.map((row, rowIndex) => (
-              <tr className="odd:bg-white even:bg-[#fffaf0]" key={`${block.id}-${rowIndex}`}>
-                {row.map((cell, cellIndex) => (
-                  <td className="border-b border-clinical-line px-3 py-2 align-top text-[#4e5561]" key={`${block.id}-${rowIndex}-${cellIndex}`}>
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+    return <RichTableBlock block={block} />;
   }
 
   if (block.type === "media") {

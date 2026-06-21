@@ -9,13 +9,16 @@ import { examTicketQuestionOverrides } from "./curated";
 import { ticket21To22Overrides } from "./curated-21-22";
 import { ticket23Overrides } from "./curated-23";
 import { examTickets } from "./generated";
+import { missingExamQuestionAnswers } from "./missing-answers";
 import type {
   ExamTicket,
   ExamTicketQuestionOverride,
-  ExamTicketSummary
+  ExamTicketSummary,
+  MissingExamQuestionAnswer
 } from "./schema";
 
 const typedExamTickets = examTickets as ExamTicket[];
+const typedMissingExamQuestionAnswers = missingExamQuestionAnswers as MissingExamQuestionAnswer[];
 const allExamTicketQuestionOverrides = [
   ...(examTicketQuestionOverrides as ExamTicketQuestionOverride[]),
   ...(ticket21To22Overrides as ExamTicketQuestionOverride[]),
@@ -97,6 +100,22 @@ export function getExamQuestionCoverage() {
     questions: examQuestions,
     missing: missingExamQuestions
   };
+}
+
+export function getMissingExamQuestionAnswers() {
+  return typedMissingExamQuestionAnswers;
+}
+
+export function getMissingExamQuestionAnswerNumbers() {
+  return typedMissingExamQuestionAnswers.map((answer) => answer.number);
+}
+
+export function getMissingExamQuestionAnswerByNumber(number: number): MissingExamQuestionAnswer {
+  const answer = typedMissingExamQuestionAnswers.find((item) => item.number === number);
+  if (!answer) {
+    notFound();
+  }
+  return answer;
 }
 
 export function getExamTicketStats() {

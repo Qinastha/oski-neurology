@@ -812,11 +812,42 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
       session && sessionQuestions && result && !session.finishedAt ? { result, session } : undefined;
 
     return (
-      <main className="min-h-dvh p-5 max-md:p-0" data-krok-page="start">
-        <section className="mx-auto grid max-w-6xl gap-5 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
+      <main
+        className="grid min-h-dvh gap-[18px] p-5 lg:grid-cols-[240px_minmax(0,1fr)] max-md:block max-md:p-0 max-md:pb-20"
+        data-krok-page="start"
+      >
+        <aside
+          className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
+          data-krok-desktop-sidebar="start"
+        >
+          <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/krok">
+            <span className="inline-flex h-12 w-12 items-center justify-center">
+              <Image
+                alt=""
+                aria-hidden="true"
+                className={BRAND_ICON_CLASS}
+                height={46}
+                src={BRAND_ICON_SRC}
+                width={46}
+              />
+            </span>
+            <span>КРОК тести</span>
+          </Link>
+          <SiteSectionLinks active="krok" className="mt-6 border-b border-clinical-line pb-4" />
+
+          <div className="mt-auto rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+            <p className="text-xs font-black uppercase text-clinical-accent-strong">Питання</p>
+            <p className="mt-1 text-2xl font-black">{officialQuestions.length}</p>
+            <p className="text-sm text-clinical-muted">
+              офіційних · {trainingQuestionCount} тренувальних
+            </p>
+          </div>
+        </aside>
+
+        <section className="grid min-w-0 gap-5 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
           <SiteSectionLinks
             active="krok"
-            className="grid-cols-3 border-b border-clinical-line pb-4 max-md:hidden [&>a]:justify-center"
+            className="grid-cols-3 border-b border-clinical-line pb-4 lg:hidden max-md:hidden [&>a]:justify-center"
           />
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -938,10 +969,13 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
 
   return (
     <main
-      className="grid min-h-dvh gap-[18px] p-5 lg:grid-cols-[292px_minmax(0,1fr)] max-lg:flex max-lg:h-dvh max-lg:flex-col max-lg:overflow-hidden max-lg:p-0"
+      className="grid min-h-dvh gap-[18px] p-5 lg:grid-cols-[240px_minmax(0,1fr)] max-lg:flex max-lg:h-dvh max-lg:flex-col max-lg:overflow-hidden max-lg:p-0"
       data-krok-page="session"
     >
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] min-h-0 flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden">
+      <aside
+        className="sticky top-5 flex h-[calc(100dvh-40px)] min-h-0 flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
+        data-krok-desktop-sidebar="session"
+      >
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/krok">
           <span className="inline-flex h-12 w-12 items-center justify-center">
             <Image

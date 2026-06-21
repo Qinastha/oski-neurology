@@ -445,6 +445,15 @@ async function inspect(name, url, viewport, selector) {
   }
 
   if (name === "desktop-krok") {
+    interactions.desktopStartSidebar = await page
+      .locator('[data-krok-desktop-sidebar="start"]')
+      .count();
+    interactions.desktopStartSidebarWidth =
+      interactions.desktopStartSidebar === 1
+        ? await page
+            .locator('[data-krok-desktop-sidebar="start"]')
+            .evaluate((element) => Math.round(element.getBoundingClientRect().width))
+        : 0;
     interactions.startCards = await page.locator("[data-krok-start-card]").count();
 
     await page.locator('[data-krok-start-card="2026"] [data-krok-start-mode="ordered"]').click();
@@ -452,6 +461,15 @@ async function inspect(name, url, viewport, selector) {
     await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
       timeout: 15000
     });
+    interactions.desktopSessionSidebar = await page
+      .locator('[data-krok-desktop-sidebar="session"]')
+      .count();
+    interactions.desktopSessionSidebarWidth =
+      interactions.desktopSessionSidebar === 1
+        ? await page
+            .locator('[data-krok-desktop-sidebar="session"]')
+            .evaluate((element) => Math.round(element.getBoundingClientRect().width))
+        : 0;
     interactions.orderedCards = await page.locator("[data-krok-question-card]").count();
     interactions.orderedFirstBooklet = await page
       .locator("[data-krok-question-card]")
@@ -663,12 +681,35 @@ async function inspect(name, url, viewport, selector) {
   if (name === "desktop-tickets") {
     interactions.ticketCards = await page.locator("[data-ticket-card]").count();
     interactions.missingQuestions = await page.locator("[data-missing-exam-question]").count();
+    interactions.missingQuestionNumbers = await page
+      .locator("[data-missing-exam-question-number]")
+      .count();
+    interactions.missingQuestionTopicTags = await page.getByText("Поза білетами", { exact: true }).count();
+    interactions.missingQuestionAnswerStatuses = await page
+      .locator("[data-missing-exam-question-answer-status]")
+      .count();
+    interactions.missingQuestionAnswerLinks = await page
+      .locator("[data-missing-exam-question-link]")
+      .count();
     const searchInput = page.getByPlaceholder("Пошук за номером білета або питанням...");
     await searchInput.fill("Епілепсія. Класифікація 2017");
     await page.waitForFunction(() => document.querySelectorAll("[data-ticket-card]").length === 1, {
       timeout: 5000
     });
     interactions.searchCards = await page.locator("[data-ticket-card]").count();
+    interactions.searchMissingEmpty = await page
+      .locator("[data-missing-exam-questions-empty]")
+      .count();
+  }
+
+  if (name.startsWith("desktop-missing-question-")) {
+    const questionNumber = name.split("-").at(-1);
+    interactions.reader = await page.locator(`[data-missing-answer="${questionNumber}"]`).count();
+    interactions.sections = await page.locator("[data-missing-answer-section]").count();
+    interactions.sources = await page.locator("[data-missing-answer-source]").count();
+    interactions.sourceLinks = await page.locator('[data-missing-answer-source] a[href^="http"]').count();
+    interactions.sourceHeadings = await page.getByRole("heading", { name: "Джерела", exact: true }).count();
+    interactions.backLinks = await page.locator('a[href="/tickets"]').count();
   }
 
   if (name === "desktop-ticket-11") {
@@ -681,6 +722,11 @@ async function inspect(name, url, viewport, selector) {
     interactions.reader = await page.locator('[data-ticket-reader="21"]').count();
     interactions.questions = await page.locator("[data-ticket-question]").count();
     interactions.mediaFigures = await page.locator("[data-ticket-media-figure]").count();
+    interactions.tableScrollableContainers = await page
+      .locator("[data-ticket-table-scroll]")
+      .evaluateAll((containers) =>
+        containers.filter((container) => container.scrollWidth - container.clientWidth > 1).length
+      );
     await page.locator("[data-ticket-media-open]").first().click();
     await page.waitForSelector('[data-ticket-lightbox="open"]', { timeout: 5000 });
     interactions.lightboxOpen = await page.locator('[data-ticket-lightbox="open"]').count();
@@ -695,6 +741,34 @@ async function inspect(name, url, viewport, selector) {
     interactions.ticketCards = await page.locator("[data-ticket-card]").count();
     interactions.mobileTabs = await page.locator(".mobile-tabbar a").count();
     interactions.missingQuestions = await page.locator("[data-missing-exam-question]").count();
+    interactions.missingQuestionNumbers = await page
+      .locator("[data-missing-exam-question-number]")
+      .count();
+    interactions.missingQuestionTopicTags = await page.getByText("Поза білетами", { exact: true }).count();
+    interactions.missingQuestionAnswerStatuses = await page
+      .locator("[data-missing-exam-question-answer-status]")
+      .count();
+    interactions.missingQuestionAnswerLinks = await page
+      .locator("[data-missing-exam-question-link]")
+      .count();
+  }
+
+  if (name === "mobile-ticket-21") {
+    interactions.reader = await page.locator('[data-ticket-reader="21"]').count();
+    interactions.questions = await page.locator("[data-ticket-question]").count();
+    interactions.tables = await page.locator("[data-ticket-table]").count();
+    interactions.tableCards = await page.locator("[data-ticket-table-card-list]").count();
+    interactions.tableCardRows = await page.locator("[data-ticket-table-card-row]").count();
+    interactions.tableScrollableContainers = await page
+      .locator("[data-ticket-table-scroll]")
+      .evaluateAll((containers) =>
+        containers.filter((container) => container.scrollWidth - container.clientWidth > 1).length
+      );
+    interactions.maxTableScrollExcess = await page
+      .locator("[data-ticket-table-scroll]")
+      .evaluateAll((containers) =>
+        Math.max(0, ...containers.map((container) => container.scrollWidth - container.clientWidth))
+      );
   }
 
   if (name.includes("note-reader")) {
@@ -749,6 +823,42 @@ await inspect(
   `/tickets`,
   { width: 1440, height: 900 },
   '[data-ticket-list="catalog"]'
+);
+await inspect(
+  "desktop-missing-question-34",
+  `/tickets/questions/34`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="34"]'
+);
+await inspect(
+  "desktop-missing-question-35",
+  `/tickets/questions/35`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="35"]'
+);
+await inspect(
+  "desktop-missing-question-53",
+  `/tickets/questions/53`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="53"]'
+);
+await inspect(
+  "desktop-missing-question-57",
+  `/tickets/questions/57`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="57"]'
+);
+await inspect(
+  "desktop-missing-question-59",
+  `/tickets/questions/59`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="59"]'
+);
+await inspect(
+  "desktop-missing-question-83",
+  `/tickets/questions/83`,
+  { width: 1440, height: 900 },
+  '[data-missing-answer="83"]'
 );
 await inspect(
   "desktop-ticket-11",
@@ -980,6 +1090,12 @@ await inspect(
   '[data-ticket-list="catalog"]'
 );
 await inspect(
+  "mobile-ticket-21",
+  `/tickets/21`,
+  { width: 390, height: 844 },
+  '[data-ticket-reader="21"]'
+);
+await inspect(
   "mobile-note-reader",
   `/notes/anatomy-physiology`,
   { width: 390, height: 844 },
@@ -1117,6 +1233,18 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.startCards !== 7) {
     issues.push(`${result.name}: expected seven start cards`);
   }
+  if (result.name === "desktop-krok" && result.interactions.desktopStartSidebar !== 1) {
+    issues.push(`${result.name}: KROK start page should use the shared desktop sidebar pattern`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.desktopStartSidebarWidth !== 240) {
+    issues.push(`${result.name}: KROK start sidebar should match the 240px shared desktop nav column`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.desktopSessionSidebar !== 1) {
+    issues.push(`${result.name}: KROK session page should use the shared desktop sidebar pattern`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.desktopSessionSidebarWidth !== 240) {
+    issues.push(`${result.name}: KROK session sidebar should match the 240px shared desktop nav column`);
+  }
   if (result.name === "desktop-krok" && result.interactions.orderedCards !== 150) {
     issues.push(`${result.name}: ordered 2026 booklet did not render 150 questions`);
   }
@@ -1251,8 +1379,41 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-tickets" && result.interactions.missingQuestions !== 6) {
     issues.push(`${result.name}: expected six missing exam questions`);
   }
+  if (result.name === "desktop-tickets" && result.interactions.missingQuestionNumbers !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show standalone numbers`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.missingQuestionTopicTags !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show topic tags`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.missingQuestionAnswerStatuses !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show answer status markers`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.missingQuestionAnswerLinks !== 6) {
+    issues.push(`${result.name}: expected six missing exam question answer links`);
+  }
   if (result.name === "desktop-tickets" && result.interactions.searchCards !== 1) {
     issues.push(`${result.name}: tickets search did not narrow to one card`);
+  }
+  if (result.name === "desktop-tickets" && result.interactions.searchMissingEmpty !== 1) {
+    issues.push(`${result.name}: missing question list should show an empty state when filtered out`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.reader !== 1) {
+    issues.push(`${result.name}: missing question answer reader did not render`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.sections < 4) {
+    issues.push(`${result.name}: expected at least four answer sections`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.sources !== 0) {
+    issues.push(`${result.name}: source entries should not be visible in the answer UI`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.sourceLinks !== 0) {
+    issues.push(`${result.name}: source links should not be visible in the answer UI`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.sourceHeadings !== 0) {
+    issues.push(`${result.name}: source heading should not be visible in the answer UI`);
+  }
+  if (result.name.startsWith("desktop-missing-question-") && result.interactions.backLinks < 1) {
+    issues.push(`${result.name}: expected a back link to tickets`);
   }
   if (result.name === "desktop-ticket-11" && result.interactions.reader !== 1) {
     issues.push(`${result.name}: ticket 11 reader did not render`);
@@ -1268,6 +1429,9 @@ const failures = results.flatMap((result) => {
   }
   if (result.name === "desktop-ticket-21" && result.interactions.mediaFigures < 8) {
     issues.push(`${result.name}: ticket 21 media figures did not render`);
+  }
+  if (result.name === "desktop-ticket-21" && result.interactions.tableScrollableContainers !== 0) {
+    issues.push(`${result.name}: ticket tables should not require horizontal scrolling`);
   }
   if (result.name === "desktop-ticket-21" && result.interactions.lightboxOpen !== 1) {
     issues.push(`${result.name}: ticket media lightbox did not open`);
@@ -1314,8 +1478,41 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-tickets" && result.interactions.missingQuestions !== 6) {
     issues.push(`${result.name}: expected six missing exam questions on mobile`);
   }
+  if (result.name === "mobile-tickets" && result.interactions.missingQuestionNumbers !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show standalone numbers on mobile`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.missingQuestionTopicTags !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show topic tags on mobile`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.missingQuestionAnswerStatuses !== 0) {
+    issues.push(`${result.name}: missing exam question cards should not show answer statuses on mobile`);
+  }
+  if (result.name === "mobile-tickets" && result.interactions.missingQuestionAnswerLinks !== 6) {
+    issues.push(`${result.name}: expected six missing exam question answer links on mobile`);
+  }
   if (result.name === "mobile-tickets" && result.interactions.mobileTabs !== 4) {
     issues.push(`${result.name}: expected four global mobile nav links`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.reader !== 1) {
+    issues.push(`${result.name}: ticket 21 mobile reader did not render`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.questions !== 4) {
+    issues.push(`${result.name}: ticket 21 mobile questions did not render`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.tables < 1) {
+    issues.push(`${result.name}: expected ticket 21 mobile tables to render`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.tableCards < 1) {
+    issues.push(`${result.name}: mobile ticket tables should render card summaries instead of horizontal scroll`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.tableCardRows < 1) {
+    issues.push(`${result.name}: mobile ticket table card rows did not render`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.tableScrollableContainers !== 0) {
+    issues.push(`${result.name}: mobile ticket tables should not require horizontal scrolling`);
+  }
+  if (result.name === "mobile-ticket-21" && result.interactions.maxTableScrollExcess > 1) {
+    issues.push(`${result.name}: mobile ticket table scroll excess ${result.interactions.maxTableScrollExcess}px`);
   }
   if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeRoot !== 1) {
     issues.push(`${result.name}: home hub did not render`);
