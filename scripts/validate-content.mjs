@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const casesRoot = path.join(root, "src/content/cases");
 const krokGeneratedPath = path.join(root, "src/content/krok/generated.ts");
+const krokContentMapPath = path.join(root, "src/content/krok/content-map.ts");
 const krokExplanationsPath = path.join(root, "src/content/krok/explanations.ts");
 const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts");
 const krokTrainingPath = path.join(root, "src/content/krok/training.ts");
@@ -11,7 +12,7 @@ const notesSectionsPath = path.join(root, "src/content/notes/sections.ts");
 const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
 const ticketsGeneratedPath = path.join(root, "src/content/tickets/generated.ts");
 const ticketsCoveragePath = path.join(root, "src/content/tickets/coverage.ts");
-const ticketsCuratedPath = path.join(root, "src/content/tickets/curated.ts");
+const ticketsCurated01To20Path = path.join(root, "src/content/tickets/curated-01-20.ts");
 const ticketsCurated21To22Path = path.join(root, "src/content/tickets/curated-21-22.ts");
 const ticketsCurated23Path = path.join(root, "src/content/tickets/curated-23.ts");
 const publicRoot = path.join(root, "public");
@@ -153,6 +154,11 @@ function parseExportedArray(filePath, exportName, typeName) {
 }
 
 const krokBooklets = parseGeneratedKrokBooklets();
+const krokContentTopics = parseExportedArray(
+  krokContentMapPath,
+  "krokContentTopics",
+  "KrokContentTopic"
+);
 const krokAnswerExplanations = parseExportedArray(
   krokExplanationsPath,
   "krokAnswerExplanations",
@@ -177,13 +183,13 @@ const missingExamQuestions = parseExportedArray(
   "missingExamQuestions",
   "MissingExamQuestion"
 );
-const examTicketQuestionOverrides = [
-  ...parseExportedArray(ticketsCuratedPath, "examTicketQuestionOverrides", "ExamTicketQuestionOverride"),
+const allExamTicketQuestionOverrides = [
+  ...parseExportedArray(ticketsCurated01To20Path, "ticket01To20Overrides", "ExamTicketQuestionOverride"),
   ...parseExportedArray(ticketsCurated21To22Path, "ticket21To22Overrides", "ExamTicketQuestionOverride"),
   ...parseExportedArray(ticketsCurated23Path, "ticket23Overrides", "ExamTicketQuestionOverride")
 ];
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
-const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003"]);
+const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003", "ai-004"]);
 const expectedNoteSectionWeights = new Map([
   ["1.0.0.0", 10],
   ["2.0.0.0", 20],
@@ -205,6 +211,15 @@ const forbiddenTrainingStemPatterns = [
   /ключова ознака/i,
   /клінічному завданні/i,
   /найкраще відповідає цій ситуації/i,
+  /що зберігаються на момент огляду/i,
+  /Під час обстеження спостерігається/i,
+  /Під час ранкового обходу/i,
+  /хворого на діабет/i,
+  /Сімейний лікар скерував пацієнта/i,
+  /пацієнт пов’язує/i,
+  /У хворого виявлено/i,
+  /В ургентному порядку оглядають [^.]+ із фокальним дефіцитом/i,
+  /Після збору анамнезу та стандартного огляду виявлено:\s*(?:потріб|потреба|питання|підозрюють)/i,
   /пацієнт,\s*/i,
   /:\s*пацієнт\./i,
   /діагноз або наступний крок/i,
@@ -212,17 +227,30 @@ const forbiddenTrainingStemPatterns = [
   /судинний басейн, механізм або тактика/i
 ];
 const forbiddenTrainingExplanationPatterns = [
+  /^Ключова деталь:/i,
+  /є найкращою відповіддю/i,
+  /Описаний патерн добре відмежовує/i,
+  /Саме така комбінація симптомів/i,
+  /Поєднання ознак спрямовує/i,
+  /Клінічна логіка тут/i,
+  /від дистракторів/i,
+  /Тому правильна відповідь/i,
   /бо [^.!?]+», бо/i,
   /пацієнт,\s*/i,
   /:\s*пацієнт\./i,
   /діагноз або наступний крок/i
 ];
 const trainingClinicalStemPattern =
-  /^(Пацієнт|Пацієнта|У пацієнта|До неврологічного|Під час огляду)/i;
+  /^(Пацієнт|Пацієнта|У пацієнта|У пацієнтки|У неврологічному|Чоловік|Жінка|Хлопець|Дівчина|До приймального|До неврологічного|Під час огляду|Під час неврологічного|Після|На амбулаторному|На повторній|В ургентному|Внаслідок|Унаслідок)/i;
 const minTrainingAverageStemWords = 34;
 const minTrainingMedianStemWords = 30;
 const maxShortTrainingStems = 45;
 const minTrainingClinicalStemRatio = 0.55;
+const maxRepeatedTrainingOpening = 14;
+const minDirectTrainingStems = 5;
+const minMediumTrainingStems = 80;
+const minLongTrainingStems = 6;
+const minQuestionFormulaCount = 9;
 const expectedTrainingSectionCounts = new Map([
   ["1", 15],
   ["2", 30],
@@ -242,11 +270,61 @@ const expectedTrainingSectionCounts = new Map([
 ]);
 const expectedTicketNumbers = new Set(Array.from({ length: 23 }, (_, index) => index + 1));
 const expectedMissingExamQuestionNumbers = [34, 35, 53, 57, 59, 83];
+const expectedKrokContentMajorCounts = new Map([
+  ["1", 31],
+  ["2", 97],
+  ["3", 47],
+  ["4", 13],
+  ["5", 22],
+  ["6", 21],
+  ["7", 15],
+  ["8", 11],
+  ["9", 12],
+  ["10", 8],
+  ["11", 3],
+  ["12", 17],
+  ["13", 5],
+  ["14", 13],
+  ["15", 15]
+]);
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
-if (krokTrainingBooklets.length !== 3) {
-  failures.push(`Expected 3 KROK training booklets, got ${krokTrainingBooklets.length}`);
+if (krokTrainingBooklets.length !== 4) {
+  failures.push(`Expected 4 KROK training booklets, got ${krokTrainingBooklets.length}`);
+}
+if (krokContentTopics.length !== 330) {
+  failures.push(`Expected 330 KROK content topics, got ${krokContentTopics.length}`);
+}
+
+const krokContentCodes = new Set();
+const krokContentMajorCounts = new Map();
+for (const topic of krokContentTopics) {
+  if (typeof topic.code !== "string" || !/^\d+(?:\.\d+){3}$/.test(topic.code)) {
+    failures.push(`KROK content topic has invalid code: ${topic.code}`);
+    continue;
+  }
+  if (krokContentCodes.has(topic.code)) {
+    failures.push(`Duplicate KROK content topic code: ${topic.code}`);
+  }
+  krokContentCodes.add(topic.code);
+  if (typeof topic.title !== "string" || topic.title.trim().length === 0) {
+    failures.push(`KROK content topic ${topic.code} has empty title`);
+  }
+  const major = topic.code.split(".")[0];
+  krokContentMajorCounts.set(major, (krokContentMajorCounts.get(major) ?? 0) + 1);
+  if (topic.code.endsWith(".0.0.0")) {
+    const expectedWeight = expectedNoteSectionWeights.get(topic.code);
+    if (expectedWeight !== undefined && topic.weight !== expectedWeight) {
+      failures.push(`KROK content topic ${topic.code} expected weight ${expectedWeight}, got ${topic.weight}`);
+    }
+  }
+}
+for (const [major, expectedCount] of expectedKrokContentMajorCounts) {
+  const actualCount = krokContentMajorCounts.get(major) ?? 0;
+  if (actualCount !== expectedCount) {
+    failures.push(`KROK content major ${major} expected ${expectedCount} topics, got ${actualCount}`);
+  }
 }
 
 const krokQuestionIds = new Set();
@@ -328,7 +406,52 @@ function getFirstAgeFromText(value) {
   return match ? Number(match[1]) : null;
 }
 
+function hasUkrainianWord(value, wordPattern) {
+  return new RegExp(`(?:^|[^а-яіїєґ])${wordPattern}(?=$|[^а-яіїєґ])`, "i").test(String(value));
+}
+
+function hasMaleLead(value) {
+  return /^(?:Чоловік|У чоловіка|До приймального відділення звернувся чоловік|На амбулаторному прийомі чоловік|Під час неврологічного огляду чоловіка)/i.test(String(value));
+}
+
+function hasFemaleLead(value) {
+  return /^(?:Жінка|У жінки|Пацієнтка|До неврологічного кабінету скерована жінка|На повторній консультації жінка|Після госпіталізації пацієнтки|У неврологічному стаціонарі жінку)/i.test(String(value));
+}
+
+function hasAdultDefaultLead(value) {
+  return /^(?:Пацієнт віком|Після короткого анамнезу у пацієнта|В ургентному порядку оглядають пацієнта)/i.test(String(value));
+}
+
+function getOpeningKey(value) {
+  return String(value)
+    .trim()
+    .split(/\s+/)
+    .slice(0, 4)
+    .join(" ");
+}
+
+function getQuestionFormula(value) {
+  const match = String(value).match(/(?:Який|Яка|Яке|Які|Укажіть|Визначте|Оберіть|Що|Де|Куди)[^?.!]*[?.!]?$/i);
+  return normalizeQuestionText(match?.[0] ?? value).slice(0, 80);
+}
+
+function getSharedTokenRatio(left, right) {
+  const leftTokens = new Set(normalizeQuestionText(left).split(" ").filter((token) => token.length >= 4));
+  const rightTokens = new Set(normalizeQuestionText(right).split(" ").filter((token) => token.length >= 4));
+  if (leftTokens.size === 0 || rightTokens.size === 0) {
+    return 0;
+  }
+  let shared = 0;
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) {
+      shared += 1;
+    }
+  }
+  return shared / Math.min(leftTokens.size, rightTokens.size);
+}
+
 const allQuestionIds = new Set(krokQuestionIds);
+const officialQuestionsForSimilarity = krokBooklets.flatMap((booklet) => booklet.questions);
 const normalizedAllTrainingQuestionTexts = new Set();
 let trainingQuestionCount = 0;
 let trainingCorrectAnswerCount = 0;
@@ -345,9 +468,15 @@ for (const booklet of krokTrainingBooklets) {
   }
 
   const sectionCounts = new Map();
+  const contentCodeCounts = new Map();
   const normalizedTrainingTexts = new Set();
   const trainingStemWordCounts = [];
+  const openingCounts = new Map();
+  const questionFormulas = new Set();
   let clinicalTrainingStemCount = 0;
+  let directTrainingStemCount = 0;
+  let mediumTrainingStemCount = 0;
+  let longTrainingStemCount = 0;
   for (const question of booklet.questions) {
     trainingQuestionCount += 1;
     if (allQuestionIds.has(question.id)) {
@@ -366,6 +495,18 @@ for (const booklet of krokTrainingBooklets) {
     }
     const stemWordCount = countWords(question.text);
     trainingStemWordCounts.push(stemWordCount);
+    if (stemWordCount < 24) {
+      directTrainingStemCount += 1;
+    }
+    if (stemWordCount >= 30 && stemWordCount <= 70) {
+      mediumTrainingStemCount += 1;
+    }
+    if (stemWordCount >= 75) {
+      longTrainingStemCount += 1;
+    }
+    const openingKey = getOpeningKey(question.text);
+    openingCounts.set(openingKey, (openingCounts.get(openingKey) ?? 0) + 1);
+    questionFormulas.add(getQuestionFormula(question.text));
     if (trainingClinicalStemPattern.test(question.text)) {
       clinicalTrainingStemCount += 1;
     }
@@ -380,11 +521,7 @@ for (const booklet of krokTrainingBooklets) {
       failures.push(`KROK training question ${question.id} has a repeated explanatory connector`);
     }
     const firstAge = getFirstAgeFromText(question.text);
-    if (
-      firstAge !== null &&
-      firstAge >= 18 &&
-      /\b(?:дитина|дитини|хлопчик|немовля)\b/i.test(question.text)
-    ) {
+    if (firstAge !== null && firstAge >= 18 && hasUkrainianWord(question.text, "(?:дитина|дитини|хлопчик|дівчинка|немовля|підліток|підлітка)")) {
       failures.push(`KROK training question ${question.id} mixes adult age with pediatric context`);
     }
     if (
@@ -394,11 +531,7 @@ for (const booklet of krokTrainingBooklets) {
     ) {
       failures.push(`KROK training question ${question.id} mixes young age with older-adult context`);
     }
-    if (
-      firstAge !== null &&
-      firstAge >= 45 &&
-      /\bмолод(?:ий|а|ої|ого)\b/i.test(question.text)
-    ) {
+    if (firstAge !== null && firstAge >= 45 && hasUkrainianWord(question.text, "молод(?:ий|а|ої|ого)")) {
       failures.push(`KROK training question ${question.id} mixes older age with young-adult wording`);
     }
     if (
@@ -415,17 +548,60 @@ for (const booklet of krokTrainingBooklets) {
     ) {
       failures.push(`KROK training question ${question.id} uses an atypically old age for MS relapse vignette`);
     }
+    if (
+      firstAge !== null &&
+      firstAge < 50 &&
+      /(?:хвороб[а-яіїєґ']*\s+Паркінсона|леводоп)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically young age for Parkinson/levodopa vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge < 55 &&
+      /(?:деменц|Альцгеймер|погіршення пам)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically young age for dementia vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge < 45 &&
+      /(?:боковий аміотрофічний склероз|фасцикуляції.*спастичність|спастичність.*фасцикуляції)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically young age for ALS vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge >= 60 &&
+      /(?:неврит зорового нерва|біль при рухах оком.*сприйняття червоного)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically old age for optic neuritis vignette`);
+    }
     if (/^Пацієнт\b[^.]+\.?\s*Пацієнтка\b/i.test(question.text)) {
       failures.push(`KROK training question ${question.id} mixes patient gender in the stem`);
     }
-    if (/^Пацієнт\w*\b/i.test(question.text) && /\b(?:породіл|вагітн|післяпологов|після пологів)/i.test(question.text)) {
+    if ((hasMaleLead(question.text) || hasAdultDefaultLead(question.text)) && /(?:породіл|вагітн|післяпологов|після пологів)/i.test(question.text)) {
       failures.push(`KROK training question ${question.id} mixes male/default patient wording with obstetric context`);
+    }
+    if (hasMaleLead(question.text) && hasUkrainianWord(question.text, "жінка")) {
+      failures.push(`KROK training question ${question.id} mixes male lead with female clinical context`);
+    }
+    if (hasFemaleLead(question.text) && hasUkrainianWord(question.text, "хлопчик")) {
+      failures.push(`KROK training question ${question.id} mixes female lead with male pediatric context`);
     }
     if (typeof question.contentSection !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(question.contentSection)) {
       failures.push(`KROK training question ${question.id} has invalid contentSection`);
     } else {
       const majorSection = question.contentSection.split(".")[0];
       sectionCounts.set(majorSection, (sectionCounts.get(majorSection) ?? 0) + 1);
+    }
+    if (typeof question.contentCode !== "string" || !krokContentCodes.has(question.contentCode)) {
+      failures.push(`KROK training question ${question.id} has invalid contentCode`);
+    } else {
+      const majorCode = question.contentCode.split(".")[0];
+      contentCodeCounts.set(majorCode, (contentCodeCounts.get(majorCode) ?? 0) + 1);
+      if (typeof question.contentSection === "string" && question.contentSection.split(".")[0] !== majorCode) {
+        failures.push(`KROK training question ${question.id} contentCode does not match contentSection`);
+      }
     }
 
     const normalized = normalizeQuestionText(question.text);
@@ -439,6 +615,14 @@ for (const booklet of krokTrainingBooklets) {
     normalizedAllTrainingQuestionTexts.add(normalized);
     if (normalizedKrokQuestionTexts.has(normalized)) {
       failures.push(`KROK training question duplicates official question text: ${question.id}`);
+    }
+    const tooSimilarOfficial = officialQuestionsForSimilarity.find(
+      (officialQuestion) =>
+        getSharedTokenRatio(question.text, officialQuestion.text) >= 0.82 &&
+        Math.min(countWords(question.text), countWords(officialQuestion.text)) >= 18
+    );
+    if (tooSimilarOfficial) {
+      failures.push(`KROK training question ${question.id} is too similar to official question ${tooSimilarOfficial.id}`);
     }
 
     if (!Array.isArray(question.options) || question.options.length !== 5) {
@@ -463,6 +647,7 @@ for (const booklet of krokTrainingBooklets) {
   const shortStemCount = trainingStemWordCounts.filter((count) => count < 24).length;
   const clinicalStemRatio =
     clinicalTrainingStemCount / Math.max(trainingStemWordCounts.length, 1);
+  const repeatedOpening = [...openingCounts.entries()].find(([, count]) => count > maxRepeatedTrainingOpening);
   if (averageStemWords < minTrainingAverageStemWords) {
     failures.push(
       `KROK training booklet ${booklet.id} average stem words expected >= ${minTrainingAverageStemWords}, got ${averageStemWords.toFixed(1)}`
@@ -483,20 +668,49 @@ for (const booklet of krokTrainingBooklets) {
       `KROK training booklet ${booklet.id} clinical-style stems expected >= ${(minTrainingClinicalStemRatio * 100).toFixed(0)}%, got ${(clinicalStemRatio * 100).toFixed(1)}%`
     );
   }
+  if (repeatedOpening) {
+    failures.push(
+      `KROK training booklet ${booklet.id} repeats opening "${repeatedOpening[0]}" ${repeatedOpening[1]} times`
+    );
+  }
+  if (directTrainingStemCount < minDirectTrainingStems) {
+    failures.push(
+      `KROK training booklet ${booklet.id} direct short stems expected >= ${minDirectTrainingStems}, got ${directTrainingStemCount}`
+    );
+  }
+  if (mediumTrainingStemCount < minMediumTrainingStems) {
+    failures.push(
+      `KROK training booklet ${booklet.id} medium stems expected >= ${minMediumTrainingStems}, got ${mediumTrainingStemCount}`
+    );
+  }
+  if (longTrainingStemCount < minLongTrainingStems) {
+    failures.push(
+      `KROK training booklet ${booklet.id} long stems expected >= ${minLongTrainingStems}, got ${longTrainingStemCount}`
+    );
+  }
+  if (questionFormulas.size < minQuestionFormulaCount) {
+    failures.push(
+      `KROK training booklet ${booklet.id} question formula diversity expected >= ${minQuestionFormulaCount}, got ${questionFormulas.size}`
+    );
+  }
 
   for (const [section, expectedCount] of expectedTrainingSectionCounts) {
     const actualCount = sectionCounts.get(section) ?? 0;
     if (actualCount !== expectedCount) {
       failures.push(`KROK training booklet ${booklet.id} section ${section}.0.0.0 expected ${expectedCount}, got ${actualCount}`);
     }
+    const actualContentCodeCount = contentCodeCounts.get(section) ?? 0;
+    if (actualContentCodeCount !== expectedCount) {
+      failures.push(`KROK training booklet ${booklet.id} contentCode major ${section} expected ${expectedCount}, got ${actualContentCodeCount}`);
+    }
   }
 }
 
-if (trainingQuestionCount !== 450) {
-  failures.push(`Expected 450 KROK training questions, got ${trainingQuestionCount}`);
+if (trainingQuestionCount !== 600) {
+  failures.push(`Expected 600 KROK training questions, got ${trainingQuestionCount}`);
 }
-if (trainingCorrectAnswerCount !== 450) {
-  failures.push(`Expected 450 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
+if (trainingCorrectAnswerCount !== 600) {
+  failures.push(`Expected 600 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
 }
 
 const explanationQuestionIds = new Set();
@@ -756,7 +970,7 @@ function validateRichBlock(block, context, mediaIds, usedMediaIds) {
   }
 }
 
-for (const override of examTicketQuestionOverrides) {
+for (const override of allExamTicketQuestionOverrides) {
   const ticket = examTicketsByNumber.get(override.ticketNumber);
   if (!ticket) {
     failures.push(`Curated ticket override references missing ticket ${override.ticketNumber}`);

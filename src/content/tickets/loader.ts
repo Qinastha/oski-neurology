@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { stripMarkdown } from "@/content/markdown";
 import { normalizeSearchText } from "@/lib/search";
 import { examQuestions, missingExamQuestions } from "./coverage";
-import { examTicketQuestionOverrides } from "./curated";
+import { ticket01To20Overrides } from "./curated-01-20";
 import { ticket21To22Overrides } from "./curated-21-22";
 import { ticket23Overrides } from "./curated-23";
 import { examTickets } from "./generated";
@@ -20,7 +20,7 @@ import type {
 const typedExamTickets = examTickets as ExamTicket[];
 const typedMissingExamQuestionAnswers = missingExamQuestionAnswers as MissingExamQuestionAnswer[];
 const allExamTicketQuestionOverrides = [
-  ...(examTicketQuestionOverrides as ExamTicketQuestionOverride[]),
+  ...(ticket01To20Overrides as ExamTicketQuestionOverride[]),
   ...(ticket21To22Overrides as ExamTicketQuestionOverride[]),
   ...(ticket23Overrides as ExamTicketQuestionOverride[])
 ];

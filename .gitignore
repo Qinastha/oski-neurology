@@ -10,4 +10,3 @@ script
 *.local
 tsconfig.tsbuildinfo
 docs
-scripts

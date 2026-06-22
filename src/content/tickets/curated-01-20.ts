@@ -1,6 +1,6 @@
 import type { ExamTicketQuestionOverride } from "./schema";
 
-export const examTicketQuestionOverrides = [
+export const ticket01To20Overrides = [
   {
     "ticketNumber": 1,
     "questionNumber": 1,

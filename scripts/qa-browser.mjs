@@ -594,7 +594,7 @@ async function inspect(name, url, viewport, selector) {
     await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
     interactions.restartStartCards = await page.locator("[data-krok-start-card]").count();
 
-    await page.locator('[data-krok-start-card="ai-003"] [data-krok-start-mode="ordered"]').click();
+    await page.locator('[data-krok-start-card="ai-004"] [data-krok-start-mode="ordered"]').click();
     await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
     await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
       timeout: 15000
@@ -1230,8 +1230,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
   }
-  if (result.name === "desktop-krok" && result.interactions.startCards !== 7) {
-    issues.push(`${result.name}: expected seven start cards`);
+  if (result.name === "desktop-krok" && result.interactions.startCards !== 8) {
+    issues.push(`${result.name}: expected eight start cards`);
   }
   if (result.name === "desktop-krok" && result.interactions.desktopStartSidebar !== 1) {
     issues.push(`${result.name}: KROK start page should use the shared desktop sidebar pattern`);
@@ -1313,20 +1313,20 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.finishResultPanels !== 1) {
     issues.push(`${result.name}: finish result panel did not render`);
   }
-  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 7) {
+  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 8) {
     issues.push(`${result.name}: restart did not return to booklet start`);
   }
   if (result.name === "desktop-krok" && result.interactions.trainingCards !== 150) {
-    issues.push(`${result.name}: training AI booklet 3 did not render 150 questions`);
+    issues.push(`${result.name}: training AI booklet 4 did not render 150 questions`);
   }
-  if (result.name === "desktop-krok" && result.interactions.trainingFirstBooklet !== "ai-003") {
-    issues.push(`${result.name}: training AI booklet 3 first question uses wrong booklet`);
+  if (result.name === "desktop-krok" && result.interactions.trainingFirstBooklet !== "ai-004") {
+    issues.push(`${result.name}: training AI booklet 4 first question uses wrong booklet`);
   }
   if (result.name === "desktop-krok" && result.interactions.trainingExplanation !== 1) {
-    issues.push(`${result.name}: training AI booklet 3 explanation did not render`);
+    issues.push(`${result.name}: training AI booklet 4 explanation did not render`);
   }
-  if (result.name === "mobile-krok" && result.interactions.startCards !== 7) {
-    issues.push(`${result.name}: expected seven start cards on mobile`);
+  if (result.name === "mobile-krok" && result.interactions.startCards !== 8) {
+    issues.push(`${result.name}: expected eight start cards on mobile`);
   }
   if (result.name === "mobile-krok" && result.interactions.questionCards !== 150) {
     issues.push(`${result.name}: mobile booklet did not render 150 questions`);

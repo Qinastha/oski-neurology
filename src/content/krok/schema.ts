@@ -1,12 +1,20 @@
 export type KrokOfficialBookletId = "2024" | "2025" | "2026";
 
-export type KrokTrainingBookletId = "ai-001" | "ai-002" | "ai-003";
+export type KrokTrainingBookletId = "ai-001" | "ai-002" | "ai-003" | "ai-004";
 
 export type KrokBookletId = KrokOfficialBookletId | KrokTrainingBookletId;
 
 export type KrokSessionBookletId = KrokBookletId | "random";
 
 export type KrokQuestionOrderMode = "ordered" | "shuffled";
+
+export type KrokContentSectionCode = `${number}.0.0.0`;
+
+export interface KrokContentTopic {
+  code: string;
+  title: string;
+  weight?: number;
+}
 
 export interface KrokOption {
   id: string;
@@ -25,7 +33,8 @@ export interface KrokQuestion {
 
 export interface KrokTrainingQuestion extends KrokQuestion {
   bookletId: KrokTrainingBookletId;
-  contentSection: `${number}.0.0.0`;
+  contentSection: KrokContentSectionCode;
+  contentCode: string;
   explanation: string;
 }
 
@@ -45,7 +54,8 @@ export interface KrokAnswerOverride {
 export interface KrokResolvedQuestion extends KrokQuestion {
   explanation: string;
   reviewNote?: string;
-  contentSection?: `${number}.0.0.0`;
+  contentSection?: KrokContentSectionCode;
+  contentCode?: string;
 }
 
 export interface KrokBooklet {
