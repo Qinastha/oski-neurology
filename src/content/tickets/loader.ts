@@ -5,9 +5,7 @@ import { notFound } from "next/navigation";
 import { stripMarkdown } from "@/content/markdown";
 import { normalizeSearchText } from "@/lib/search";
 import { examQuestions, missingExamQuestions } from "./coverage";
-import { ticket01To20Overrides } from "./curated-01-20";
-import { ticket21To22Overrides } from "./curated-21-22";
-import { ticket23Overrides } from "./curated-23";
+import { examTicketQuestionOverrides } from "./curated";
 import { examTickets } from "./generated";
 import { missingExamQuestionAnswers } from "./missing-answers";
 import type {
@@ -19,11 +17,8 @@ import type {
 
 const typedExamTickets = examTickets as ExamTicket[];
 const typedMissingExamQuestionAnswers = missingExamQuestionAnswers as MissingExamQuestionAnswer[];
-const allExamTicketQuestionOverrides = [
-  ...(ticket01To20Overrides as ExamTicketQuestionOverride[]),
-  ...(ticket21To22Overrides as ExamTicketQuestionOverride[]),
-  ...(ticket23Overrides as ExamTicketQuestionOverride[])
-];
+const allExamTicketQuestionOverrides =
+  examTicketQuestionOverrides as ExamTicketQuestionOverride[];
 const overridesByQuestion = new Map(
   allExamTicketQuestionOverrides.map((override) => [
     `${override.ticketNumber}:${override.questionNumber}`,

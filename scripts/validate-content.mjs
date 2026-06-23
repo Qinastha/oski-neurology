@@ -12,9 +12,12 @@ const notesSectionsPath = path.join(root, "src/content/notes/sections.ts");
 const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
 const ticketsGeneratedPath = path.join(root, "src/content/tickets/generated.ts");
 const ticketsCoveragePath = path.join(root, "src/content/tickets/coverage.ts");
-const ticketsCurated01To20Path = path.join(root, "src/content/tickets/curated-01-20.ts");
-const ticketsCurated21To22Path = path.join(root, "src/content/tickets/curated-21-22.ts");
-const ticketsCurated23Path = path.join(root, "src/content/tickets/curated-23.ts");
+const ticketsCuratedPath = path.join(root, "src/content/tickets/curated.ts");
+const legacyTicketsCuratedSplitPaths = [
+  "curated-01-20.ts",
+  "curated-21-22.ts",
+  "curated-23.ts"
+].map((fileName) => path.join(root, "src/content/tickets", fileName));
 const publicRoot = path.join(root, "public");
 
 const caseDirs = fs
@@ -183,11 +186,11 @@ const missingExamQuestions = parseExportedArray(
   "missingExamQuestions",
   "MissingExamQuestion"
 );
-const allExamTicketQuestionOverrides = [
-  ...parseExportedArray(ticketsCurated01To20Path, "ticket01To20Overrides", "ExamTicketQuestionOverride"),
-  ...parseExportedArray(ticketsCurated21To22Path, "ticket21To22Overrides", "ExamTicketQuestionOverride"),
-  ...parseExportedArray(ticketsCurated23Path, "ticket23Overrides", "ExamTicketQuestionOverride")
-];
+const allExamTicketQuestionOverrides = parseExportedArray(
+  ticketsCuratedPath,
+  "examTicketQuestionOverrides",
+  "ExamTicketQuestionOverride"
+);
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003", "ai-004"]);
 const expectedNoteSectionWeights = new Map([
@@ -220,6 +223,11 @@ const forbiddenTrainingStemPatterns = [
   /У хворого виявлено/i,
   /В ургентному порядку оглядають [^.]+ із фокальним дефіцитом/i,
   /Після збору анамнезу та стандартного огляду виявлено:\s*(?:потріб|потреба|питання|підозрюють)/i,
+  /Який рівень ураження треба запідозрити\?/i,
+  /Вихідна ознака/i,
+  /описаний неврологічний патерн/i,
+  /Початок симптомів пов’язаний з останніми кількома днями/i,
+  /для уточнення рівня ураження/i,
   /пацієнт,\s*/i,
   /:\s*пацієнт\./i,
   /діагноз або наступний крок/i,
@@ -235,6 +243,7 @@ const forbiddenTrainingExplanationPatterns = [
   /Клінічна логіка тут/i,
   /від дистракторів/i,
   /Тому правильна відповідь/i,
+  /\b(?:GBS|HSV|DMT|IVIG)\b/i,
   /бо [^.!?]+», бо/i,
   /пацієнт,\s*/i,
   /:\s*пацієнт\./i,
@@ -287,6 +296,13 @@ const expectedKrokContentMajorCounts = new Map([
   ["14", 13],
   ["15", 15]
 ]);
+for (const filePath of legacyTicketsCuratedSplitPaths) {
+  if (fs.existsSync(filePath)) {
+    failures.push(
+      `Legacy split exam ticket curated file must be merged into src/content/tickets/curated.ts: ${path.basename(filePath)}`
+    );
+  }
+}
 if (krokBooklets.length !== 3) {
   failures.push(`Expected 3 KROK booklets, got ${krokBooklets.length}`);
 }
@@ -422,6 +438,117 @@ function hasAdultDefaultLead(value) {
   return /^(?:Пацієнт віком|Після короткого анамнезу у пацієнта|В ургентному порядку оглядають пацієнта)/i.test(String(value));
 }
 
+function getClinicalContradiction(value) {
+  const text = String(value);
+  const rules = [
+    {
+      label: "denies trauma in a trauma vignette",
+      context: /Анамнез не містить ознак гострої травми/i,
+      cue: /(?:після падіння|після травми|після удару)/i
+    },
+    {
+      label: "denies fever in an infectious CNS vignette",
+      context: /температура тіла нормальна/i,
+      cue: /(?:гарячка|менінгіт|енцефаліт)/i
+    },
+    {
+      label: "uses persistent duration in a regressed TIA vignette",
+      context: /Скарги тривають другу добу без повного регресу/i,
+      cue: /(?:повністю регресував|40 хвилин|транзиторна)/i
+    },
+    {
+      label: "denies intoxication in a toxic exposure vignette",
+      context: /травми або інтоксикації [^.]+не зазначає/i,
+      cue: /(?:свинець|талій|випромінювання|розчинники|миш’як|акумуляторн|радіаційн)/i
+    }
+  ];
+  return rules.find((rule) => rule.context.test(text) && rule.cue.test(text))?.label ?? null;
+}
+
+function getOptionLogicIssue(question, correctOptionText) {
+  const optionTexts = new Set(question.options.map((option) => option.text));
+  const hasAny = (values) => values.some((value) => optionTexts.has(value));
+
+  if (
+    correctOptionText === "Нативна КТ головного мозку" &&
+    hasAny([
+      "Транзиторна ішемічна атака",
+      "Ішемічний інсульт",
+      "Внутрішньомозковий крововилив",
+      "Субарахноїдальний крововилив",
+      "Синдром передньої спинномозкової артерії",
+      "Тромбоз венозного синуса",
+      "Гіпертонічна енцефалопатія",
+      "Хронічна ішемія головного мозку",
+      "Каротидна дисекція"
+    ])
+  ) {
+    return "mixes an acute stroke action answer with diagnostic distractors";
+  }
+
+  if (
+    correctOptionText === "Ліва потилична кора" &&
+    hasAny([
+      "Невропатичний біль",
+      "Доброякісне пароксизмальне позиційне головокружіння",
+      "Хвороба Меньєра",
+      "Гідроцефалія",
+      "Делірій",
+      "Центральний парез",
+      "Периферичний парез",
+      "Сенситивна атаксія",
+      "Мозочкова атаксія",
+      "Синдром Броун-Секара",
+      "Бульбарний синдром",
+      "Альтернуючий синдром"
+    ])
+  ) {
+    return "mixes a cortical localization answer with syndrome distractors";
+  }
+
+  if (
+    correctOptionText === "Латеральний спіноталамічний шлях" &&
+    hasAny([
+      "Невропатичний біль",
+      "Доброякісне пароксизмальне позиційне головокружіння",
+      "Хвороба Меньєра",
+      "Гідроцефалія",
+      "Делірій",
+      "Центральний парез",
+      "Периферичний парез",
+      "Сенситивна атаксія",
+      "Мозочкова атаксія",
+      "Синдром Броун-Секара"
+    ])
+  ) {
+    return "mixes a pathway answer with syndrome distractors";
+  }
+
+  if (
+    correctOptionText === "Лицевий нерв" &&
+    hasAny([
+      "Дистальна симетрична полінейропатія",
+      "Поперекова радикулопатія",
+      "Плечова плексопатія",
+      "Міжреберна невралгія",
+      "Мералгія парестетична",
+      "Вертеброгенний корінцевий синдром"
+    ])
+  ) {
+    return "mixes a cranial nerve answer with peripheral syndrome distractors";
+  }
+
+  if (/Яка локалізація ураження найбільш імовірна/i.test(question.text) && correctOptionText === "Плечова плексопатія") {
+    return "answers a localization question with a syndrome label";
+  }
+
+  if (/Яку локалізацію треба виключити/i.test(question.text) && correctOptionText === "Пухлина спинного мозку") {
+    return "answers a localization question with a pathology label";
+  }
+
+  return null;
+}
+
 function getOpeningKey(value) {
   return String(value)
     .trim()
@@ -513,6 +640,10 @@ for (const booklet of krokTrainingBooklets) {
     if (forbiddenTrainingStemPatterns.some((pattern) => pattern.test(question.text))) {
       failures.push(`KROK training question ${question.id} uses a forbidden meta-style stem phrase`);
     }
+    const clinicalContradiction = getClinicalContradiction(question.text);
+    if (clinicalContradiction) {
+      failures.push(`KROK training question ${question.id} ${clinicalContradiction}`);
+    }
     if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
       failures.push(`KROK training question ${question.id} needs an explanation`);
     } else if (forbiddenTrainingExplanationPatterns.some((pattern) => pattern.test(question.explanation))) {
@@ -576,6 +707,41 @@ for (const booklet of krokTrainingBooklets) {
     ) {
       failures.push(`KROK training question ${question.id} uses an atypically old age for optic neuritis vignette`);
     }
+    if (
+      firstAge !== null &&
+      firstAge >= 60 &&
+      /(?:мігрень|пульсуючий [^.!?]*головний біль[^.!?]*фотофоб)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically old age for migraine vignette`);
+    }
+    if (
+      firstAge !== null &&
+      (firstAge < 25 || firstAge >= 70) &&
+      /(?:Хвороба Меньєра|шумом у вусі|флуктуацією слуху)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypical age for Meniere disease vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge >= 60 &&
+      /(?:Синдром Рейно|пальці кистей біліють на холоді)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically old age for Raynaud vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge < 40 &&
+      /(?:Невралгія трійчастого нерва|короткі простріли болю в половині обличчя)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically young age for trigeminal neuralgia vignette`);
+    }
+    if (
+      firstAge !== null &&
+      firstAge < 35 &&
+      /(?:B12-дефіцитна мієлопатія|макроцитарна анемія.*втрата вібраційної чутливості)/i.test(question.text)
+    ) {
+      failures.push(`KROK training question ${question.id} uses an atypically young age for B12 myelopathy vignette`);
+    }
     if (/^Пацієнт\b[^.]+\.?\s*Пацієнтка\b/i.test(question.text)) {
       failures.push(`KROK training question ${question.id} mixes patient gender in the stem`);
     }
@@ -637,6 +803,17 @@ for (const booklet of krokTrainingBooklets) {
       failures.push(`KROK training question ${question.id} correctOptionId does not match options`);
     } else {
       trainingCorrectAnswerCount += 1;
+      const correctOptionText = question.options.find((option) => option.id === question.correctOptionId)?.text;
+      const optionTexts = new Set(question.options.map((option) => option.text));
+      if (correctOptionText === "Внутрішньовенний імуноглобулін" && optionTexts.has("Плазмаферез")) {
+        failures.push(
+          `KROK training question ${question.id} has two acceptable GBS immunotherapy options in one item`
+        );
+      }
+      const optionLogicIssue = getOptionLogicIssue(question, correctOptionText);
+      if (optionLogicIssue) {
+        failures.push(`KROK training question ${question.id} ${optionLogicIssue}`);
+      }
     }
   }
 
