@@ -8,6 +8,7 @@ const krokContentMapPath = path.join(root, "src/content/krok/content-map.ts");
 const krokExplanationsPath = path.join(root, "src/content/krok/explanations.ts");
 const krokOverridesPath = path.join(root, "src/content/krok/answer-overrides.ts");
 const krokTrainingPath = path.join(root, "src/content/krok/training.ts");
+const krokPreKrokPath = path.join(root, "src/content/krok/pre-krok.ts");
 const notesSectionsPath = path.join(root, "src/content/notes/sections.ts");
 const notesBlocksPath = path.join(root, "src/content/notes/blocks.ts");
 const ticketsGeneratedPath = path.join(root, "src/content/tickets/generated.ts");
@@ -177,6 +178,11 @@ const krokTrainingBooklets = parseExportedArray(
   "krokTrainingBooklets",
   "KrokTrainingBooklet"
 );
+const krokPreKrokBooklets = parseExportedArray(
+  krokPreKrokPath,
+  "krokPreKrokBooklets",
+  "KrokPreKrokBooklet"
+);
 const noteSections = parseExportedArray(notesSectionsPath, "noteSections", "NoteSection");
 const noteBlocks = parseExportedArray(notesBlocksPath, "noteBlocks", "NoteBlock");
 const examTickets = parseExportedArray(ticketsGeneratedPath, "examTickets", "ExamTicket");
@@ -193,6 +199,7 @@ const allExamTicketQuestionOverrides = parseExportedArray(
 );
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003", "ai-004"]);
+const expectedPreKrokBookletIds = new Set(["pre-001"]);
 const expectedNoteSectionWeights = new Map([
   ["1.0.0.0", 10],
   ["2.0.0.0", 20],
@@ -277,6 +284,41 @@ const expectedTrainingSectionCounts = new Map([
   ["14", 6],
   ["15", 6]
 ]);
+const expectedPreKrokSectionCounts = new Map(expectedTrainingSectionCounts);
+const expectedPreKrokOfficialSectionCounts = new Map([
+  ["1", 7],
+  ["2", 14],
+  ["3", 7],
+  ["4", 4],
+  ["5", 7],
+  ["6", 7],
+  ["7", 7],
+  ["8", 1],
+  ["9", 1],
+  ["10", 1],
+  ["11", 1],
+  ["12", 4],
+  ["13", 1],
+  ["14", 3],
+  ["15", 3]
+]);
+const expectedPreKrokGeneratedSectionCounts = new Map([
+  ["1", 8],
+  ["2", 16],
+  ["3", 8],
+  ["4", 5],
+  ["5", 8],
+  ["6", 8],
+  ["7", 8],
+  ["8", 2],
+  ["9", 2],
+  ["10", 2],
+  ["11", 2],
+  ["12", 5],
+  ["13", 2],
+  ["14", 3],
+  ["15", 3]
+]);
 const expectedTicketNumbers = new Set(Array.from({ length: 23 }, (_, index) => index + 1));
 const expectedMissingExamQuestionNumbers = [34, 35, 53, 57, 59, 83];
 const expectedKrokContentMajorCounts = new Map([
@@ -308,6 +350,9 @@ if (krokBooklets.length !== 3) {
 }
 if (krokTrainingBooklets.length !== 4) {
   failures.push(`Expected 4 KROK training booklets, got ${krokTrainingBooklets.length}`);
+}
+if (krokPreKrokBooklets.length !== 1) {
+  failures.push(`Expected 1 Pre-KROK booklet, got ${krokPreKrokBooklets.length}`);
 }
 if (krokContentTopics.length !== 330) {
   failures.push(`Expected 330 KROK content topics, got ${krokContentTopics.length}`);
@@ -547,6 +592,131 @@ function getOptionLogicIssue(question, correctOptionText) {
   }
 
   return null;
+}
+
+function validateGeneratedKrokQuestionClinicalGuards(question, label, correctOptionText) {
+  if (forbiddenTrainingStemPatterns.some((pattern) => pattern.test(question.text))) {
+    failures.push(`${label} uses a forbidden meta-style stem phrase`);
+  }
+  const clinicalContradiction = getClinicalContradiction(question.text);
+  if (clinicalContradiction) {
+    failures.push(`${label} ${clinicalContradiction}`);
+  }
+  if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
+    failures.push(`${label} needs an explanation`);
+  } else if (forbiddenTrainingExplanationPatterns.some((pattern) => pattern.test(question.explanation))) {
+    failures.push(`${label} has a malformed explanation`);
+  } else if ((question.explanation.match(/,\s*бо/gi) ?? []).length > 1) {
+    failures.push(`${label} has a repeated explanatory connector`);
+  }
+
+  const firstAge = getFirstAgeFromText(question.text);
+  if (firstAge !== null && firstAge >= 18 && hasUkrainianWord(question.text, "(?:дитина|дитини|хлопчик|дівчинка|немовля|підліток|підлітка)")) {
+    failures.push(`${label} mixes adult age with pediatric context`);
+  }
+  if (firstAge !== null && firstAge < 60 && /похилого віку/i.test(question.text)) {
+    failures.push(`${label} mixes young age with older-adult context`);
+  }
+  if (firstAge !== null && firstAge >= 45 && hasUkrainianWord(question.text, "молод(?:ий|а|ої|ого)")) {
+    failures.push(`${label} mixes older age with young-adult wording`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge >= 65 &&
+    /(?:Гантінгтон|хореїчні рухи)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically old age for Huntington-style vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge >= 60 &&
+    /розсіяним склерозом.*рецидив/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically old age for MS relapse vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge < 50 &&
+    /(?:хвороб[а-яіїєґ']*\s+Паркінсона|леводоп)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically young age for Parkinson/levodopa vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge < 55 &&
+    /(?:деменц|Альцгеймер|погіршення пам)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically young age for dementia vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge < 45 &&
+    /(?:боковий аміотрофічний склероз|фасцикуляції.*спастичність|спастичність.*фасцикуляції)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically young age for ALS vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge >= 60 &&
+    /(?:неврит зорового нерва|біль при рухах оком.*сприйняття червоного)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically old age for optic neuritis vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge >= 60 &&
+    /(?:мігрень|пульсуючий [^.!?]*головний біль[^.!?]*фотофоб)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically old age for migraine vignette`);
+  }
+  if (
+    firstAge !== null &&
+    (firstAge < 25 || firstAge >= 70) &&
+    /(?:Хвороба Меньєра|шумом у вусі|флуктуацією слуху)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypical age for Meniere disease vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge >= 60 &&
+    /(?:Синдром Рейно|пальці кистей біліють на холоді)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically old age for Raynaud vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge < 40 &&
+    /(?:Невралгія трійчастого нерва|короткі простріли болю в половині обличчя)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically young age for trigeminal neuralgia vignette`);
+  }
+  if (
+    firstAge !== null &&
+    firstAge < 35 &&
+    /(?:B12-дефіцитна мієлопатія|макроцитарна анемія.*втрата вібраційної чутливості)/i.test(question.text)
+  ) {
+    failures.push(`${label} uses an atypically young age for B12 myelopathy vignette`);
+  }
+  if (/^Пацієнт\b[^.]+\.?\s*Пацієнтка\b/i.test(question.text)) {
+    failures.push(`${label} mixes patient gender in the stem`);
+  }
+  if ((hasMaleLead(question.text) || hasAdultDefaultLead(question.text)) && /(?:породіл|вагітн|післяпологов|після пологів)/i.test(question.text)) {
+    failures.push(`${label} mixes male/default patient wording with obstetric context`);
+  }
+  if (hasMaleLead(question.text) && hasUkrainianWord(question.text, "жінка")) {
+    failures.push(`${label} mixes male lead with female clinical context`);
+  }
+  if (hasFemaleLead(question.text) && hasUkrainianWord(question.text, "хлопчик")) {
+    failures.push(`${label} mixes female lead with male pediatric context`);
+  }
+  const optionTexts = new Set(question.options.map((option) => option.text));
+  if (correctOptionText === "Внутрішньовенний імуноглобулін" && optionTexts.has("Плазмаферез")) {
+    failures.push(`${label} has two acceptable GBS immunotherapy options in one item`);
+  }
+  const optionLogicIssue = getOptionLogicIssue(question, correctOptionText);
+  if (optionLogicIssue) {
+    failures.push(`${label} ${optionLogicIssue}`);
+  }
 }
 
 function getOpeningKey(value) {
@@ -888,6 +1058,244 @@ if (trainingQuestionCount !== 600) {
 }
 if (trainingCorrectAnswerCount !== 600) {
   failures.push(`Expected 600 KROK training correct answers, got ${trainingCorrectAnswerCount}`);
+}
+
+const officialQuestionByIdForPreKrok = new Map(
+  krokBooklets.flatMap((booklet) => booklet.questions.map((question) => [question.id, question]))
+);
+const overrideByQuestionIdForPreKrok = new Map(
+  krokAnswerOverrides.map((item) => [item.questionId, item])
+);
+const trainingQuestionsForSimilarity = krokTrainingBooklets.flatMap((booklet) => booklet.questions);
+const normalizedTrainingQuestionTextsForSimilarity = new Set(
+  trainingQuestionsForSimilarity.map((question) => normalizeQuestionText(question.text))
+);
+
+function getPreKrokGeneratedFamilyKey(correctOptionText) {
+  if (
+    correctOptionText === "Діабетична полінейропатія" ||
+    correctOptionText === "Дистальна симетрична полінейропатія"
+  ) {
+    return "diabetic-polyneuropathy";
+  }
+  return correctOptionText;
+}
+
+let preKrokQuestionCount = 0;
+let preKrokCorrectAnswerCount = 0;
+let preKrokOfficialQuestionCount = 0;
+let preKrokGeneratedQuestionCount = 0;
+const preKrokSourceQuestionIds = new Set();
+const normalizedPreKrokQuestionTexts = new Set();
+const normalizedPreKrokGeneratedTexts = new Set();
+
+for (const booklet of krokPreKrokBooklets) {
+  if (!expectedPreKrokBookletIds.has(booklet.id)) {
+    failures.push(`Unexpected Pre-KROK booklet id: ${booklet.id}`);
+  }
+  if (booklet.kind !== "pre-krok") {
+    failures.push(`Pre-KROK booklet ${booklet.id} must have kind "pre-krok"`);
+  }
+  if (!Array.isArray(booklet.questions) || booklet.questions.length !== 150) {
+    failures.push(`Expected 150 Pre-KROK questions for ${booklet.id}, got ${booklet.questions?.length}`);
+    continue;
+  }
+
+  const sectionCounts = new Map();
+  const officialSectionCounts = new Map();
+  const generatedSectionCounts = new Map();
+  const contentCodeCounts = new Map();
+  const generatedFamilyQuestions = new Map();
+  const generatedQuestionsInBooklet = [];
+
+  for (const question of booklet.questions) {
+    preKrokQuestionCount += 1;
+    if (allQuestionIds.has(question.id)) {
+      failures.push(`Duplicate KROK question id across official/training/pre-krok data: ${question.id}`);
+    }
+    allQuestionIds.add(question.id);
+
+    if (question.bookletId !== booklet.id) {
+      failures.push(`Pre-KROK question ${question.id} has wrong bookletId ${question.bookletId}`);
+    }
+    if (!Number.isInteger(question.sourceNumber) || question.sourceNumber < 1) {
+      failures.push(`Pre-KROK question ${question.id} has invalid sourceNumber`);
+    }
+    if (typeof question.text !== "string" || question.text.trim().length === 0) {
+      failures.push(`Pre-KROK question ${question.id} has empty text`);
+    }
+    if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
+      failures.push(`Pre-KROK question ${question.id} needs an explanation`);
+    }
+    if (question.origin !== "official" && question.origin !== "generated") {
+      failures.push(`Pre-KROK question ${question.id} has invalid origin ${question.origin}`);
+    }
+
+    if (typeof question.contentSection !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(question.contentSection)) {
+      failures.push(`Pre-KROK question ${question.id} has invalid contentSection`);
+    } else {
+      const majorSection = question.contentSection.split(".")[0];
+      sectionCounts.set(majorSection, (sectionCounts.get(majorSection) ?? 0) + 1);
+      if (question.origin === "official") {
+        officialSectionCounts.set(majorSection, (officialSectionCounts.get(majorSection) ?? 0) + 1);
+      }
+      if (question.origin === "generated") {
+        generatedSectionCounts.set(majorSection, (generatedSectionCounts.get(majorSection) ?? 0) + 1);
+      }
+    }
+    if (typeof question.contentCode !== "string" || !krokContentCodes.has(question.contentCode)) {
+      failures.push(`Pre-KROK question ${question.id} has invalid contentCode`);
+    } else {
+      const majorCode = question.contentCode.split(".")[0];
+      contentCodeCounts.set(majorCode, (contentCodeCounts.get(majorCode) ?? 0) + 1);
+      if (typeof question.contentSection === "string" && question.contentSection.split(".")[0] !== majorCode) {
+        failures.push(`Pre-KROK question ${question.id} contentCode does not match contentSection`);
+      }
+    }
+
+    const normalized = normalizeQuestionText(question.text);
+    if (normalizedPreKrokQuestionTexts.has(normalized)) {
+      failures.push(`Duplicate Pre-KROK question text: ${question.id}`);
+    }
+    normalizedPreKrokQuestionTexts.add(normalized);
+
+    if (!Array.isArray(question.options) || question.options.length !== 5) {
+      failures.push(`Pre-KROK question ${question.id} must have exactly 5 options`);
+      continue;
+    }
+    const optionIds = new Set(question.options.map((option) => option.id));
+    if (optionIds.size !== question.options.length) {
+      failures.push(`Pre-KROK question ${question.id} has duplicate option ids`);
+    }
+    if (!optionIds.has(question.correctOptionId)) {
+      failures.push(`Pre-KROK question ${question.id} correctOptionId does not match options`);
+      continue;
+    }
+    preKrokCorrectAnswerCount += 1;
+    const correctOptionText = question.options.find((option) => option.id === question.correctOptionId)?.text;
+
+    if (question.origin === "official") {
+      preKrokOfficialQuestionCount += 1;
+      if (typeof question.sourceQuestionId !== "string" || !krokQuestionIds.has(question.sourceQuestionId)) {
+        failures.push(`Pre-KROK official question ${question.id} references missing sourceQuestionId ${question.sourceQuestionId}`);
+      } else {
+        if (preKrokSourceQuestionIds.has(question.sourceQuestionId)) {
+          failures.push(`Duplicate Pre-KROK official source question ${question.sourceQuestionId}`);
+        }
+        preKrokSourceQuestionIds.add(question.sourceQuestionId);
+        const sourceQuestion = officialQuestionByIdForPreKrok.get(question.sourceQuestionId);
+        const sourceCorrectOptionId =
+          overrideByQuestionIdForPreKrok.get(question.sourceQuestionId)?.correctOptionId ??
+          sourceQuestion?.correctOptionId;
+        const sourceCorrectText = sourceQuestion?.options.find((option) => option.id === sourceCorrectOptionId)?.text;
+        if (sourceQuestion && question.text !== sourceQuestion.text) {
+          failures.push(`Pre-KROK official question ${question.id} text does not match source ${question.sourceQuestionId}`);
+        }
+        if (sourceCorrectText !== correctOptionText) {
+          failures.push(`Pre-KROK official question ${question.id} correct answer does not match source ${question.sourceQuestionId}`);
+        }
+      }
+    }
+
+    if (question.origin === "generated") {
+      preKrokGeneratedQuestionCount += 1;
+      if (question.sourceQuestionId !== undefined) {
+        failures.push(`Pre-KROK generated question ${question.id} must not have sourceQuestionId`);
+      }
+      if (normalizedKrokQuestionTexts.has(normalized)) {
+        failures.push(`Pre-KROK generated question duplicates official question text: ${question.id}`);
+      }
+      if (normalizedTrainingQuestionTextsForSimilarity.has(normalized)) {
+        failures.push(`Pre-KROK generated question duplicates training question text: ${question.id}`);
+      }
+      if (normalizedPreKrokGeneratedTexts.has(normalized)) {
+        failures.push(`Duplicate Pre-KROK generated question text: ${question.id}`);
+      }
+      normalizedPreKrokGeneratedTexts.add(normalized);
+      const generatedFamilyKey = getPreKrokGeneratedFamilyKey(correctOptionText);
+      const previousFamilyQuestion = generatedFamilyQuestions.get(generatedFamilyKey);
+      if (previousFamilyQuestion) {
+        failures.push(
+          `Pre-KROK generated question ${question.id} repeats clinical family "${generatedFamilyKey}" from ${previousFamilyQuestion.id}`
+        );
+      }
+      generatedFamilyQuestions.set(generatedFamilyKey, question);
+      const tooSimilarGenerated = generatedQuestionsInBooklet.find((previous) => {
+        const sharedRatio = getSharedTokenRatio(question.text, previous.question.text);
+        return (
+          (previous.correctOptionText === correctOptionText && sharedRatio >= 0.45) ||
+          (previous.familyKey === generatedFamilyKey && sharedRatio >= 0.38)
+        );
+      });
+      if (tooSimilarGenerated) {
+        failures.push(
+          `Pre-KROK generated question ${question.id} is too similar to generated question ${tooSimilarGenerated.question.id}`
+        );
+      }
+      generatedQuestionsInBooklet.push({
+        question,
+        correctOptionText,
+        familyKey: generatedFamilyKey
+      });
+      const tooSimilarOfficial = officialQuestionsForSimilarity.find(
+        (officialQuestion) =>
+          getSharedTokenRatio(question.text, officialQuestion.text) >= 0.82 &&
+          Math.min(countWords(question.text), countWords(officialQuestion.text)) >= 18
+      );
+      if (tooSimilarOfficial) {
+        failures.push(`Pre-KROK generated question ${question.id} is too similar to official question ${tooSimilarOfficial.id}`);
+      }
+      const tooSimilarTraining = trainingQuestionsForSimilarity.find(
+        (trainingQuestion) =>
+          getSharedTokenRatio(question.text, trainingQuestion.text) >= 0.96 &&
+          Math.min(countWords(question.text), countWords(trainingQuestion.text)) >= 18
+      );
+      if (tooSimilarTraining) {
+        failures.push(`Pre-KROK generated question ${question.id} is too similar to training question ${tooSimilarTraining.id}`);
+      }
+      validateGeneratedKrokQuestionClinicalGuards(
+        question,
+        `Pre-KROK generated question ${question.id}`,
+        correctOptionText
+      );
+    }
+  }
+
+  for (const [section, expectedCount] of expectedPreKrokSectionCounts) {
+    const actualCount = sectionCounts.get(section) ?? 0;
+    if (actualCount !== expectedCount) {
+      failures.push(`Pre-KROK booklet ${booklet.id} section ${section}.0.0.0 expected ${expectedCount}, got ${actualCount}`);
+    }
+    const actualContentCodeCount = contentCodeCounts.get(section) ?? 0;
+    if (actualContentCodeCount !== expectedCount) {
+      failures.push(`Pre-KROK booklet ${booklet.id} contentCode major ${section} expected ${expectedCount}, got ${actualContentCodeCount}`);
+    }
+  }
+  for (const [section, expectedCount] of expectedPreKrokOfficialSectionCounts) {
+    const actualCount = officialSectionCounts.get(section) ?? 0;
+    if (actualCount !== expectedCount) {
+      failures.push(`Pre-KROK booklet ${booklet.id} official-origin section ${section}.0.0.0 expected ${expectedCount}, got ${actualCount}`);
+    }
+  }
+  for (const [section, expectedCount] of expectedPreKrokGeneratedSectionCounts) {
+    const actualCount = generatedSectionCounts.get(section) ?? 0;
+    if (actualCount !== expectedCount) {
+      failures.push(`Pre-KROK booklet ${booklet.id} generated-origin section ${section}.0.0.0 expected ${expectedCount}, got ${actualCount}`);
+    }
+  }
+}
+
+if (preKrokQuestionCount !== 150) {
+  failures.push(`Expected 150 Pre-KROK questions, got ${preKrokQuestionCount}`);
+}
+if (preKrokCorrectAnswerCount !== 150) {
+  failures.push(`Expected 150 Pre-KROK correct answers, got ${preKrokCorrectAnswerCount}`);
+}
+if (preKrokOfficialQuestionCount !== 68) {
+  failures.push(`Expected 68 official-origin Pre-KROK questions, got ${preKrokOfficialQuestionCount}`);
+}
+if (preKrokGeneratedQuestionCount !== 82) {
+  failures.push(`Expected 82 generated-origin Pre-KROK questions, got ${preKrokGeneratedQuestionCount}`);
 }
 
 const explanationQuestionIds = new Set();
@@ -1571,5 +1979,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions, ${noteSections.length} note sections, ${noteBlocks.length} note blocks, ${examTickets.length} exam tickets, ${examQuestions.length} exam questions`
+  `Content OK: ${slugs.length} cases (${nonImagingCount} без КТ/МРТ, ${imagingCount} КТ/МРТ), ${publicRefs.length} public assets, ${krokQuestionCount} official KROK questions, ${trainingQuestionCount} training KROK questions, ${preKrokQuestionCount} Pre-KROK questions, ${noteSections.length} note sections, ${noteBlocks.length} note blocks, ${examTickets.length} exam tickets, ${examQuestions.length} exam questions`
 );

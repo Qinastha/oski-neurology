@@ -21,6 +21,10 @@ const trainingKrokSource = readFileSync(
   path.join(process.cwd(), "src/content/krok/training.ts"),
   "utf8"
 );
+const preKrokSource = readFileSync(
+  path.join(process.cwd(), "src/content/krok/pre-krok.ts"),
+  "utf8"
+);
 const generatedKrokPrefix = "export const krokBooklets = ";
 const generatedKrokJson = generatedKrokSource
   .slice(generatedKrokSource.indexOf(generatedKrokPrefix) + generatedKrokPrefix.length)
@@ -29,6 +33,10 @@ const trainingKrokPrefix = "export const krokTrainingBooklets = ";
 const trainingKrokJson = trainingKrokSource
   .slice(trainingKrokSource.indexOf(trainingKrokPrefix) + trainingKrokPrefix.length)
   .replace(/\s+satisfies KrokTrainingBooklet\[];\s*$/, "");
+const preKrokPrefix = "export const krokPreKrokBooklets = ";
+const preKrokJson = preKrokSource
+  .slice(preKrokSource.indexOf(preKrokPrefix) + preKrokPrefix.length)
+  .replace(/\s+satisfies KrokPreKrokBooklet\[];\s*$/, "");
 function parseAnswerOverrides(source) {
   const plainPrefix = "export const krokAnswerOverrides = ";
   const typedPrefix = "export const krokAnswerOverrides: KrokAnswerOverride[] = ";
@@ -53,6 +61,11 @@ for (const booklet of JSON.parse(generatedKrokJson)) {
   }
 }
 for (const booklet of JSON.parse(trainingKrokJson)) {
+  for (const question of booklet.questions) {
+    krokCorrectOptionByQuestionId.set(question.id, question.correctOptionId);
+  }
+}
+for (const booklet of JSON.parse(preKrokJson)) {
   for (const question of booklet.questions) {
     krokCorrectOptionByQuestionId.set(question.id, question.correctOptionId);
   }
@@ -562,6 +575,7 @@ async function inspect(name, url, viewport, selector) {
     interactions.randomUniqueCards = new Set(randomIds).size;
     interactions.randomYears = new Set(randomIds.map((id) => id?.slice(0, 4))).size;
     interactions.randomTrainingCards = randomIds.filter((id) => id?.startsWith("ai-")).length;
+    interactions.randomPreKrokCards = randomIds.filter((id) => id?.startsWith("pre-")).length;
     interactions.randomFirstId = randomIds[0];
 
     await page.reload({ waitUntil: "networkidle" });
@@ -618,6 +632,38 @@ async function inspect(name, url, viewport, selector) {
       )
       .click();
     interactions.trainingExplanation = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .locator("[data-krok-answer-explanation]")
+      .count();
+
+    await page.context().clearCookies();
+    await page.goto(targetUrl, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
+    await page.locator('[data-krok-start-card="pre-001"] [data-krok-start-mode="ordered"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    interactions.preKrokCards = await page.locator("[data-krok-question-card]").count();
+    interactions.preKrokFirstBooklet = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-booklet-id");
+    const firstPreKrokQuestionId = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-question-card");
+    if (!firstPreKrokQuestionId) {
+      throw new Error("No first Pre-KROK question found");
+    }
+    const firstPreKrokCorrectOptionId = getCorrectOptionId(firstPreKrokQuestionId);
+    await page
+      .locator(
+        `[data-krok-question-card="${firstPreKrokQuestionId}"] [data-krok-option="${firstPreKrokCorrectOptionId}"]`
+      )
+      .click();
+    interactions.preKrokExplanation = await page
       .locator("[data-krok-question-card]")
       .first()
       .locator("[data-krok-answer-explanation]")
@@ -1230,8 +1276,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
   }
-  if (result.name === "desktop-krok" && result.interactions.startCards !== 8) {
-    issues.push(`${result.name}: expected eight start cards`);
+  if (result.name === "desktop-krok" && result.interactions.startCards !== 9) {
+    issues.push(`${result.name}: expected nine start cards`);
   }
   if (result.name === "desktop-krok" && result.interactions.desktopStartSidebar !== 1) {
     issues.push(`${result.name}: KROK start page should use the shared desktop sidebar pattern`);
@@ -1304,6 +1350,9 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.randomTrainingCards !== 0) {
     issues.push(`${result.name}: random booklet included training AI questions`);
   }
+  if (result.name === "desktop-krok" && result.interactions.randomPreKrokCards !== 0) {
+    issues.push(`${result.name}: random booklet included Pre-KROK questions`);
+  }
   if (
     result.name === "desktop-krok" &&
     result.interactions.randomFirstId !== result.interactions.randomFirstIdAfterReload
@@ -1313,7 +1362,7 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.finishResultPanels !== 1) {
     issues.push(`${result.name}: finish result panel did not render`);
   }
-  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 8) {
+  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 9) {
     issues.push(`${result.name}: restart did not return to booklet start`);
   }
   if (result.name === "desktop-krok" && result.interactions.trainingCards !== 150) {
@@ -1325,8 +1374,17 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.trainingExplanation !== 1) {
     issues.push(`${result.name}: training AI booklet 4 explanation did not render`);
   }
-  if (result.name === "mobile-krok" && result.interactions.startCards !== 8) {
-    issues.push(`${result.name}: expected eight start cards on mobile`);
+  if (result.name === "desktop-krok" && result.interactions.preKrokCards !== 150) {
+    issues.push(`${result.name}: Pre-KROK booklet 1 did not render 150 questions`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.preKrokFirstBooklet !== "pre-001") {
+    issues.push(`${result.name}: Pre-KROK booklet 1 first question uses wrong booklet`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.preKrokExplanation !== 1) {
+    issues.push(`${result.name}: Pre-KROK booklet 1 explanation did not render`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.startCards !== 9) {
+    issues.push(`${result.name}: expected nine start cards on mobile`);
   }
   if (result.name === "mobile-krok" && result.interactions.questionCards !== 150) {
     issues.push(`${result.name}: mobile booklet did not render 150 questions`);

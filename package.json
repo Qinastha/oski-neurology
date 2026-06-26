@@ -9,6 +9,7 @@
     "import:krok": "node scripts/import-krok.mjs",
     "import:exam-tickets": "node scripts/import-exam-tickets.mjs",
     "generate:krok-training": "node scripts/generate-krok-training.mjs",
+    "generate:krok-pre": "node scripts/generate-krok-pre.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "validate:content": "node scripts/validate-content.mjs",

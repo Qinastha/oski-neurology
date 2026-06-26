@@ -12,7 +12,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-static";
 
 export default function KrokPage() {
-  const { officialBooklets, trainingBooklets } = getKrokCatalog();
+  const { officialBooklets, preKrokBooklets, trainingBooklets } = getKrokCatalog();
 
-  return <KrokTrainer officialBooklets={officialBooklets} trainingBooklets={trainingBooklets} />;
+  return (
+    <KrokTrainer
+      officialBooklets={officialBooklets}
+      preKrokBooklets={preKrokBooklets}
+      trainingBooklets={trainingBooklets}
+    />
+  );
 }

@@ -33,6 +33,7 @@ type Filter = "all" | "unanswered" | "wrong" | "correct" | "flagged";
 
 interface KrokTrainerProps {
   officialBooklets: KrokResolvedBooklet[];
+  preKrokBooklets: KrokResolvedBooklet[];
   trainingBooklets: KrokResolvedBooklet[];
 }
 
@@ -254,6 +255,12 @@ function formatBookletLabel(bookletId: KrokSessionBookletId) {
     return Number.isFinite(bookletNumber)
       ? `Тренувальний буклет ${bookletNumber}`
       : "Тренувальний буклет";
+  }
+  if (bookletId.startsWith("pre-")) {
+    const bookletNumber = Number(bookletId.slice(4));
+    return Number.isFinite(bookletNumber)
+      ? `Пре-КРОК буклет ${bookletNumber}`
+      : "Пре-КРОК буклет";
   }
   return `КРОК ${bookletId}`;
 }
@@ -581,7 +588,11 @@ function QuestionCard({
   );
 }
 
-export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerProps) {
+export function KrokTrainer({
+  officialBooklets,
+  preKrokBooklets,
+  trainingBooklets
+}: KrokTrainerProps) {
   const [session, setSession] = useState<KrokSession | null>(null);
   const [showSession, setShowSession] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
@@ -589,8 +600,8 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
   const [showExplanations, setShowExplanations] = useState(true);
 
   const allBooklets = useMemo(
-    () => [...officialBooklets, ...trainingBooklets],
-    [officialBooklets, trainingBooklets]
+    () => [...officialBooklets, ...preKrokBooklets, ...trainingBooklets],
+    [officialBooklets, preKrokBooklets, trainingBooklets]
   );
   const officialQuestions = useMemo(
     () => officialBooklets.flatMap((booklet) => booklet.questions),
@@ -599,6 +610,10 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
   const trainingQuestionCount = useMemo(
     () => trainingBooklets.reduce((sum, booklet) => sum + booklet.questions.length, 0),
     [trainingBooklets]
+  );
+  const preKrokQuestionCount = useMemo(
+    () => preKrokBooklets.reduce((sum, booklet) => sum + booklet.questions.length, 0),
+    [preKrokBooklets]
   );
   const allQuestions = useMemo(
     () => allBooklets.flatMap((booklet) => booklet.questions),
@@ -839,7 +854,7 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
             <p className="text-xs font-black uppercase text-clinical-accent-strong">Питання</p>
             <p className="mt-1 text-2xl font-black">{officialQuestions.length}</p>
             <p className="text-sm text-clinical-muted">
-              офіційних · {trainingQuestionCount} тренувальних
+              офіційних · {preKrokQuestionCount} пре-КРОК · {trainingQuestionCount} тренувальних
             </p>
           </div>
         </aside>
@@ -852,7 +867,8 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
-                {officialQuestions.length} офіційних питань · {trainingQuestionCount} тренувальних
+                {officialQuestions.length} офіційних · {preKrokQuestionCount} пре-КРОК ·{" "}
+                {trainingQuestionCount} тренувальних
               </p>
               <h1 className="mt-1 text-[clamp(30px,4vw,46px)] font-black leading-[1.04]">
                 КРОК 3 Неврологія
@@ -935,6 +951,27 @@ export function KrokTrainer({ officialBooklets, trainingBooklets }: KrokTrainerP
                   title="Випадковий буклет"
                   onStartShuffled={() => startSession("random", "shuffled")}
                 />
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black">Пре-КРОК</h2>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {preKrokBooklets.map((booklet) => (
+                  <BookletCard
+                    badge="45% official"
+                    bookletId={booklet.id}
+                    count={booklet.questions.length}
+                    key={booklet.id}
+                    title={booklet.title}
+                    onStartOrdered={() => startSession(booklet.id, "ordered")}
+                    onStartShuffled={() => startSession(booklet.id, "shuffled")}
+                  />
+                ))}
               </div>
             </section>
 

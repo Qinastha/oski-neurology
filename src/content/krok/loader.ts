@@ -3,11 +3,13 @@ import "server-only";
 import { krokAnswerOverrides } from "./answer-overrides";
 import { krokAnswerExplanations } from "./explanations";
 import { krokBooklets } from "./generated";
+import { krokPreKrokBooklets } from "./pre-krok";
 import { krokTrainingBooklets } from "./training";
 import type {
   KrokAnswerExplanation,
   KrokBooklet,
   KrokBookletId,
+  KrokPreKrokBooklet,
   KrokQuestion,
   KrokResolvedBooklet,
   KrokResolvedQuestion,
@@ -15,6 +17,7 @@ import type {
 } from "./schema";
 
 const typedKrokBooklets = krokBooklets as KrokBooklet[];
+const typedKrokPreKrokBooklets = krokPreKrokBooklets as KrokPreKrokBooklet[];
 const typedKrokTrainingBooklets = krokTrainingBooklets as KrokTrainingBooklet[];
 const typedKrokAnswerExplanations = krokAnswerExplanations as KrokAnswerExplanation[];
 const explanationByQuestionId = new Map(
@@ -52,7 +55,21 @@ const resolvedKrokTrainingBooklets: KrokResolvedBooklet[] = typedKrokTrainingBoo
   })
 );
 
-const allResolvedKrokBooklets = [...resolvedKrokBooklets, ...resolvedKrokTrainingBooklets];
+const resolvedKrokPreKrokBooklets: KrokResolvedBooklet[] = typedKrokPreKrokBooklets.map(
+  (booklet) => ({
+    ...booklet,
+    questions: booklet.questions.map((question) => ({
+      ...question,
+      explanation: question.explanation
+    }))
+  })
+);
+
+const allResolvedKrokBooklets = [
+  ...resolvedKrokBooklets,
+  ...resolvedKrokPreKrokBooklets,
+  ...resolvedKrokTrainingBooklets
+];
 
 export function getKrokBooklet(id: KrokBookletId): KrokResolvedBooklet | undefined {
   return allResolvedKrokBooklets.find((booklet) => booklet.id === id);
@@ -69,6 +86,7 @@ export function getOfficialKrokQuestions(): KrokResolvedQuestion[] {
 export function getKrokCatalog() {
   return {
     officialBooklets: resolvedKrokBooklets,
+    preKrokBooklets: resolvedKrokPreKrokBooklets,
     trainingBooklets: resolvedKrokTrainingBooklets,
     allBooklets: allResolvedKrokBooklets,
     officialQuestions: getOfficialKrokQuestions()
@@ -81,6 +99,7 @@ export function getKrokStats() {
   return {
     bookletCount: allResolvedKrokBooklets.length,
     officialBookletCount: typedKrokBooklets.length,
+    preKrokBookletCount: typedKrokPreKrokBooklets.length,
     trainingBookletCount: typedKrokTrainingBooklets.length,
     questionCount: questions.length,
     officialQuestionCount: getOfficialKrokQuestions().length,
