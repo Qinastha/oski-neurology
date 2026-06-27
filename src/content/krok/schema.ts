@@ -2,7 +2,7 @@ export type KrokOfficialBookletId = "2024" | "2025" | "2026";
 
 export type KrokTrainingBookletId = "ai-001" | "ai-002" | "ai-003" | "ai-004";
 
-export type KrokPreKrokBookletId = "pre-001";
+export type KrokPreKrokBookletId = "pre-001" | "pre-002";
 
 export type KrokBookletId = KrokOfficialBookletId | KrokTrainingBookletId | KrokPreKrokBookletId;
 

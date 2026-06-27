@@ -223,7 +223,7 @@ export const concepts = [
   concept("3", "3.5.1.0", "потрібно виміряти тиск ліквору і взяти зразок для клітинного та біохімічного аналізу", "Яка процедура потрібна?", "Люмбальна пункція", "Люмбальна пункція дає змогу оцінити лікворний тиск і склад ліквору."),
   concept("3", "3.6.1.0", "після коротких епізодів завмирання треба зареєструвати пароксизмальну електричну активність кори", "Який метод обстеження найбільш доцільний?", "Електроенцефалографія", "ЕЕГ є базовим методом функціональної оцінки епілептичної активності."),
   concept("3", "3.6.2.0", "потрібно відрізнити нейропатичне ураження від первинної міопатії", "Який метод допоможе найбільше?", "Електроміографія", "ЕМГ та дослідження нервової провідності локалізують ураження на рівні м’яза, нерва або мотонейрона."),
-  concept("3", "3.6.6.0", "пацієнт поступив у перші години після появи фокального дефіциту, крововилив ще не виключено", "Яке обстеження треба виконати першим?", "Комп’ютерна томографія", "Нативна КТ швидко виключає внутрішньочерепний крововилив перед антитромботичною або реперфузійною тактикою."),
+  concept("3", "3.6.6.0", "пацієнта госпіталізовано у перші години після появи фокального дефіциту, крововилив ще не виключено", "Яке обстеження треба виконати першим?", "Комп’ютерна томографія", "Нативна КТ швидко виключає внутрішньочерепний крововилив перед антитромботичною або реперфузійною тактикою."),
   concept("3", "3.6.7.0", "підозрюють демієлінізацію з осередками у перивентрикулярній білій речовині та стовбурі", "Який метод найбільш інформативний?", "Магнітно-резонансна томографія", "МРТ найкраще демонструє демієлінізуючі вогнища у просторі та часі."),
 
   concept("4", "4.1.0.0", "тремор, дистонія, дизартрія, підвищені трансамінази і кільця Кайзера-Флейшера", "Який діагноз найбільш імовірний?", "Хвороба Вільсона", "Печінково-неврологічне поєднання з кільцями Кайзера-Флейшера характерне для порушення обміну міді."),
@@ -719,8 +719,15 @@ export function deterministicShuffle(items, seed) {
   return next;
 }
 
-export function createGeneratedEntries({ targets = sectionTargets, bookletIndex, variantOffset = 0 }) {
+export function createGeneratedEntries({
+  targets = sectionTargets,
+  bookletIndex,
+  variantOffset = 0,
+  avoidFamilyRepeats = false,
+  familyKeyForItem = (item) => item.correct
+}) {
   const rawQuestions = [];
+  const usedFamilyKeysBySection = new Map();
   let withinBooklet = 0;
   let longRemaining = 6;
   let directRemaining = 6;
@@ -730,9 +737,23 @@ export function createGeneratedEntries({ targets = sectionTargets, bookletIndex,
     if (!availableConcepts?.length) {
       throw new Error(`No concepts for section ${section}`);
     }
+    const usedFamilyKeys = usedFamilyKeysBySection.get(section) ?? new Set();
+    usedFamilyKeysBySection.set(section, usedFamilyKeys);
     for (let sectionIndex = 0; sectionIndex < count; sectionIndex += 1) {
-      const conceptIndex = (bookletIndex * 3 + sectionIndex) % availableConcepts.length;
-      const item = availableConcepts[conceptIndex];
+      const startConceptIndex = (bookletIndex * 3 + sectionIndex) % availableConcepts.length;
+      let item = null;
+      for (let offset = 0; offset < availableConcepts.length; offset += 1) {
+        const candidate = availableConcepts[(startConceptIndex + offset) % availableConcepts.length];
+        const familyKey = familyKeyForItem(candidate);
+        if (!avoidFamilyRepeats || !usedFamilyKeys.has(familyKey)) {
+          item = candidate;
+          usedFamilyKeys.add(familyKey);
+          break;
+        }
+      }
+      if (!item) {
+        throw new Error(`No non-repeating concept family for section ${section}`);
+      }
       const variant = variantOffset + bookletIndex * 151 + withinBooklet * 11 + sectionIndex;
       const profile = profileFor(item, ageFor(bookletIndex, withinBooklet), variant);
       const directPreferred = prefersDirectStem(item);
@@ -754,7 +775,7 @@ export function createGeneratedEntries({ targets = sectionTargets, bookletIndex,
             : makeMediumStem(item, profile, variant, withinBooklet);
       rawQuestions.push({
         item,
-        stem,
+        stem: stem.replace(/\.\./g, "."),
         variant,
         section,
         provisionalIndex: withinBooklet

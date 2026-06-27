@@ -668,6 +668,38 @@ async function inspect(name, url, viewport, selector) {
       .first()
       .locator("[data-krok-answer-explanation]")
       .count();
+
+    await page.context().clearCookies();
+    await page.goto(targetUrl, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-krok-page="start"]', { timeout: 15000 });
+    await page.locator('[data-krok-start-card="pre-002"] [data-krok-start-mode="ordered"]').click();
+    await page.waitForSelector('[data-krok-page="session"]', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("[data-krok-question-card]").length === 150, {
+      timeout: 15000
+    });
+    interactions.preKrok2Cards = await page.locator("[data-krok-question-card]").count();
+    interactions.preKrok2FirstBooklet = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-booklet-id");
+    const firstPreKrok2QuestionId = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .getAttribute("data-krok-question-card");
+    if (!firstPreKrok2QuestionId) {
+      throw new Error("No first Pre-KROK 2 question found");
+    }
+    const firstPreKrok2CorrectOptionId = getCorrectOptionId(firstPreKrok2QuestionId);
+    await page
+      .locator(
+        `[data-krok-question-card="${firstPreKrok2QuestionId}"] [data-krok-option="${firstPreKrok2CorrectOptionId}"]`
+      )
+      .click();
+    interactions.preKrok2Explanation = await page
+      .locator("[data-krok-question-card]")
+      .first()
+      .locator("[data-krok-answer-explanation]")
+      .count();
   }
 
   if (name === "mobile-krok") {
@@ -1276,8 +1308,8 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-stroke" && result.interactions.expandedAfter !== 4) {
     issues.push(`${result.name}: checklist accordion interaction failed`);
   }
-  if (result.name === "desktop-krok" && result.interactions.startCards !== 9) {
-    issues.push(`${result.name}: expected nine start cards`);
+  if (result.name === "desktop-krok" && result.interactions.startCards !== 10) {
+    issues.push(`${result.name}: expected ten start cards`);
   }
   if (result.name === "desktop-krok" && result.interactions.desktopStartSidebar !== 1) {
     issues.push(`${result.name}: KROK start page should use the shared desktop sidebar pattern`);
@@ -1362,7 +1394,7 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.finishResultPanels !== 1) {
     issues.push(`${result.name}: finish result panel did not render`);
   }
-  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 9) {
+  if (result.name === "desktop-krok" && result.interactions.restartStartCards !== 10) {
     issues.push(`${result.name}: restart did not return to booklet start`);
   }
   if (result.name === "desktop-krok" && result.interactions.trainingCards !== 150) {
@@ -1383,8 +1415,17 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.preKrokExplanation !== 1) {
     issues.push(`${result.name}: Pre-KROK booklet 1 explanation did not render`);
   }
-  if (result.name === "mobile-krok" && result.interactions.startCards !== 9) {
-    issues.push(`${result.name}: expected nine start cards on mobile`);
+  if (result.name === "desktop-krok" && result.interactions.preKrok2Cards !== 150) {
+    issues.push(`${result.name}: Pre-KROK booklet 2 did not render 150 questions`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.preKrok2FirstBooklet !== "pre-002") {
+    issues.push(`${result.name}: Pre-KROK booklet 2 first question uses wrong booklet`);
+  }
+  if (result.name === "desktop-krok" && result.interactions.preKrok2Explanation !== 1) {
+    issues.push(`${result.name}: Pre-KROK booklet 2 explanation did not render`);
+  }
+  if (result.name === "mobile-krok" && result.interactions.startCards !== 10) {
+    issues.push(`${result.name}: expected ten start cards on mobile`);
   }
   if (result.name === "mobile-krok" && result.interactions.questionCards !== 150) {
     issues.push(`${result.name}: mobile booklet did not render 150 questions`);

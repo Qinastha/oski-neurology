@@ -199,7 +199,7 @@ const allExamTicketQuestionOverrides = parseExportedArray(
 );
 const expectedBookletIds = new Set(["2024", "2025", "2026"]);
 const expectedTrainingBookletIds = new Set(["ai-001", "ai-002", "ai-003", "ai-004"]);
-const expectedPreKrokBookletIds = new Set(["pre-001"]);
+const expectedPreKrokBookletIds = new Set(["pre-001", "pre-002"]);
 const expectedNoteSectionWeights = new Map([
   ["1.0.0.0", 10],
   ["2.0.0.0", 20],
@@ -351,8 +351,8 @@ if (krokBooklets.length !== 3) {
 if (krokTrainingBooklets.length !== 4) {
   failures.push(`Expected 4 KROK training booklets, got ${krokTrainingBooklets.length}`);
 }
-if (krokPreKrokBooklets.length !== 1) {
-  failures.push(`Expected 1 Pre-KROK booklet, got ${krokPreKrokBooklets.length}`);
+if (krokPreKrokBooklets.length !== 2) {
+  failures.push(`Expected 2 Pre-KROK booklets, got ${krokPreKrokBooklets.length}`);
 }
 if (krokContentTopics.length !== 330) {
   failures.push(`Expected 330 KROK content topics, got ${krokContentTopics.length}`);
@@ -417,6 +417,9 @@ for (const booklet of krokBooklets) {
     }
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`KROK question ${question.id} has empty text`);
+    }
+    if (typeof question.text === "string" && /\.{2,}/.test(question.text)) {
+      failures.push(`KROK question ${question.id} has repeated punctuation`);
     }
     normalizedKrokQuestionTexts.add(normalizeQuestionText(question.text));
     if (!Array.isArray(question.options) || question.options.length < 3 || question.options.length > 5) {
@@ -790,6 +793,9 @@ for (const booklet of krokTrainingBooklets) {
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`KROK training question ${question.id} has empty text`);
     }
+    if (typeof question.text === "string" && /\.{2,}/.test(question.text)) {
+      failures.push(`KROK training question ${question.id} has repeated punctuation`);
+    }
     const stemWordCount = countWords(question.text);
     trainingStemWordCounts.push(stemWordCount);
     if (stemWordCount < 24) {
@@ -1124,6 +1130,9 @@ for (const booklet of krokPreKrokBooklets) {
     if (typeof question.text !== "string" || question.text.trim().length === 0) {
       failures.push(`Pre-KROK question ${question.id} has empty text`);
     }
+    if (typeof question.text === "string" && /\.{2,}/.test(question.text)) {
+      failures.push(`Pre-KROK question ${question.id} has repeated punctuation`);
+    }
     if (typeof question.explanation !== "string" || question.explanation.trim().length < 20) {
       failures.push(`Pre-KROK question ${question.id} needs an explanation`);
     }
@@ -1213,18 +1222,20 @@ for (const booklet of krokPreKrokBooklets) {
       }
       normalizedPreKrokGeneratedTexts.add(normalized);
       const generatedFamilyKey = getPreKrokGeneratedFamilyKey(correctOptionText);
-      const previousFamilyQuestion = generatedFamilyQuestions.get(generatedFamilyKey);
+      const generatedSectionFamilyKey = `${question.contentSection}:${generatedFamilyKey}`;
+      const previousFamilyQuestion = generatedFamilyQuestions.get(generatedSectionFamilyKey);
       if (previousFamilyQuestion) {
         failures.push(
           `Pre-KROK generated question ${question.id} repeats clinical family "${generatedFamilyKey}" from ${previousFamilyQuestion.id}`
         );
       }
-      generatedFamilyQuestions.set(generatedFamilyKey, question);
+      generatedFamilyQuestions.set(generatedSectionFamilyKey, question);
       const tooSimilarGenerated = generatedQuestionsInBooklet.find((previous) => {
         const sharedRatio = getSharedTokenRatio(question.text, previous.question.text);
+        const sameGeneratedSection = previous.question.contentSection === question.contentSection;
         return (
-          (previous.correctOptionText === correctOptionText && sharedRatio >= 0.45) ||
-          (previous.familyKey === generatedFamilyKey && sharedRatio >= 0.38)
+          (sameGeneratedSection && previous.correctOptionText === correctOptionText && sharedRatio >= 0.45) ||
+          (sameGeneratedSection && previous.familyKey === generatedFamilyKey && sharedRatio >= 0.38)
         );
       });
       if (tooSimilarGenerated) {
@@ -1285,17 +1296,17 @@ for (const booklet of krokPreKrokBooklets) {
   }
 }
 
-if (preKrokQuestionCount !== 150) {
-  failures.push(`Expected 150 Pre-KROK questions, got ${preKrokQuestionCount}`);
+if (preKrokQuestionCount !== 300) {
+  failures.push(`Expected 300 Pre-KROK questions, got ${preKrokQuestionCount}`);
 }
-if (preKrokCorrectAnswerCount !== 150) {
-  failures.push(`Expected 150 Pre-KROK correct answers, got ${preKrokCorrectAnswerCount}`);
+if (preKrokCorrectAnswerCount !== 300) {
+  failures.push(`Expected 300 Pre-KROK correct answers, got ${preKrokCorrectAnswerCount}`);
 }
-if (preKrokOfficialQuestionCount !== 68) {
-  failures.push(`Expected 68 official-origin Pre-KROK questions, got ${preKrokOfficialQuestionCount}`);
+if (preKrokOfficialQuestionCount !== 136) {
+  failures.push(`Expected 136 official-origin Pre-KROK questions, got ${preKrokOfficialQuestionCount}`);
 }
-if (preKrokGeneratedQuestionCount !== 82) {
-  failures.push(`Expected 82 generated-origin Pre-KROK questions, got ${preKrokGeneratedQuestionCount}`);
+if (preKrokGeneratedQuestionCount !== 164) {
+  failures.push(`Expected 164 generated-origin Pre-KROK questions, got ${preKrokGeneratedQuestionCount}`);
 }
 
 const explanationQuestionIds = new Set();
