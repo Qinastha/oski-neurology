@@ -50,7 +50,7 @@ function SectionCard({
 }) {
   return (
     <article
-      className="group flex min-h-[260px] flex-col justify-between rounded-lg border border-clinical-line bg-white p-4 shadow-[0_18px_55px_rgba(84,67,20,0.06)] transition hover:-translate-y-0.5 hover:border-clinical-line-strong hover:shadow-[0_22px_65px_rgba(84,67,20,0.11)]"
+      className="group flex min-h-[260px] flex-col justify-between rounded-lg border border-clinical-line bg-clinical-surface p-4 shadow-[0_18px_55px_rgba(84,67,20,0.06)] transition hover:-translate-y-0.5 hover:border-clinical-line-strong hover:shadow-[0_22px_65px_rgba(84,67,20,0.11)]"
       data-home-section-card={testId}
     >
       <div>
@@ -60,7 +60,7 @@ function SectionCard({
           >
             {icon}
           </span>
-          <span className="rounded-full border border-clinical-line bg-[#fffaf0] px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
+          <span className="rounded-full border border-clinical-line bg-clinical-surface-soft px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
             {stat}
           </span>
         </div>
@@ -93,7 +93,7 @@ export default function HomePage() {
       data-home-hub="root"
     >
       <section className="mx-auto grid min-h-[calc(100dvh-40px)] max-w-7xl gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <aside className="flex flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
+        <aside className="flex flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
           <div className="flex items-center gap-3">
             <span className="inline-flex h-16 w-16 items-center justify-center">
               <Image
@@ -120,7 +120,7 @@ export default function HomePage() {
           </p>
         </aside>
 
-        <section className="rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
+        <section className="rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl">
           <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[13px] font-extrabold text-clinical-accent-strong">
@@ -164,7 +164,7 @@ export default function HomePage() {
               title="Конспект"
             />
             <SectionCard
-              accent="bg-[#fff5dc] text-[#8a5c00]"
+              accent="bg-clinical-surface-soft text-clinical-accent-strong"
               eyebrow="Держіспит"
               href="/tickets"
               icon={<FileText size={22} />}
@@ -175,9 +175,9 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="mt-5 rounded-lg border border-clinical-line bg-[#fffdf8] p-4">
+          <div className="mt-5 rounded-lg border border-clinical-line bg-clinical-control p-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line-strong bg-white text-clinical-accent-strong">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line-strong bg-clinical-surface text-clinical-accent-strong">
                 <Layers3 size={20} />
               </span>
               <div className="min-w-0">

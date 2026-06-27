@@ -54,8 +54,8 @@ export function SiteSectionLinks({
           <Link
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex min-h-[42px] items-center gap-2.5 rounded-lg px-2.5 text-sm font-extrabold text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-              isActive && "bg-clinical-accent-soft text-[#171a1f]"
+              "flex min-h-[42px] items-center gap-2.5 rounded-lg px-2.5 text-sm font-extrabold text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+              isActive && "bg-clinical-accent-soft text-clinical-text"
             )}
             href={href}
             key={key}
@@ -83,7 +83,7 @@ export function SiteMobileTabbar({ active }: { active: SiteSection }) {
           <Link
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] leading-tight text-[#5d6470]",
+              "flex min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] leading-tight text-clinical-muted",
               isActive && "font-extrabold text-clinical-accent-strong"
             )}
             href={href}

@@ -4,7 +4,7 @@ function renderInline(text: string) {
   return parts.map((part, index) => {
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
-        <code className="rounded bg-[#fffaf0] px-1.5 py-0.5 text-[#875e00]" key={index}>
+        <code className="rounded bg-clinical-surface-soft px-1.5 py-0.5 text-clinical-accent-strong" key={index}>
           {part.slice(1, -1)}
         </code>
       );
@@ -68,7 +68,7 @@ export function MarkdownView({ markdown }: { markdown: string }) {
   }
 
   return (
-    <div className="text-[15px] leading-[1.65] text-[#343a43]">
+    <div className="text-[15px] leading-[1.65] text-clinical-muted">
       {blocks.map((block, index) => {
         if (block.startsWith("### ")) {
           return (

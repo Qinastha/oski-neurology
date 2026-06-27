@@ -18,7 +18,7 @@ export function CaseCard({
   onToggleFavorite
 }: CaseCardProps) {
   return (
-    <article className="case-card grid min-h-[72px] grid-cols-[minmax(0,1fr)_44px] items-center rounded-lg border border-clinical-line bg-white/85 transition hover:border-clinical-line-strong hover:bg-[#fffaf0]">
+    <article className="case-card grid min-h-[72px] grid-cols-[minmax(0,1fr)_44px] items-center rounded-lg border border-clinical-line bg-clinical-surface/85 transition hover:border-clinical-line-strong hover:bg-clinical-surface-soft">
       <Link
         className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-3 p-3"
         href={`/cases/${studyCase.slug}`}
@@ -39,7 +39,7 @@ export function CaseCard({
             ? `Прибрати ${studyCase.title} з обраного`
             : `Додати ${studyCase.title} до обраного`
         }
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface text-clinical-muted transition hover:border-clinical-line-strong hover:text-clinical-accent-strong"
         type="button"
         onClick={() => onToggleFavorite(studyCase.slug)}
       >

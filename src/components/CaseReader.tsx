@@ -55,9 +55,9 @@ type LightboxImage = CaseImage & {
 };
 
 const panelClass =
-  "rounded-lg border border-clinical-line/85 bg-white/90 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl";
+  "rounded-lg border border-clinical-line/85 bg-clinical-surface/90 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl";
 const iconButtonClass =
-  "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-[#5a626e] transition hover:border-clinical-line-strong hover:text-clinical-accent-strong";
+  "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface text-clinical-muted transition hover:border-clinical-line-strong hover:text-clinical-accent-strong";
 const yellowButtonClass =
   "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line-strong bg-gradient-to-b from-[#ffe680] to-clinical-accent px-3.5 text-sm font-extrabold text-[#201900]";
 const BRAND_ICON_SRC = "/metadata/apple-icon.png";
@@ -105,7 +105,7 @@ function SectionBlock({
 }) {
   return (
     <details
-      className="group mt-2.5 rounded-lg border border-clinical-line bg-white"
+      className="group mt-2.5 rounded-lg border border-clinical-line bg-clinical-surface"
       id={id}
       open={defaultOpen}
     >
@@ -129,7 +129,7 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
   return (
     <article
       className={cn(
-        "check-step rounded-lg border bg-gradient-to-b from-white to-[#fffdf8] transition",
+        "check-step rounded-lg border bg-gradient-to-b from-clinical-surface to-clinical-control transition",
         open ? "border-clinical-accent-strong/45" : "border-clinical-line"
       )}
       data-state={open ? "open" : "closed"}
@@ -142,7 +142,7 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
         type="button"
         onClick={() => setOpen((value) => !value)}
       >
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-clinical-accent-soft text-xs font-black text-[#8a6300]">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-clinical-accent-soft text-xs font-black text-clinical-accent-strong">
           {String(item.order).padStart(2, "0")}
         </span>
         <span className="min-w-0 text-[15px] font-extrabold leading-tight">{item.title}</span>
@@ -151,7 +151,7 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
       {open ? (
         <div
           aria-labelledby={buttonId}
-          className="mb-3 ml-[60px] mr-3 rounded-r-lg border-l-[3px] border-clinical-accent bg-[#fffaf0] p-3.5 max-md:ml-[46px] max-md:p-3"
+          className="mb-3 ml-[60px] mr-3 rounded-r-lg border-l-[3px] border-clinical-accent bg-clinical-surface-soft p-3.5 max-md:ml-[46px] max-md:p-3"
           id={panelId}
           role="region"
         >
@@ -167,7 +167,7 @@ function ChecklistCard({ item }: { item: ChecklistItem }) {
 
 function InteractionCard({ item, index }: { item: InteractionItem; index: number }) {
   return (
-    <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+    <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3 rounded-lg border border-clinical-line bg-clinical-surface-soft p-3">
       <span className="font-black text-clinical-accent-strong">
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -181,10 +181,10 @@ function InteractionCard({ item, index }: { item: InteractionItem; index: number
 
 function coverageClass(status: TaskCoverageStatus) {
   const classes: Record<TaskCoverageStatus, string> = {
-    covered: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    partial: "border-amber-200 bg-amber-50 text-amber-800",
-    missing: "border-rose-200 bg-rose-50 text-rose-800",
-    not_applicable: "border-slate-200 bg-slate-50 text-slate-700"
+    covered: "border-clinical-success-line bg-clinical-success-surface text-clinical-success-text",
+    partial: "border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong",
+    missing: "border-clinical-danger-line bg-clinical-danger-surface text-clinical-danger-text",
+    not_applicable: "border-clinical-line bg-clinical-surface text-clinical-muted"
   };
 
   return classes[status];
@@ -192,7 +192,7 @@ function coverageClass(status: TaskCoverageStatus) {
 
 function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
   return (
-    <article className="rounded-lg border border-clinical-line-strong bg-[#fffaf0] p-3">
+    <article className="rounded-lg border border-clinical-line-strong bg-clinical-surface-soft p-3">
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div>
           <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
@@ -204,7 +204,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
 
       <div className="mt-3 grid gap-2 lg:grid-cols-3">
         {skill.equipment?.length ? (
-          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+          <div className="rounded-lg border border-clinical-line bg-clinical-surface p-2.5">
             <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
               Підготувати
             </h4>
@@ -216,7 +216,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
           </div>
         ) : null}
         {skill.patientSetup?.length ? (
-          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+          <div className="rounded-lg border border-clinical-line bg-clinical-surface p-2.5">
             <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
               Положення пацієнта
             </h4>
@@ -228,7 +228,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
           </div>
         ) : null}
         {skill.examinerPhrases?.length ? (
-          <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+          <div className="rounded-lg border border-clinical-line bg-clinical-surface p-2.5">
             <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
               Сказати пацієнту
             </h4>
@@ -244,7 +244,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
       <div className="mt-3 grid gap-2">
         {skill.steps.map((step, index) => (
           <section
-            className="grid gap-2 rounded-lg border border-clinical-line bg-white p-2.5 sm:grid-cols-[34px_minmax(0,1fr)]"
+            className="grid gap-2 rounded-lg border border-clinical-line bg-clinical-surface p-2.5 sm:grid-cols-[34px_minmax(0,1fr)]"
             key={step.id}
           >
             <span className="font-black text-clinical-accent-strong">
@@ -259,7 +259,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
                 {step.instruction}
               </p>
               {step.expectedFinding ? (
-                <p className="mt-1.5 rounded-lg bg-[#fffaf0] px-2 py-1.5 text-sm leading-relaxed text-[#5d4710]">
+                <p className="mt-1.5 rounded-lg bg-clinical-surface-soft px-2 py-1.5 text-sm leading-relaxed text-clinical-muted">
                   {step.expectedFinding}
                 </p>
               ) : null}
@@ -269,7 +269,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
       </div>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-lg border border-clinical-line bg-white p-2.5">
+        <div className="rounded-lg border border-clinical-line bg-clinical-surface p-2.5">
           <h4 className="text-xs font-black uppercase text-clinical-accent-strong">
             Інтерпретація
           </h4>
@@ -280,7 +280,7 @@ function PracticalSkillCard({ skill }: { skill: PracticalSkill }) {
           </ul>
         </div>
         {skill.safety?.length ? (
-          <div className="rounded-lg border border-amber-200 bg-white p-2.5">
+          <div className="rounded-lg border border-amber-200 bg-clinical-surface p-2.5">
             <h4 className="text-xs font-black uppercase text-amber-700">Безпека</h4>
             <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-clinical-muted">
               {skill.safety.map((item) => (
@@ -306,7 +306,7 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
 
   return (
     <div className="grid gap-3">
-      <div className="rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+      <div className="rounded-lg border border-clinical-line bg-clinical-surface-soft p-3">
         <div>
           <p className="m-0 text-xs font-black uppercase text-clinical-accent-strong">
             {formatStationType(blueprint.stationType)}
@@ -315,12 +315,12 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
         </div>
       </div>
 
-      <section className="rounded-lg border border-clinical-line bg-white p-3">
+      <section className="rounded-lg border border-clinical-line bg-clinical-surface p-3">
         <h3 className="text-sm font-black">Що вимагає завдання</h3>
         <div className="mt-2 grid gap-2" data-blueprint-required-tasks="list">
           {blueprint.requiredTasks.map((task, index) => (
             <article
-              className="grid gap-2 rounded-lg border border-clinical-line bg-[#fffdf8] p-2.5 sm:grid-cols-[34px_minmax(0,1fr)_auto] sm:items-start"
+              className="grid gap-2 rounded-lg border border-clinical-line bg-clinical-control p-2.5 sm:grid-cols-[34px_minmax(0,1fr)_auto] sm:items-start"
               key={task.id}
             >
               <span className="font-black text-clinical-accent-strong">
@@ -358,8 +358,8 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
         {orderedAnswerBlocks.map((block) => (
           <article
             className={cn(
-              "rounded-lg border border-clinical-line bg-white p-3",
-              (block.type === "must_say" || block.type === "pitfalls") && "bg-[#fffaf0]"
+              "rounded-lg border border-clinical-line bg-clinical-surface p-3",
+              (block.type === "must_say" || block.type === "pitfalls") && "bg-clinical-surface-soft"
             )}
             key={`${block.type}-${block.title}`}
           >
@@ -377,7 +377,7 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
                   <span>
                     {point.text}
                     {point.evidence ? (
-                      <span className="ml-2 inline-flex rounded-full border border-clinical-line bg-[#fffdf8] px-1.5 py-0.5 text-[11px] font-extrabold text-clinical-muted">
+                      <span className="ml-2 inline-flex rounded-full border border-clinical-line bg-clinical-control px-1.5 py-0.5 text-[11px] font-extrabold text-clinical-muted">
                         {formatEvidenceType(point.evidence)}
                       </span>
                     ) : null}
@@ -389,7 +389,7 @@ function StationBlueprintPanel({ blueprint }: { blueprint: StationBlueprint }) {
         ))}
       </div>
 
-      <section className="rounded-lg border border-clinical-line bg-white p-3">
+      <section className="rounded-lg border border-clinical-line bg-clinical-surface p-3">
         <h3 className="text-sm font-black">Джерела для ревізії</h3>
         <div className="mt-2 grid gap-1.5" data-blueprint-sources="list">
           {blueprint.sources.map((source) => (
@@ -421,13 +421,13 @@ function MediaFigure({
 
   return (
     <figure
-      className="overflow-hidden rounded-lg border border-clinical-line bg-white [content-visibility:auto] [contain-intrinsic-size:260px] max-md:min-w-[min(78vw,320px)] max-md:[scroll-snap-align:start]"
+      className="overflow-hidden rounded-lg border border-clinical-line bg-clinical-surface [content-visibility:auto] [contain-intrinsic-size:260px] max-md:min-w-[min(78vw,320px)] max-md:[scroll-snap-align:start]"
       data-media-figure={kind}
     >
       <button
         aria-label={`Відкрити зображення: ${image.caption ?? image.alt}`}
         className={cn(
-          "group relative block w-full overflow-hidden bg-[#f7f7f7] text-left",
+          "group relative block w-full overflow-hidden bg-clinical-control text-left",
           isScan ? "aspect-[1.2/1] bg-[#111]" : "aspect-[3/4]"
         )}
         data-image-open={kind}
@@ -449,7 +449,7 @@ function MediaFigure({
           src={image.src}
           width={isScan ? 960 : 900}
         />
-        <span className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/70 bg-white/85 text-[#3b414a] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100 max-md:opacity-100">
+        <span className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/70 bg-clinical-surface/85 text-clinical-muted opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100 max-md:opacity-100">
           <ZoomIn size={17} />
         </span>
       </button>
@@ -480,7 +480,7 @@ function OriginalPagesDisclosure({
         }
       }}
     >
-      <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-clinical-line-strong bg-clinical-accent-soft px-3 text-[13px] font-extrabold text-[#594107] [&::-webkit-details-marker]:hidden">
+      <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-clinical-line-strong bg-clinical-accent-soft px-3 text-[13px] font-extrabold text-clinical-accent-strong [&::-webkit-details-marker]:hidden">
         Показати сторінки завдання ({pages.length})
         <ChevronDown className="transition group-open:rotate-180" size={17} />
       </summary>
@@ -634,8 +634,8 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           {cases.map((item) => (
             <Link
               className={cn(
-                "grid min-h-[46px] grid-cols-[26px_minmax(0,1fr)] gap-2 rounded-lg p-2 text-[13px] leading-tight text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-                item.slug === studyCase.slug && "bg-clinical-accent-soft text-[#171a1f]"
+                "grid min-h-[46px] grid-cols-[26px_minmax(0,1fr)] gap-2 rounded-lg p-2 text-[13px] leading-tight text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+                item.slug === studyCase.slug && "bg-clinical-accent-soft text-clinical-text"
               )}
               href={`/cases/${item.slug}`}
               key={item.slug}
@@ -799,7 +799,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
           <div className="flex flex-wrap gap-1.5">
             {studyCase.tags.map((tag) => (
               <span
-                className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs text-[#595f68]"
+                className="rounded-full border border-clinical-line bg-clinical-surface-soft px-2 py-1 text-xs text-clinical-muted"
                 key={tag}
               >
                 {tag}
@@ -839,7 +839,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             type="button"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <section className="absolute inset-x-2 bottom-2 max-h-[82dvh] overflow-auto rounded-lg border border-clinical-line bg-white p-4 shadow-[0_22px_70px_rgba(49,39,10,0.24)]">
+          <section className="absolute inset-x-2 bottom-2 max-h-[82dvh] overflow-auto rounded-lg border border-clinical-line bg-clinical-surface p-4 shadow-[0_22px_70px_rgba(49,39,10,0.24)]">
             <header className="mb-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="m-0 text-xs font-extrabold uppercase text-clinical-accent-strong">
@@ -861,7 +861,7 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             <nav className="grid gap-2" aria-label="Мобільний зміст станції">
               {anchors.map(([id, label]) => (
                 <a
-                  className="flex min-h-11 items-center justify-between rounded-lg border border-clinical-line bg-[#fffdf8] px-3 text-sm font-extrabold text-[#272b31]"
+                  className="flex min-h-11 items-center justify-between rounded-lg border border-clinical-line bg-clinical-control px-3 text-sm font-extrabold text-clinical-text"
                   href={`#${id}`}
                   key={id}
                   onClick={() => setMobileMenuOpen(false)}
@@ -873,18 +873,18 @@ export function CaseReader({ studyCase, cases, previous, next }: CaseReaderProps
             </nav>
 
             {studyCase.group === "imaging" ? (
-              <section className="mt-3 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+              <section className="mt-3 rounded-lg border border-clinical-line bg-clinical-surface-soft p-3">
                 <strong className="text-sm">Ключовий висновок</strong>
                 <p className="mt-2 text-sm leading-relaxed text-clinical-muted">{studyCase.keyAnswer}</p>
               </section>
             ) : null}
 
-            <section className="mt-3 rounded-lg border border-clinical-line bg-white p-3">
+            <section className="mt-3 rounded-lg border border-clinical-line bg-clinical-surface p-3">
               <strong className="text-sm">Теги</strong>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {studyCase.tags.map((tag) => (
                   <span
-                    className="rounded-full border border-clinical-line bg-[#fffaf0] px-2 py-1 text-xs text-[#595f68]"
+                    className="rounded-full border border-clinical-line bg-clinical-surface-soft px-2 py-1 text-xs text-clinical-muted"
                     key={tag}
                   >
                     {tag}

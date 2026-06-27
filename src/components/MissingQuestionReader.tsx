@@ -29,7 +29,7 @@ export function MissingQuestionReader({
 
   return (
     <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,900px)] max-md:block max-md:p-0 max-md:pb-20">
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
+      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/tickets">
           <span className="inline-flex h-12 w-12 items-center justify-center">
             <Image
@@ -49,8 +49,8 @@ export function MissingQuestionReader({
             <Link
               aria-current={item.number === answer.number ? "page" : undefined}
               className={[
-                "min-h-[42px] rounded-lg p-2 text-[13px] leading-tight text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-                item.number === answer.number ? "bg-clinical-accent-soft text-[#171a1f]" : ""
+                "min-h-[42px] rounded-lg p-2 text-[13px] leading-tight text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+                item.number === answer.number ? "bg-clinical-accent-soft text-clinical-text" : ""
               ].join(" ")}
               href={`/tickets/questions/${item.number}`}
               key={item.number}
@@ -61,11 +61,11 @@ export function MissingQuestionReader({
         </nav>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-clinical-surface/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
         <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
           <Link
             aria-label="До списку білетів"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface"
             href="/tickets"
           >
             <ArrowLeft size={18} />
@@ -76,7 +76,7 @@ export function MissingQuestionReader({
             </span>
             <h1 className="mt-1 truncate text-base font-extrabold">{answer.title}</h1>
           </div>
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-clinical-accent-strong">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface text-clinical-accent-strong">
             <FileText size={18} />
           </span>
         </header>
@@ -89,7 +89,7 @@ export function MissingQuestionReader({
             <h1 className="mt-1 text-[clamp(30px,5vw,52px)] font-black leading-[1.02] tracking-normal text-clinical-text">
               {answer.title}
             </h1>
-            <p className="mt-4 max-w-[72ch] text-[17px] leading-8 text-[#606773] max-md:text-base max-md:leading-7">
+            <p className="mt-4 max-w-[72ch] text-[17px] leading-8 text-clinical-muted max-md:text-base max-md:leading-7">
               {answer.lead}
             </p>
           </div>
@@ -112,7 +112,7 @@ export function MissingQuestionReader({
                 </div>
 
                 {section.paragraphs?.length ? (
-                  <div className="mt-4 grid gap-4 text-[16px] leading-8 text-[#4e5561] max-md:text-[15px] max-md:leading-7">
+                  <div className="mt-4 grid gap-4 text-[16px] leading-8 text-clinical-muted max-md:text-[15px] max-md:leading-7">
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}
@@ -120,7 +120,7 @@ export function MissingQuestionReader({
                 ) : null}
 
                 {section.items?.length ? (
-                  <ul className="mt-4 grid gap-3 text-[15px] leading-7 text-[#4e5561]">
+                  <ul className="mt-4 grid gap-3 text-[15px] leading-7 text-clinical-muted">
                     {section.items.map((item) => (
                       <li className="flex gap-3" key={item}>
                         <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clinical-accent-strong" />
@@ -138,7 +138,7 @@ export function MissingQuestionReader({
         <footer className="mt-8 flex items-center justify-between gap-4 border-t border-clinical-line pt-5">
           {previous ? (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href={`/tickets/questions/${previous.number}`}
             >
               <ArrowLeft size={17} />
@@ -146,7 +146,7 @@ export function MissingQuestionReader({
             </Link>
           ) : (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href="/tickets"
             >
               <ArrowLeft size={17} />

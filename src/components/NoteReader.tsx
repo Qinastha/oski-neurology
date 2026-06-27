@@ -59,7 +59,7 @@ function ContentBlock({ block }: { block: NoteContentBlock }) {
     <section
       className={cn(
         "scroll-mt-24 border-t border-clinical-line py-7 first:border-t-0 first:pt-2",
-        isCallout && "border-l-4 border-t-0 border-clinical-accent bg-[#fffaf0] px-4 py-4"
+        isCallout && "border-l-4 border-t-0 border-clinical-accent bg-clinical-surface-soft px-4 py-4"
       )}
       data-note-content-block={block.id}
     >
@@ -74,17 +74,17 @@ function ContentBlock({ block }: { block: NoteContentBlock }) {
         </h2>
       ) : null}
       {block.lead ? (
-        <p className="mt-2 text-[15px] font-semibold leading-relaxed text-[#4e5561]">{block.lead}</p>
+        <p className="mt-2 text-[15px] font-semibold leading-relaxed text-clinical-muted">{block.lead}</p>
       ) : null}
       {block.paragraphs?.length ? (
-        <div className="mt-4 grid gap-4 text-[16px] leading-8 text-[#4e5561] max-md:text-[15px] max-md:leading-7">
+        <div className="mt-4 grid gap-4 text-[16px] leading-8 text-clinical-muted max-md:text-[15px] max-md:leading-7">
           {block.paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
       ) : null}
       {block.items?.length ? (
-        <ul className="mt-4 grid gap-3 text-[15px] leading-7 text-[#4e5561]">
+        <ul className="mt-4 grid gap-3 text-[15px] leading-7 text-clinical-muted">
           {block.items.map((item) => (
             <li className="flex gap-3" key={item}>
               <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clinical-accent-strong" />
@@ -128,7 +128,7 @@ function PointFlowSection({
             key={point.title}
           >
             <h3 className="text-[17px] font-black leading-tight text-clinical-text">{point.title}</h3>
-            <p className="mt-1.5 text-[15px] leading-7 text-[#4e5561]">{point.text}</p>
+            <p className="mt-1.5 text-[15px] leading-7 text-clinical-muted">{point.text}</p>
           </div>
         ))}
       </div>
@@ -180,7 +180,7 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
   return (
     <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,900px)] max-md:block max-md:p-0 max-md:pb-20">
       <aside
-        className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden"
+        className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden"
         data-note-left-nav="blocks"
       >
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/notes">
@@ -202,8 +202,8 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
             item.block ? (
               <Link
                 className={cn(
-                  "grid min-h-[46px] grid-cols-[36px_minmax(0,1fr)] gap-2 rounded-lg p-2 text-[13px] leading-tight text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-                  item.slug === section.slug && "bg-clinical-accent-soft text-[#171a1f]"
+                  "grid min-h-[46px] grid-cols-[36px_minmax(0,1fr)] gap-2 rounded-lg p-2 text-[13px] leading-tight text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+                  item.slug === section.slug && "bg-clinical-accent-soft text-clinical-text"
                 )}
                 href={`/notes/${item.slug}`}
                 key={item.code}
@@ -226,11 +226,11 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
         </nav>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-clinical-surface/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
         <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
           <Link
             aria-label="До списку блоків конспекту"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface"
             href="/notes"
           >
             <ArrowLeft size={18} />
@@ -243,7 +243,7 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
           </div>
           <button
             aria-pressed={read}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface"
             type="button"
             onClick={toggleRead}
           >
@@ -260,14 +260,14 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
               <h1 className="mt-1 max-w-[14ch] text-[clamp(34px,5vw,58px)] font-black leading-[0.98] tracking-normal text-clinical-text md:max-w-[15ch]">
                 {section.title}
               </h1>
-              <p className="mt-4 max-w-[68ch] text-[17px] leading-8 text-[#606773] max-md:text-base max-md:leading-7">
+              <p className="mt-4 max-w-[68ch] text-[17px] leading-8 text-clinical-muted max-md:text-base max-md:leading-7">
                 {block.summary}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2 max-md:mt-3">
               <button
                 aria-pressed={bookmarked}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
                 type="button"
                 onClick={toggleBookmark}
               >
@@ -314,7 +314,7 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
         <footer className="mt-4 flex items-center justify-between gap-4 border-t border-clinical-line pt-5">
           {previous ? (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href={`/notes/${previous.slug}`}
             >
               <ArrowLeft size={17} />
@@ -322,7 +322,7 @@ export function NoteReader({ sections, section, block }: NoteReaderProps) {
             </Link>
           ) : (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href="/notes"
             >
               <ArrowLeft size={17} />

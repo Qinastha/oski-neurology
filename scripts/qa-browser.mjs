@@ -503,7 +503,32 @@ async function inspect(name, url, viewport, selector) {
           .some((card) => !card.querySelector("[data-krok-option]")?.getAttribute("data-krok-option")?.endsWith("-a"))
       );
 
-    await page.locator("[data-krok-question-card]").first().locator("[data-krok-option]").first().click();
+    const orderedFirstQuestionId = interactions.orderedFirstThreeIds[0];
+    const orderedFirstCorrectOptionId = getCorrectOptionId(orderedFirstQuestionId);
+    const orderedFirstOptionIds = await page
+      .locator(`[data-krok-question-card="${orderedFirstQuestionId}"] [data-krok-option]`)
+      .evaluateAll((options) => options.map((option) => option.getAttribute("data-krok-option")));
+    const orderedFirstWrongOptionId = orderedFirstOptionIds.find(
+      (optionId) => optionId && optionId !== orderedFirstCorrectOptionId
+    );
+    if (!orderedFirstWrongOptionId) {
+      throw new Error(`No wrong option found for ${orderedFirstQuestionId}`);
+    }
+
+    await page.evaluate(() => {
+      window.localStorage.setItem("osceThemeV1", "dark");
+      document.documentElement.dataset.theme = "dark";
+    });
+    await page
+      .locator(
+        `[data-krok-question-card="${orderedFirstQuestionId}"] [data-krok-option="${orderedFirstWrongOptionId}"]`
+      )
+      .click();
+    await page.waitForSelector(
+      `[data-krok-question-card="${orderedFirstQuestionId}"] [data-krok-answer-explanation]`,
+      { timeout: 5000 }
+    );
+    await page.waitForTimeout(350);
     interactions.legacyAnswerFeedback = await page
       .locator("[data-krok-question-card]")
       .first()
@@ -514,6 +539,39 @@ async function inspect(name, url, viewport, selector) {
       .first()
       .locator("[data-krok-answer-explanation]")
       .count();
+    interactions.darkAnswerStateColors = await page.evaluate(
+      ({ correctOptionId, questionId, wrongOptionId }) => {
+        function channelLuminance(value) {
+          const match = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (!match) {
+            return 255;
+          }
+          return 0.2126 * Number(match[1]) + 0.7152 * Number(match[2]) + 0.0722 * Number(match[3]);
+        }
+
+        function background(selector) {
+          const element = document.querySelector(selector);
+          if (!element) {
+            return { color: "", luminance: 255 };
+          }
+          const color = window.getComputedStyle(element).backgroundColor;
+          return { color, luminance: channelLuminance(color) };
+        }
+
+        return {
+          correct: background(
+            `[data-krok-question-card="${questionId}"] [data-krok-option="${correctOptionId}"]`
+          ),
+          explanation: background(`[data-krok-question-card="${questionId}"] [data-krok-answer-explanation]`),
+          wrong: background(`[data-krok-question-card="${questionId}"] [data-krok-option="${wrongOptionId}"]`)
+        };
+      },
+      {
+        correctOptionId: orderedFirstCorrectOptionId,
+        questionId: orderedFirstQuestionId,
+        wrongOptionId: orderedFirstWrongOptionId
+      }
+    );
     await page.locator("[data-krok-explanation-toggle]").first().click();
     interactions.answerExplanationHidden = await page
       .locator("[data-krok-question-card]")
@@ -873,6 +931,34 @@ async function inspect(name, url, viewport, selector) {
     interactions.homeCards = await page.locator("[data-home-section-card]").count();
     interactions.homeLinks = await page.locator('[data-home-section-card] a[href^="/"]').count();
     interactions.mobileTabs = await page.locator(".mobile-tabbar a").count();
+
+    await page.evaluate(() => {
+      window.localStorage.removeItem("osceThemeV1");
+      document.documentElement.dataset.theme = "light";
+    });
+    interactions.themeToggleCount = await page.locator("[data-theme-toggle]").count();
+    interactions.themeInitial = await page.evaluate(() => document.documentElement.dataset.theme);
+    await page.locator("[data-theme-toggle]").click();
+    await page.waitForFunction(() => document.documentElement.dataset.theme === "dark", {
+      timeout: 5000
+    });
+    interactions.themeAfterDarkClick = await page.evaluate(() => document.documentElement.dataset.theme);
+    interactions.themeStoredAfterDarkClick = await page.evaluate(() =>
+      window.localStorage.getItem("osceThemeV1")
+    );
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.documentElement.dataset.theme === "dark", {
+      timeout: 5000
+    });
+    interactions.themeAfterReload = await page.evaluate(() => document.documentElement.dataset.theme);
+    await page.locator("[data-theme-toggle]").click();
+    await page.waitForFunction(() => document.documentElement.dataset.theme === "light", {
+      timeout: 5000
+    });
+    interactions.themeAfterLightClick = await page.evaluate(() => document.documentElement.dataset.theme);
+    interactions.themeStoredAfterLightClick = await page.evaluate(() =>
+      window.localStorage.getItem("osceThemeV1")
+    );
   }
 
   const screenshotPath = path.join(outputDir, `${name}.png`);
@@ -1341,6 +1427,17 @@ const failures = results.flatMap((result) => {
   if (result.name === "desktop-krok" && result.interactions.answerExplanation !== 1) {
     issues.push(`${result.name}: answer explanation did not render`);
   }
+  if (result.name === "desktop-krok") {
+    for (const [state, value] of Object.entries(result.interactions.darkAnswerStateColors ?? {})) {
+      if (value.luminance > 130) {
+        issues.push(
+          `${result.name}: ${state} answer state is too light for dark theme (${value.color}, luminance ${Math.round(
+            value.luminance
+          )})`
+        );
+      }
+    }
+  }
   if (result.name === "desktop-krok" && result.interactions.answerExplanationHidden !== 0) {
     issues.push(`${result.name}: explanation toggle did not hide answer explanation`);
   }
@@ -1621,6 +1718,39 @@ const failures = results.flatMap((result) => {
   }
   if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.homeLinks < 4) {
     issues.push(`${result.name}: expected home cards to link to all sections`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.themeToggleCount !== 1) {
+    issues.push(`${result.name}: expected one global theme toggle`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.themeInitial !== "light") {
+    issues.push(`${result.name}: expected theme to start as light`);
+  }
+  if (
+    (result.name === "desktop-home" || result.name === "mobile-home") &&
+    result.interactions.themeAfterDarkClick !== "dark"
+  ) {
+    issues.push(`${result.name}: theme toggle did not switch to dark`);
+  }
+  if (
+    (result.name === "desktop-home" || result.name === "mobile-home") &&
+    result.interactions.themeStoredAfterDarkClick !== "dark"
+  ) {
+    issues.push(`${result.name}: dark theme was not persisted`);
+  }
+  if ((result.name === "desktop-home" || result.name === "mobile-home") && result.interactions.themeAfterReload !== "dark") {
+    issues.push(`${result.name}: dark theme did not survive reload`);
+  }
+  if (
+    (result.name === "desktop-home" || result.name === "mobile-home") &&
+    result.interactions.themeAfterLightClick !== "light"
+  ) {
+    issues.push(`${result.name}: theme toggle did not switch back to light`);
+  }
+  if (
+    (result.name === "desktop-home" || result.name === "mobile-home") &&
+    result.interactions.themeStoredAfterLightClick !== "light"
+  ) {
+    issues.push(`${result.name}: light theme was not persisted`);
   }
   if (result.name === "mobile-home" && result.interactions.mobileTabs !== 4) {
     issues.push(`${result.name}: expected four global mobile nav links`);

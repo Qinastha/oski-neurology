@@ -106,7 +106,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
 
   return (
     <main className="grid min-h-dvh gap-[18px] p-5 md:grid-cols-[240px_minmax(0,1fr)] max-md:block max-md:p-0 max-md:pb-20">
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
+      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/cases">
           <span className="inline-flex h-12 w-12 items-center justify-center">
             <Image
@@ -127,8 +127,8 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
             <button
               aria-pressed={filter === itemFilter}
               className={cn(
-                "flex min-h-[42px] w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-                filter === itemFilter && "bg-clinical-accent-soft font-extrabold text-[#171a1f]"
+                "flex min-h-[42px] w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+                filter === itemFilter && "bg-clinical-accent-soft font-extrabold text-clinical-text"
               )}
               data-filter={itemFilter}
               key={itemFilter}
@@ -142,7 +142,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
         </nav>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px] max-md:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px] max-md:shadow-none">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="m-0 text-[13px] font-extrabold text-clinical-accent-strong">
@@ -165,10 +165,10 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
         </header>
 
         <div className="mt-5" data-search-shell="query">
-          <label className="flex h-11 w-full min-w-0 items-center gap-2.5 rounded-lg border border-clinical-line bg-white px-3 text-clinical-muted">
+          <label className="flex h-11 w-full min-w-0 items-center gap-2.5 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-clinical-muted">
             <Search size={18} />
             <input
-              className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-[#8f96a3]"
+              className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-clinical-placeholder"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Пошук станцій, синдромів, ключових слів..."
@@ -176,12 +176,12 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
           </label>
         </div>
 
-        <div className="mt-3.5 grid overflow-hidden rounded-lg border border-clinical-line bg-white sm:grid-cols-4 max-sm:grid-cols-2">
+        <div className="mt-3.5 grid overflow-hidden rounded-lg border border-clinical-line bg-clinical-surface sm:grid-cols-4 max-sm:grid-cols-2">
           {(Object.keys(filterLabels) as Filter[]).map((item) => (
             <button
               className={cn(
-                "min-h-10 border-clinical-line text-[#414852] transition hover:bg-clinical-accent-soft max-sm:border-b sm:border-r sm:last:border-r-0",
-                filter === item && "bg-clinical-accent-soft font-extrabold text-[#211b05]"
+                "min-h-10 border-clinical-line text-clinical-muted transition hover:bg-clinical-accent-soft max-sm:border-b sm:border-r sm:last:border-r-0",
+                filter === item && "bg-clinical-accent-soft font-extrabold text-clinical-accent-strong"
               )}
               key={item}
               onClick={() => setFilter(item)}
@@ -194,7 +194,7 @@ export function CasesExplorer({ cases }: { cases: ExplorerCase[] }) {
 
         <div className="my-4 flex items-center gap-3 text-[13px] text-clinical-muted">
           <span>{completed || 0}/20 пройдено</span>
-          <span className="relative h-1 w-[min(220px,42vw)] overflow-hidden rounded-full bg-[#e9e1d4]">
+          <span className="relative h-1 w-[min(220px,42vw)] overflow-hidden rounded-full bg-clinical-line">
             <span
               className="absolute inset-y-0 left-0 rounded-full bg-clinical-accent"
               style={{ width: `${Math.min((completed / 20) * 100, 100)}%` }}

@@ -322,7 +322,7 @@ function ExplanationToggle({
         "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-extrabold transition",
         enabled
           ? "border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong"
-          : "border-clinical-line bg-white text-clinical-muted hover:border-clinical-line-strong",
+          : "border-clinical-line bg-clinical-surface text-clinical-muted hover:border-clinical-line-strong",
         compact && "px-2 text-xs"
       )}
       data-krok-explanation-toggle={enabled ? "on" : "off"}
@@ -354,7 +354,7 @@ function BookletCard({
 }) {
   return (
     <article
-      className="rounded-lg border border-clinical-line bg-white/90 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.08)]"
+      className="rounded-lg border border-clinical-line bg-clinical-surface/90 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.08)]"
       data-krok-start-card={bookletId}
     >
       <div className="flex items-start justify-between gap-3">
@@ -372,7 +372,7 @@ function BookletCard({
               <span className="normal-case tracking-normal">{count} питань</span>
             </span>
           ) : (
-            <span className="rounded-full border border-clinical-line bg-[#fffaf0] px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
+            <span className="rounded-full border border-clinical-line bg-clinical-surface-soft px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
               {count} питань
             </span>
           )}
@@ -381,7 +381,7 @@ function BookletCard({
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {onStartOrdered ? (
           <button
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-[#fffaf0]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text transition hover:border-clinical-line-strong hover:bg-clinical-surface-soft"
             data-krok-start-mode="ordered"
             type="button"
             onClick={onStartOrdered}
@@ -416,15 +416,15 @@ function ResultPanel({
   onRestart: () => void;
 }) {
   const rows: Array<{ label: string; value: number; color: string }> = [
-    { label: "Правильні", value: result.correct, color: "text-emerald-700" },
-    { label: "Помилки", value: result.wrong, color: "text-rose-700" },
-    { label: "Без відповіді", value: result.unanswered, color: "text-slate-700" },
-    { label: "Позначені", value: result.flagged, color: "text-amber-700" }
+    { label: "Правильні", value: result.correct, color: "text-clinical-success-text" },
+    { label: "Помилки", value: result.wrong, color: "text-clinical-danger-text" },
+    { label: "Без відповіді", value: result.unanswered, color: "text-clinical-muted" },
+    { label: "Позначені", value: result.flagged, color: "text-clinical-accent-strong" }
   ];
 
   return (
     <section
-      className="rounded-lg border border-clinical-line-strong bg-[#fffaf0] p-4"
+      className="rounded-lg border border-clinical-line-strong bg-clinical-surface-soft p-4"
       data-krok-result="summary"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -438,7 +438,7 @@ function ResultPanel({
           </h2>
         </div>
         <button
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
           type="button"
           onClick={onRestart}
         >
@@ -448,7 +448,7 @@ function ResultPanel({
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-4">
         {rows.map(({ label, value, color }) => (
-          <div className="rounded-lg border border-clinical-line bg-white p-3" key={label}>
+          <div className="rounded-lg border border-clinical-line bg-clinical-surface p-3" key={label}>
             <p className="text-xs font-extrabold text-clinical-muted">{label}</p>
             <p className={cn("mt-1 text-2xl font-black", color)}>{value}</p>
           </div>
@@ -460,7 +460,7 @@ function ResultPanel({
           <div className="mt-2 flex flex-wrap gap-1.5">
             {mistakeIds.map((id) => (
               <a
-                className="rounded-full border border-rose-200 bg-white px-2.5 py-1 text-xs font-extrabold text-rose-700"
+                className="rounded-full border border-clinical-danger-line bg-clinical-danger-surface px-2.5 py-1 text-xs font-extrabold text-clinical-danger-text"
                 href={`#krok-question-${id}`}
                 key={id}
               >
@@ -498,7 +498,7 @@ function QuestionCard({
   const answered = Boolean(selectedOptionId);
   return (
     <article
-      className="krok-question-card scroll-mt-4 rounded-lg border border-clinical-line bg-white/92 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.06)] [contain-intrinsic-size:360px] [content-visibility:auto] max-md:p-3"
+      className="krok-question-card scroll-mt-4 rounded-lg border border-clinical-line bg-clinical-surface/92 p-4 shadow-[0_18px_55px_rgba(84,67,20,0.06)] [contain-intrinsic-size:360px] [content-visibility:auto] max-md:p-3"
       data-krok-question-card={question.id}
       data-krok-booklet-id={question.bookletId}
       data-krok-source-number={question.sourceNumber}
@@ -522,7 +522,7 @@ function QuestionCard({
             "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition",
             flagged
               ? "border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong"
-              : "border-clinical-line bg-white text-clinical-muted hover:border-clinical-line-strong"
+              : "border-clinical-line bg-clinical-surface text-clinical-muted hover:border-clinical-line-strong"
           )}
           title="Позначити для повторення"
           type="button"
@@ -542,11 +542,11 @@ function QuestionCard({
           return (
             <button
               className={cn(
-                "grid min-h-12 w-full grid-cols-[30px_minmax(0,1fr)_24px] items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm leading-relaxed transition",
-                !answered && "border-clinical-line bg-[#fffdf8] hover:border-clinical-line-strong",
-                showCorrect && "border-emerald-300 bg-emerald-50 text-emerald-900",
-                showWrong && "border-rose-300 bg-rose-50 text-rose-900",
-                answered && !showCorrect && !showWrong && "border-clinical-line bg-white text-clinical-muted"
+                "grid min-h-12 w-full appearance-none grid-cols-[30px_minmax(0,1fr)_24px] items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm leading-relaxed transition",
+                !answered && "border-clinical-line bg-clinical-control hover:border-clinical-line-strong",
+                showCorrect && "border-clinical-success-line bg-clinical-success-surface text-clinical-success-text",
+                showWrong && "border-clinical-danger-line bg-clinical-danger-surface text-clinical-danger-text",
+                answered && !showCorrect && !showWrong && "border-clinical-line bg-clinical-surface text-clinical-muted"
               )}
               data-krok-option={option.id}
               disabled={answered || finished}
@@ -570,8 +570,8 @@ function QuestionCard({
           className={cn(
             "mt-3 rounded-lg border p-3 text-sm leading-relaxed",
             selectedOptionId === question.correctOptionId
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-rose-200 bg-rose-50 text-rose-800"
+              ? "border-clinical-success-line bg-clinical-success-surface text-clinical-success-text"
+              : "border-clinical-danger-line bg-clinical-danger-surface text-clinical-danger-text"
           )}
           data-krok-answer-explanation={question.id}
         >
@@ -832,7 +832,7 @@ export function KrokTrainer({
         data-krok-page="start"
       >
         <aside
-          className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
+          className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
           data-krok-desktop-sidebar="start"
         >
           <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/krok">
@@ -850,7 +850,7 @@ export function KrokTrainer({
           </Link>
           <SiteSectionLinks active="krok" className="mt-6 border-b border-clinical-line pb-4" />
 
-          <div className="mt-auto rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+          <div className="mt-auto rounded-lg border border-clinical-line bg-clinical-surface-soft p-3">
             <p className="text-xs font-black uppercase text-clinical-accent-strong">Питання</p>
             <p className="mt-1 text-2xl font-black">{officialQuestions.length}</p>
             <p className="text-sm text-clinical-muted">
@@ -859,7 +859,7 @@ export function KrokTrainer({
           </div>
         </aside>
 
-        <section className="grid min-w-0 gap-5 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
+        <section className="grid min-w-0 gap-5 rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
           <SiteSectionLinks
             active="krok"
             className="grid-cols-3 border-b border-clinical-line pb-4 lg:hidden max-md:hidden [&>a]:justify-center"
@@ -889,7 +889,7 @@ export function KrokTrainer({
 
           {resumeState ? (
             <section
-              className="grid gap-3 rounded-lg border border-clinical-line-strong bg-[#fffaf0] p-4 md:grid-cols-[minmax(0,1fr)_auto]"
+              className="grid gap-3 rounded-lg border border-clinical-line-strong bg-clinical-surface-soft p-4 md:grid-cols-[minmax(0,1fr)_auto]"
               data-krok-resume="active"
             >
               <div>
@@ -915,7 +915,7 @@ export function KrokTrainer({
                   Продовжити тест
                 </button>
                 <button
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
                   data-krok-resume-action="new"
                   type="button"
                   onClick={restart}
@@ -1010,7 +1010,7 @@ export function KrokTrainer({
       data-krok-page="session"
     >
       <aside
-        className="sticky top-5 flex h-[calc(100dvh-40px)] min-h-0 flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
+        className="sticky top-5 flex h-[calc(100dvh-40px)] min-h-0 flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:hidden"
         data-krok-desktop-sidebar="session"
       >
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/krok">
@@ -1028,7 +1028,7 @@ export function KrokTrainer({
         </Link>
         <SiteSectionLinks active="krok" className="mt-6 border-b border-clinical-line pb-4" />
 
-        <div className="mt-4 rounded-lg border border-clinical-line bg-[#fffaf0] p-3">
+        <div className="mt-4 rounded-lg border border-clinical-line bg-clinical-surface-soft p-3">
           <p className="text-xs font-black uppercase text-clinical-accent-strong">
             {formatBookletLabel(session.bookletId)}
           </p>
@@ -1036,7 +1036,7 @@ export function KrokTrainer({
           <p className="text-sm text-clinical-muted">
             Вірних {result.correct} · {formatPercent(result.percent)}%
           </p>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e9e1d4]">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-clinical-line">
             <div
               className="h-full rounded-full bg-clinical-accent"
               style={{ width: `${(result.answered / result.total) * 100}%` }}
@@ -1053,8 +1053,8 @@ export function KrokTrainer({
             <button
               aria-pressed={filter === item}
               className={cn(
-                "min-h-10 rounded-lg px-3 text-left text-sm font-extrabold text-[#3d434b] transition hover:bg-clinical-accent-soft",
-                filter === item && "bg-clinical-accent-soft text-[#171a1f]"
+                "min-h-10 rounded-lg px-3 text-left text-sm font-extrabold text-clinical-muted transition hover:bg-clinical-accent-soft",
+                filter === item && "bg-clinical-accent-soft text-clinical-text"
               )}
               key={item}
               type="button"
@@ -1071,9 +1071,9 @@ export function KrokTrainer({
             const flagged = (session.flags[index] ?? "0") === "1";
             const stateClass = selectedOptionId
               ? selectedOptionId === question.correctOptionId
-                ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                : "border-rose-300 bg-rose-50 text-rose-800"
-              : "border-clinical-line bg-white text-clinical-muted";
+                ? "border-clinical-success-line bg-clinical-success-surface text-clinical-success-text"
+                : "border-clinical-danger-line bg-clinical-danger-surface text-clinical-danger-text"
+              : "border-clinical-line bg-clinical-surface text-clinical-muted";
             return (
               <a
                 className={cn(
@@ -1101,7 +1101,7 @@ export function KrokTrainer({
         </button>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:rounded-none max-lg:border-0 max-lg:p-[18px_14px_24px] max-lg:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:rounded-none max-lg:border-0 max-lg:p-[18px_14px_24px] max-lg:shadow-none">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[13px] font-extrabold text-clinical-accent-strong">
@@ -1118,14 +1118,14 @@ export function KrokTrainer({
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href="/krok"
             >
               <ClipboardList size={16} />
               Буклети
             </Link>
             <button
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               type="button"
               onClick={restart}
             >
@@ -1135,15 +1135,15 @@ export function KrokTrainer({
           </div>
         </header>
 
-        <div className="mt-4 grid gap-2 rounded-lg border border-clinical-line bg-white p-3 sm:grid-cols-5 max-lg:hidden">
+        <div className="mt-4 grid gap-2 rounded-lg border border-clinical-line bg-clinical-surface p-3 sm:grid-cols-5 max-lg:hidden">
           {(Object.keys(filterLabels) as Filter[]).map((item) => (
             <button
               aria-pressed={filter === item}
               className={cn(
                 "min-h-10 rounded-lg px-2 text-sm font-extrabold transition",
                 filter === item
-                  ? "bg-clinical-accent-soft text-[#211b05]"
-                  : "text-clinical-muted hover:bg-[#fffaf0]"
+                  ? "bg-clinical-accent-soft text-clinical-accent-strong"
+                  : "text-clinical-muted hover:bg-clinical-surface-soft"
               )}
               key={item}
               type="button"
@@ -1192,7 +1192,7 @@ export function KrokTrainer({
         </div>
 
         {visibleQuestions.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-clinical-line bg-white p-6 text-center">
+          <div className="mt-4 rounded-lg border border-clinical-line bg-clinical-surface p-6 text-center">
             <AlertTriangle className="mx-auto text-clinical-accent-strong" size={28} />
             <p className="mt-2 font-extrabold">За цим фільтром поки немає питань.</p>
           </div>
@@ -1211,7 +1211,7 @@ export function KrokTrainer({
             Відповіли {result.answered}/{result.total} · Вірних {result.correct} ·{" "}
             {formatPercent(result.percent)}%
           </p>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e9e1d4]">
+          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-clinical-line">
             <div
               className="h-full rounded-full bg-clinical-accent"
               style={{ width: `${(result.answered / result.total) * 100}%` }}
@@ -1220,7 +1220,7 @@ export function KrokTrainer({
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
           <button
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-xs font-extrabold text-clinical-text"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-xs font-extrabold text-clinical-text"
             data-krok-mobile-panel-trigger="button"
             type="button"
             onClick={() => setMobilePanelOpen(true)}
@@ -1257,7 +1257,7 @@ export function KrokTrainer({
             type="button"
             onClick={() => setMobilePanelOpen(false)}
           />
-          <section className="relative w-full rounded-t-lg border border-clinical-line bg-white p-3 shadow-[0_-18px_55px_rgba(84,67,20,0.16)]">
+          <section className="relative w-full rounded-t-lg border border-clinical-line bg-clinical-surface p-3 shadow-[0_-18px_55px_rgba(84,67,20,0.16)]">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-black uppercase text-clinical-accent-strong">
@@ -1266,7 +1266,7 @@ export function KrokTrainer({
                 <h2 className="mt-1 text-lg font-black">Питання та фільтри</h2>
               </div>
               <button
-                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-clinical-line bg-white px-3 text-xs font-extrabold text-clinical-text"
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface px-3 text-xs font-extrabold text-clinical-text"
                 type="button"
                 onClick={() => setMobilePanelOpen(false)}
               >
@@ -1282,7 +1282,7 @@ export function KrokTrainer({
                     "min-h-10 rounded-lg border px-2 text-sm font-extrabold",
                     filter === item
                       ? "border-clinical-line-strong bg-clinical-accent-soft text-clinical-accent-strong"
-                      : "border-clinical-line bg-white text-clinical-muted"
+                      : "border-clinical-line bg-clinical-surface text-clinical-muted"
                   )}
                   data-krok-mobile-filter={item}
                   key={item}
@@ -1306,9 +1306,9 @@ export function KrokTrainer({
                 const flagged = (session.flags[index] ?? "0") === "1";
                 const stateClass = selectedOptionId
                   ? selectedOptionId === question.correctOptionId
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                    : "border-rose-300 bg-rose-50 text-rose-800"
-                  : "border-clinical-line bg-white text-clinical-muted";
+                    ? "border-clinical-success-line bg-clinical-success-surface text-clinical-success-text"
+                    : "border-clinical-danger-line bg-clinical-danger-surface text-clinical-danger-text"
+                  : "border-clinical-line bg-clinical-surface text-clinical-muted";
                 return (
                   <a
                     className={cn(

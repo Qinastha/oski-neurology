@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import Script from "next/script";
+
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -48,18 +51,33 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#f5c84b",
-  colorScheme: "light"
+  colorScheme: "light dark"
 };
+
+const themeBootScript = `
+(() => {
+  try {
+    const storedTheme = window.localStorage.getItem("osceThemeV1");
+    document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
+  } catch {
+    document.documentElement.dataset.theme = "light";
+  }
+})();
+`;
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="uk">
+    <html data-theme="light" lang="uk" suppressHydrationWarning>
       <body className="bg-clinical-bg font-sans text-clinical-text antialiased">
+        <Script id="theme-boot" strategy="beforeInteractive">
+          {themeBootScript}
+        </Script>
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,244,191,0.72),transparent_34%),radial-gradient(circle_at_top_right,rgba(244,197,63,0.18),transparent_26%),#fffdf7]"
+          className="site-page-background pointer-events-none fixed inset-0 -z-10"
         />
         {children}
+        <ThemeToggle />
       </body>
     </html>
   );

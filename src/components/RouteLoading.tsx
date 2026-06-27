@@ -4,7 +4,7 @@ interface RouteLoadingProps {
 }
 
 function SkeletonLine({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-[#efe6d4] ${className}`} />;
+  return <div className={`animate-pulse rounded-full bg-clinical-line ${className}`} />;
 }
 
 export function RouteLoading({ title = "Завантаження", mode = "cards" }: RouteLoadingProps) {
@@ -12,7 +12,7 @@ export function RouteLoading({ title = "Завантаження", mode = "cards
 
   return (
     <main className="min-h-dvh p-5 max-md:p-0">
-      <section className="mx-auto grid max-w-6xl gap-4 rounded-lg border border-clinical-line/85 bg-white/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
+      <section className="mx-auto grid max-w-6xl gap-4 rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-5 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[18px_14px_88px]">
         <header className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <SkeletonLine className="h-3 w-36" />
@@ -26,7 +26,7 @@ export function RouteLoading({ title = "Завантаження", mode = "cards
         <div className={mode === "reader" ? "grid gap-3" : "grid gap-3 md:grid-cols-2"}>
           {Array.from({ length: cardCount }, (_, index) => (
             <div
-              className="rounded-lg border border-clinical-line bg-white p-4"
+              className="rounded-lg border border-clinical-line bg-clinical-surface p-4"
               key={index}
             >
               <SkeletonLine className="h-3 w-24" />

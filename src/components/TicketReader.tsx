@@ -33,13 +33,13 @@ function ContentBlock({ block }: { block: ExamTicketContentBlock }) {
 
   if (block.type === "list_item") {
     return (
-      <li className="pl-1 text-[15px] leading-7 text-[#4e5561] marker:text-clinical-accent-strong">
+      <li className="pl-1 text-[15px] leading-7 text-clinical-muted marker:text-clinical-accent-strong">
         {block.text.replace(/^([•●-]|\d+[\).])\s*/, "")}
       </li>
     );
   }
 
-  return <p className="mt-3 text-[16px] leading-8 text-[#4e5561] max-md:text-[15px] max-md:leading-7">{block.text}</p>;
+  return <p className="mt-3 text-[16px] leading-8 text-clinical-muted max-md:text-[15px] max-md:leading-7">{block.text}</p>;
 }
 
 function ContentBlocks({ blocks }: { blocks: ExamTicketContentBlock[] }) {
@@ -92,7 +92,7 @@ function MediaFigure({
 }) {
   return (
     <figure
-      className={cn("overflow-hidden rounded-lg border border-clinical-line bg-white", className)}
+      className={cn("overflow-hidden rounded-lg border border-clinical-line bg-clinical-surface", className)}
       data-ticket-media-figure={media.id}
     >
       <button
@@ -102,7 +102,7 @@ function MediaFigure({
         onClick={() => onOpen(media)}
       >
         <div
-          className="relative w-full overflow-hidden bg-[#fffaf0]"
+          className="relative w-full overflow-hidden bg-clinical-surface-soft"
           style={{ aspectRatio: `${media.width} / ${media.height}` }}
         >
           <Image
@@ -136,7 +136,7 @@ function RichTableBlock({ block }: { block: ExamTicketRichTableBlock }) {
   return (
     <div className="mt-4" data-ticket-table={block.id}>
       <div
-        className="hidden rounded-lg border border-clinical-line bg-white/80 md:block"
+        className="hidden rounded-lg border border-clinical-line bg-clinical-surface/80 md:block"
         data-ticket-table-scroll={block.id}
       >
         <table className="w-full table-fixed border-collapse text-left text-[13px] leading-6">
@@ -156,10 +156,10 @@ function RichTableBlock({ block }: { block: ExamTicketRichTableBlock }) {
           </thead>
           <tbody>
             {block.rows.map((row, rowIndex) => (
-              <tr className="odd:bg-white even:bg-[#fffaf0]" key={`${block.id}-${rowIndex}`}>
+              <tr className="odd:bg-clinical-surface even:bg-clinical-surface-soft" key={`${block.id}-${rowIndex}`}>
                 {row.map((cell, cellIndex) => (
                   <td
-                    className="border-b border-clinical-line px-3 py-2 align-top text-[#4e5561] [overflow-wrap:anywhere]"
+                    className="border-b border-clinical-line px-3 py-2 align-top text-clinical-muted [overflow-wrap:anywhere]"
                     key={`${block.id}-${rowIndex}-${cellIndex}`}
                   >
                     {cell}
@@ -181,7 +181,7 @@ function RichTableBlock({ block }: { block: ExamTicketRichTableBlock }) {
 
           return (
             <article
-              className="rounded-lg border border-clinical-line bg-white/80 p-3"
+              className="rounded-lg border border-clinical-line bg-clinical-surface/80 p-3"
               data-ticket-table-card-row={block.id}
               key={`${block.id}-card-${rowIndex}`}
             >
@@ -195,11 +195,11 @@ function RichTableBlock({ block }: { block: ExamTicketRichTableBlock }) {
               {details.length > 0 ? (
                 <dl className="mt-3 grid gap-2">
                   {details.map((item) => (
-                    <div className="rounded-lg bg-[#fffaf0] px-3 py-2" key={`${block.id}-card-${rowIndex}-${item.label}`}>
+                    <div className="rounded-lg bg-clinical-surface-soft px-3 py-2" key={`${block.id}-card-${rowIndex}-${item.label}`}>
                       <dt className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
                         {item.label}
                       </dt>
-                      <dd className="m-0 mt-0.5 text-[14px] leading-6 text-[#4e5561] [overflow-wrap:anywhere]">
+                      <dd className="m-0 mt-0.5 text-[14px] leading-6 text-clinical-muted [overflow-wrap:anywhere]">
                         {item.value || "-"}
                       </dd>
                     </div>
@@ -228,7 +228,7 @@ function RichBlock({
   }
 
   if (block.type === "paragraph") {
-    return <p className="mt-3 text-[16px] leading-8 text-[#4e5561] max-md:text-[15px] max-md:leading-7">{block.text}</p>;
+    return <p className="mt-3 text-[16px] leading-8 text-clinical-muted max-md:text-[15px] max-md:leading-7">{block.text}</p>;
   }
 
   if (block.type === "list") {
@@ -236,7 +236,7 @@ function RichBlock({
     return (
       <ListTag
         className={cn(
-          "mt-3 space-y-2 pl-5 text-[15px] leading-7 text-[#4e5561] marker:text-clinical-accent-strong",
+          "mt-3 space-y-2 pl-5 text-[15px] leading-7 text-clinical-muted marker:text-clinical-accent-strong",
           block.style === "ordered" ? "list-decimal" : "list-disc"
         )}
       >
@@ -251,11 +251,11 @@ function RichBlock({
 
   if (block.type === "definition_list") {
     return (
-      <dl className="mt-3 divide-y divide-clinical-line overflow-hidden rounded-lg border border-clinical-line bg-white/70">
+      <dl className="mt-3 divide-y divide-clinical-line overflow-hidden rounded-lg border border-clinical-line bg-clinical-surface/70">
         {block.items.map((item, index) => (
           <div className="grid gap-1 px-4 py-3 sm:grid-cols-[190px_minmax(0,1fr)] sm:gap-4" key={`${block.id}-${index}`}>
             <dt className="text-[14px] font-black leading-6 text-clinical-accent-strong">{item.term}</dt>
-            <dd className="m-0 text-[15px] leading-7 text-[#4e5561]">
+            <dd className="m-0 text-[15px] leading-7 text-clinical-muted">
               {Array.isArray(item.description) ? (
                 <ul className="list-disc space-y-1 pl-5 marker:text-clinical-accent-strong">
                   {item.description.map((description, descriptionIndex) => (
@@ -333,14 +333,14 @@ function TicketLightbox({
     >
       <button
         aria-label="Закрити зображення"
-        className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/25 bg-white/95 text-clinical-text"
+        className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/25 bg-white/95 text-[#1f2328]"
         data-ticket-lightbox-close="button"
         type="button"
         onClick={onClose}
       >
         <X size={20} />
       </button>
-      <div className="relative h-[min(82dvh,900px)] w-[min(94vw,1180px)] overflow-hidden rounded-lg bg-white">
+      <div className="relative h-[min(82dvh,900px)] w-[min(94vw,1180px)] overflow-hidden rounded-lg bg-clinical-surface">
         <Image
           alt={media.alt}
           className="object-contain"
@@ -402,7 +402,7 @@ export function TicketReader({
 
   return (
     <main className="grid min-h-dvh justify-center gap-[18px] p-5 md:grid-cols-[240px_minmax(0,900px)] max-md:block max-md:p-0 max-md:pb-20">
-      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-white/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
+      <aside className="sticky top-5 flex h-[calc(100dvh-40px)] flex-col rounded-lg border border-clinical-line/85 bg-clinical-surface/90 p-[18px_14px] shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:hidden">
         <Link className="flex min-h-[38px] items-center gap-2.5 font-extrabold" href="/tickets">
           <span className="inline-flex h-12 w-12 items-center justify-center">
             <Image
@@ -422,8 +422,8 @@ export function TicketReader({
             <Link
               aria-current={item.number === ticket.number ? "page" : undefined}
               className={cn(
-                "min-h-[42px] rounded-lg p-2 text-[13px] leading-tight text-[#3d434b] transition hover:bg-clinical-accent-soft hover:text-[#171a1f]",
-                item.number === ticket.number && "bg-clinical-accent-soft text-[#171a1f]"
+                "min-h-[42px] rounded-lg p-2 text-[13px] leading-tight text-clinical-muted transition hover:bg-clinical-accent-soft hover:text-clinical-text",
+                item.number === ticket.number && "bg-clinical-accent-soft text-clinical-text"
               )}
               href={`/tickets/${item.number}`}
               key={item.id}
@@ -434,11 +434,11 @@ export function TicketReader({
         </nav>
       </aside>
 
-      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-white/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
+      <section className="min-w-0 rounded-lg border border-clinical-line/85 bg-clinical-surface/[0.92] px-[clamp(18px,4vw,48px)] py-6 shadow-[0_18px_55px_rgba(84,67,20,0.08)] backdrop-blur-2xl max-md:min-h-dvh max-md:rounded-none max-md:border-0 max-md:p-[0_14px_88px] max-md:shadow-none">
         <header className="sticky top-0 z-10 -mx-3 mb-3 hidden min-h-[68px] grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-clinical-line bg-clinical-bg/95 px-3 py-2 backdrop-blur-xl max-md:grid">
           <Link
             aria-label="До списку білетів"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface"
             href="/tickets"
           >
             <ArrowLeft size={18} />
@@ -449,7 +449,7 @@ export function TicketReader({
             </span>
             <h1 className="mt-1 truncate text-base font-extrabold">{ticket.title}</h1>
           </div>
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-white text-clinical-accent-strong">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-clinical-line bg-clinical-surface text-clinical-accent-strong">
             <FileText size={18} />
           </span>
         </header>
@@ -463,7 +463,7 @@ export function TicketReader({
               <h1 className="mt-1 text-[clamp(34px,5vw,58px)] font-black leading-[0.98] tracking-normal text-clinical-text">
                 {ticket.title}
               </h1>
-              <p className="mt-4 max-w-[68ch] text-[17px] leading-8 text-[#606773] max-md:text-base max-md:leading-7">
+              <p className="mt-4 max-w-[68ch] text-[17px] leading-8 text-clinical-muted max-md:text-base max-md:leading-7">
                 {ticket.questions.length} питання
                 {mediaCount > 0 ? ` · ${mediaCount} зображень` : ""}.
               </p>
@@ -526,7 +526,7 @@ export function TicketReader({
         <footer className="mt-8 flex items-center justify-between gap-4 border-t border-clinical-line pt-5">
           {previous ? (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href={`/tickets/${previous.number}`}
             >
               <ArrowLeft size={17} />
@@ -534,7 +534,7 @@ export function TicketReader({
             </Link>
           ) : (
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-white px-3 text-sm font-extrabold text-clinical-text"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-clinical-line bg-clinical-surface px-3 text-sm font-extrabold text-clinical-text"
               href="/tickets"
             >
               <ArrowLeft size={17} />
