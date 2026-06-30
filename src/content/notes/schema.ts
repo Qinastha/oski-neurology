@@ -2,7 +2,7 @@ export type NoteSectionStatus = "available" | "planned";
 
 export type NoteSourceType = "pdf" | "book" | "manual" | "reference";
 
-export type NoteContentBlockType = "prose" | "list" | "subsection" | "clinical_note";
+export type NoteContentBlockType = "prose" | "list" | "subsection" | "clinical_note" | "table";
 
 export interface NoteSubtopic {
   code: string;
@@ -31,6 +31,8 @@ export interface NoteContentBlock {
   lead?: string;
   paragraphs?: string[];
   items?: string[];
+  columns?: string[];
+  rows?: string[][];
 }
 
 export interface NoteSource {
@@ -50,6 +52,7 @@ export interface NoteBlock {
   sectionCode: `${number}.0.0.0`;
   updatedAt: string;
   summary: string;
+  coverageHighlights: string[];
   content: NoteContentBlock[];
   topical?: NotePoint[];
   krokPatterns: NotePoint[];

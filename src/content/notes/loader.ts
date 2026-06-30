@@ -55,7 +55,19 @@ export function getNoteSearchBlob(section: ResolvedNoteSection) {
       section.code,
       section.title,
       ...section.subtopics.flatMap((subtopic) => [subtopic.code, subtopic.title]),
-      ...(section.block?.content.flatMap((item) => [item.title ?? ""]) ?? [])
+      ...(section.block?.coverageHighlights ?? []),
+      ...(section.block?.content.flatMap((item) => [
+        item.title ?? "",
+        item.lead ?? "",
+        ...(item.paragraphs ?? []),
+        ...(item.items ?? []),
+        ...(item.columns ?? []),
+        ...(item.rows ?? []).flat()
+      ]) ?? []),
+      ...(section.block?.topical?.flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]) ?? []),
+      ...(section.block?.krokPatterns.flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]) ?? []),
+      ...(section.block?.pitfalls.flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]) ?? []),
+      ...(section.block?.krokSearchTerms ?? [])
     ].join("\n")
     )
   );

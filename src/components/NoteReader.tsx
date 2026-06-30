@@ -52,7 +52,120 @@ function writeStringSet(key: string, value: Set<string>) {
   window.localStorage.setItem(key, JSON.stringify([...value]));
 }
 
+function getColumnWidth(columnCount: number, columnIndex: number) {
+  if (columnCount <= 1) {
+    return "100%";
+  }
+
+  const firstColumnWidth = columnCount === 2 ? 34 : columnCount === 3 ? 28 : 24;
+  if (columnIndex === 0) {
+    return `${firstColumnWidth}%`;
+  }
+
+  return `${(100 - firstColumnWidth) / (columnCount - 1)}%`;
+}
+
+function TableBlock({ block }: { block: NoteContentBlock }) {
+  const columns = block.columns ?? [];
+  const rows = block.rows ?? [];
+
+  return (
+    <section
+      className="scroll-mt-24 border-t border-clinical-line py-7 first:border-t-0 first:pt-2"
+      data-note-content-block={block.id}
+    >
+      {block.title ? (
+        <h2 className="text-[clamp(22px,3vw,30px)] font-black leading-tight text-clinical-text">
+          {block.title}
+        </h2>
+      ) : null}
+      {block.lead ? (
+        <p className="mt-2 text-[15px] font-semibold leading-relaxed text-clinical-muted">{block.lead}</p>
+      ) : null}
+
+      <div className="mt-4 hidden rounded-lg border border-clinical-line bg-clinical-surface/80 md:block">
+        <table
+          className="w-full table-fixed border-collapse text-left text-[13px] leading-6"
+          data-note-table={block.id}
+        >
+          <colgroup>
+            {columns.map((column, columnIndex) => (
+              <col key={column} style={{ width: getColumnWidth(columns.length, columnIndex) }} />
+            ))}
+          </colgroup>
+          <thead className="bg-clinical-accent-soft text-clinical-accent-strong">
+            <tr>
+              {columns.map((column) => (
+                <th className="border-b border-clinical-line px-3 py-2 font-black [overflow-wrap:anywhere]" key={column}>
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr className="odd:bg-clinical-surface even:bg-clinical-surface-soft" key={`${block.id}-${rowIndex}`}>
+                {row.map((cell, cellIndex) => (
+                  <td
+                    className="border-b border-clinical-line px-3 py-2 align-top text-clinical-muted [overflow-wrap:anywhere]"
+                    key={`${block.id}-${rowIndex}-${cellIndex}`}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:hidden" data-note-table-card-list={block.id}>
+        {rows.map((row, rowIndex) => {
+          const rowTitle = row[0] || `Рядок ${rowIndex + 1}`;
+          const details = columns.slice(1).map((column, columnIndex) => ({
+            label: column,
+            value: row[columnIndex + 1] ?? ""
+          }));
+
+          return (
+            <article
+              className="rounded-lg border border-clinical-line bg-clinical-surface/80 p-3"
+              data-note-table-card-row={block.id}
+              key={`${block.id}-card-${rowIndex}`}
+            >
+              <p className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
+                {columns[0] ?? "Пункт"}
+              </p>
+              <h3 className="mt-0.5 text-[15px] font-black leading-6 text-clinical-text [overflow-wrap:anywhere]">
+                {rowTitle}
+              </h3>
+              {details.length > 0 ? (
+                <dl className="mt-3 grid gap-2">
+                  {details.map((item) => (
+                    <div className="rounded-lg bg-clinical-surface-soft px-3 py-2" key={`${block.id}-card-${rowIndex}-${item.label}`}>
+                      <dt className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
+                        {item.label}
+                      </dt>
+                      <dd className="m-0 mt-0.5 text-[14px] leading-6 text-clinical-muted [overflow-wrap:anywhere]">
+                        {item.value || "-"}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function ContentBlock({ block }: { block: NoteContentBlock }) {
+  if (block.type === "table") {
+    return <TableBlock block={block} />;
+  }
+
   const isCallout = block.type === "clinical_note";
 
   return (

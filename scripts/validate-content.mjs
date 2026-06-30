@@ -1657,7 +1657,8 @@ const deprecatedNoteBlockKeys = [
   "differentials",
   "relatedCases"
 ];
-const validNoteContentBlockTypes = new Set(["prose", "list", "subsection", "clinical_note"]);
+const validNoteContentBlockTypes = new Set(["prose", "list", "subsection", "clinical_note", "table"]);
+const expectedNoteTableSections = new Set(["1.0.0.0", "2.0.0.0", "3.0.0.0", "5.0.0.0", "6.0.0.0"]);
 const forbiddenNoteContentPhrases = [
   "Короткий алгоритм",
   "Порядок думки",
@@ -1872,6 +1873,7 @@ for (const block of noteBlocks) {
   if (!Array.isArray(block.content) || block.content.length === 0) {
     failures.push(`Note block ${block.sectionCode} needs content`);
   }
+  let tableBlockCount = 0;
   for (const contentBlock of block.content ?? []) {
     if (typeof contentBlock.id !== "string" || contentBlock.id.trim().length === 0) {
       failures.push(`Note block ${block.sectionCode} has content block without id`);
@@ -1895,7 +1897,11 @@ for (const block of noteBlocks) {
 
     const textCount =
       paragraphs.filter((item) => typeof item === "string" && item.trim().length >= 20).length +
-      items.filter((item) => typeof item === "string" && item.trim().length >= 20).length;
+      items.filter((item) => typeof item === "string" && item.trim().length >= 20).length +
+      (contentBlock.columns ?? []).filter((item) => typeof item === "string" && item.trim().length >= 3).length +
+      (contentBlock.rows ?? [])
+        .flat()
+        .filter((item) => typeof item === "string" && item.trim().length >= 3).length;
     if (textCount === 0) {
       failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} needs text`);
     }
@@ -1908,6 +1914,31 @@ for (const block of noteBlocks) {
     if (contentBlock.type === "list" && items.length === 0) {
       failures.push(`Note block ${block.sectionCode} content ${contentBlock.id} needs list items`);
     }
+    if (contentBlock.type === "table") {
+      tableBlockCount += 1;
+      if (
+        !Array.isArray(contentBlock.columns) ||
+        contentBlock.columns.length < 2 ||
+        !contentBlock.columns.every((item) => typeof item === "string" && item.trim().length > 0)
+      ) {
+        failures.push(`Note block ${block.sectionCode} table ${contentBlock.id} needs columns`);
+      }
+      if (
+        !Array.isArray(contentBlock.rows) ||
+        contentBlock.rows.length === 0 ||
+        !contentBlock.rows.every(
+          (row) =>
+            Array.isArray(row) &&
+            row.length === contentBlock.columns?.length &&
+            row.every((cell) => typeof cell === "string" && cell.trim().length > 0)
+        )
+      ) {
+        failures.push(`Note block ${block.sectionCode} table ${contentBlock.id} needs rows matching columns`);
+      }
+    }
+  }
+  if (expectedNoteTableSections.has(block.sectionCode) && tableBlockCount === 0) {
+    failures.push(`Note block ${block.sectionCode} needs at least one table block`);
   }
 
   for (const point of block.topical ?? []) {
@@ -1941,6 +1972,14 @@ for (const block of noteBlocks) {
   if (!Array.isArray(block.krokSearchTerms) || block.krokSearchTerms.length === 0) {
     failures.push(`Note block ${block.sectionCode} needs krokSearchTerms`);
   }
+  if (
+    !Array.isArray(block.coverageHighlights) ||
+    block.coverageHighlights.length < 3 ||
+    block.coverageHighlights.length > 6 ||
+    !block.coverageHighlights.every((item) => typeof item === "string" && item.trim().length >= 12)
+  ) {
+    failures.push(`Note block ${block.sectionCode} needs 3-6 coverageHighlights`);
+  }
 
   const coverageRules = expectedNoteSubtopicCoverage.get(block.sectionCode);
   if (coverageRules) {
@@ -1952,12 +1991,15 @@ for (const block of noteBlocks) {
         contentBlock.title ?? "",
         contentBlock.lead ?? "",
         ...(contentBlock.paragraphs ?? []),
-        ...(contentBlock.items ?? [])
+        ...(contentBlock.items ?? []),
+        ...(contentBlock.columns ?? []),
+        ...(contentBlock.rows ?? []).flat()
       ]),
       ...(block.topical ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
       ...(block.krokPatterns ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
       ...(block.pitfalls ?? []).flatMap((point) => [point.title, point.text, ...(point.tags ?? [])]),
-      ...(block.krokSearchTerms ?? [])
+      ...(block.krokSearchTerms ?? []),
+      ...(block.coverageHighlights ?? [])
     ].join("\n").toLowerCase();
 
     for (const rule of coverageRules) {

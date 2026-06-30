@@ -207,10 +207,26 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
                     ) : null}
                   </div>
                   <h2 className="mt-3 text-xl font-black leading-tight">{section.title}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-clinical-muted">
-                    {section.subtopics.slice(0, 5).map((item) => item.title).join(" · ")}
-                    {section.subtopics.length > 5 ? " · ..." : ""}
-                  </p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {section.subtopics.map((item) => (
+                      <span
+                        className="rounded-lg border border-clinical-line bg-clinical-control px-2 py-1 text-[12px] font-semibold leading-5 text-clinical-muted"
+                        key={item.code}
+                      >
+                        {item.code} · {item.title}
+                      </span>
+                    ))}
+                  </div>
+                  {section.block?.coverageHighlights.length ? (
+                    <div className="mt-3 rounded-lg border border-clinical-line bg-clinical-surface-soft px-3 py-2">
+                      <p className="text-[11px] font-black uppercase leading-5 text-clinical-accent-strong">
+                        Розбирається
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-clinical-muted">
+                        {section.block.coverageHighlights.join(" · ")}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-stretch md:justify-center">
