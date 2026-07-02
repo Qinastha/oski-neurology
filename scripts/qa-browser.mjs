@@ -1109,6 +1109,12 @@ await inspect(
   '[data-note-reader="treatment-prevention"]'
 );
 await inspect(
+  "desktop-note-reader-extra-krok-layer",
+  `/notes/extra-krok-layer`,
+  { width: 1440, height: 900 },
+  '[data-note-reader="extra-krok-layer"]'
+);
+await inspect(
   "desktop-dementia",
   `/cases/dementia-mini-cog`,
   { width: 1440, height: 900 },
@@ -1330,6 +1336,12 @@ await inspect(
   `/notes/treatment-prevention`,
   { width: 390, height: 844 },
   '[data-note-reader="treatment-prevention"]'
+);
+await inspect(
+  "mobile-note-reader-extra-krok-layer",
+  `/notes/extra-krok-layer`,
+  { width: 390, height: 844 },
+  '[data-note-reader="extra-krok-layer"]'
 );
 
 await browser.close();
@@ -1557,11 +1569,11 @@ const failures = results.flatMap((result) => {
   if (result.name === "mobile-krok" && result.interactions.bottomFinishButtons !== 1) {
     issues.push(`${result.name}: mobile finish button is missing`);
   }
-  if (result.name === "desktop-notes" && result.interactions.sectionCards !== 15) {
-    issues.push(`${result.name}: expected 15 note section cards`);
+  if (result.name === "desktop-notes" && result.interactions.sectionCards !== 16) {
+    issues.push(`${result.name}: expected 16 note section cards`);
   }
-  if (result.name === "desktop-notes" && result.interactions.availableCards !== 15) {
-    issues.push(`${result.name}: expected fifteen available note sections`);
+  if (result.name === "desktop-notes" && result.interactions.availableCards !== 16) {
+    issues.push(`${result.name}: expected sixteen available note sections`);
   }
   if (result.name === "desktop-notes" && result.interactions.plannedCards !== 0) {
     issues.push(`${result.name}: expected zero planned note sections`);
@@ -1662,8 +1674,8 @@ const failures = results.flatMap((result) => {
   if (result.name.includes("note-reader") && result.interactions.sourceSections !== 0) {
     issues.push(`${result.name}: source section should not render in notes UI`);
   }
-  if (result.name === "mobile-notes" && result.interactions.sectionCards !== 15) {
-    issues.push(`${result.name}: expected 15 note section cards on mobile`);
+  if (result.name === "mobile-notes" && result.interactions.sectionCards !== 16) {
+    issues.push(`${result.name}: expected 16 note section cards on mobile`);
   }
   if (result.name === "mobile-notes" && result.interactions.mobileTabs !== 4) {
     issues.push(`${result.name}: expected four global mobile nav links`);

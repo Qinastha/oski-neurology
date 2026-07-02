@@ -215,7 +215,8 @@ const expectedNoteSectionWeights = new Map([
   ["12.0.0.0", 6],
   ["13.0.0.0", 2],
   ["14.0.0.0", 4],
-  ["15.0.0.0", 4]
+  ["15.0.0.0", 4],
+  ["16.0.0.0", 0]
 ]);
 const forbiddenTrainingStemPatterns = [
   /ключова ознака/i,
@@ -1601,15 +1602,15 @@ for (const override of allExamTicketQuestionOverrides) {
   }
 }
 
-if (noteSections.length !== 15) {
-  failures.push(`Expected 15 note sections, got ${noteSections.length}`);
+if (noteSections.length !== 16) {
+  failures.push(`Expected 16 note sections, got ${noteSections.length}`);
 }
 
 const noteSectionCodes = new Set();
 const noteSectionSlugs = new Set();
 let noteSectionWeightTotal = 0;
 for (const section of noteSections) {
-  if (typeof section.code !== "string" || !/^(?:[1-9]|1[0-5])\.0\.0\.0$/.test(section.code)) {
+  if (typeof section.code !== "string" || !/^(?:[1-9]|1[0-6])\.0\.0\.0$/.test(section.code)) {
     failures.push(`Note section has invalid code: ${section.code}`);
     continue;
   }
@@ -1658,7 +1659,7 @@ const deprecatedNoteBlockKeys = [
   "relatedCases"
 ];
 const validNoteContentBlockTypes = new Set(["prose", "list", "subsection", "clinical_note", "table"]);
-const expectedNoteTableSections = new Set(["1.0.0.0", "2.0.0.0", "3.0.0.0", "5.0.0.0", "6.0.0.0"]);
+const expectedNoteTableSections = new Set(["1.0.0.0", "2.0.0.0", "3.0.0.0", "5.0.0.0", "6.0.0.0", "16.0.0.0"]);
 const forbiddenNoteContentPhrases = [
   "Короткий алгоритм",
   "Порядок думки",
@@ -1834,6 +1835,19 @@ const expectedNoteSubtopicCoverage = new Map([
       { code: "15.12.0.0", groups: [["невідкладні стани"], ["abc", "дихальні шляхи"], ["глюкоза"], ["манітол", "гіпертонічний nacl"], ["декомпресія", "компресія спинного мозку"]] },
       { code: "15.13.0.0", groups: [["соматична патологія"], ["діабетична"], ["b12"], ["печінкова енцефалопатія"], ["лактулоза"], ["тіамін", "wernicke"]] },
       { code: "15.14.0.0", groups: [["профілактика"], ["вакцина"], ["контроль тиску"], ["куріння"], ["реабілітація", "прихильність"]] }
+    ]
+  ],
+  [
+    "16.0.0.0",
+    [
+      { code: "16.1.0.0", groups: [["aspects"], ["toast"], ["edss"]] },
+      { code: "16.2.0.0", groups: [["фовіл"], ["гасперіні"], ["бенедикт"], ["медіальний поздовжній"], ["інтернуклеар"]] },
+      { code: "16.3.0.0", groups: [["герстман"], ["пальцева агнозія"], ["дискалькул"], ["зоровий тракт"], ["латеральне колінчасте"]] },
+      { code: "16.4.0.0", groups: [["ноцицептив"], ["ноципласт"], ["головний біль напруги"], ["цервікокраніалг"], ["алодинія", "гіпералгезія"]] },
+      { code: "16.5.0.0", groups: [["язикоглотков"], ["міжреберна"], ["ліктьова ямка"], ["соромітн"], ["плексит"]] },
+      { code: "16.6.0.0", groups: [["штрюмпел"], ["фрідрайх"], ["кліщовий енцефаліт"], ["нейроснід"], ["лейкоенцефаліт"], ["метанол"]] },
+      { code: "16.7.0.0", groups: [["уздг"], ["доплер"], ["краніограф"], ["спондилограф"], ["фокальні повільні хвилі"], ["дікса-холлпайка"]] },
+      { code: "16.8.0.0", groups: [["дислокаційний синдром"], ["кальцієво-фосфор"], ["поліомієлітоподіб"]] }
     ]
   ]
 ]);

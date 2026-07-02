@@ -194,7 +194,7 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
                       {section.code.split(".")[0]}.0
                     </span>
                     <span className="rounded-full border border-clinical-line bg-clinical-surface-soft px-2.5 py-1 text-xs font-black text-clinical-accent-strong">
-                      {section.weight}%
+                      {section.weight > 0 ? `${section.weight}%` : "Екстра"}
                     </span>
                     <span className="rounded-full border border-clinical-line bg-clinical-surface px-2.5 py-1 text-xs font-extrabold text-clinical-muted">
                       {formatStatus(section)}
