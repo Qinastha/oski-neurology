@@ -165,6 +165,7 @@ export function NotesExplorer({ sections }: { sections: ExplorerNoteSection[] })
             <Search size={18} />
             <input
               className="w-full min-w-0 bg-transparent text-clinical-text outline-none placeholder:text-clinical-placeholder"
+              suppressHydrationWarning
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Пошук за темою або підтемою..."

@@ -235,7 +235,7 @@ export const noteSections = [
   {
     "code": "16.0.0.0",
     "slug": "extra-krok-layer",
-    "title": "Екстра: KROK-layer без дублювання",
+    "title": "Екстра",
     "weight": 0,
     "status": "available",
     "subtopics": [
